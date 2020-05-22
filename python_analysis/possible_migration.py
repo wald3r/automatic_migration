@@ -1,5 +1,5 @@
 import pandas as pd
-
+import time
 
 
 def load(name):
@@ -54,7 +54,7 @@ def amount_of_migrations(df):
     df_meanDay = df_groups['SpotPrice'].agg('mean')
 
     df_final = df_meanDay.reset_index()
-    df_final = df_final.sort_values(by=['Year', 'Month', 'Day', 'SpotPrice'])
+    #df_final = df_final.sort_values(by=['Year', 'Month', 'Day', 'SpotPrice'])
 
     df_final = df_final.groupby(['Year', 'Month', 'Day'])['AvailabilityZone', 'SpotPrice'].agg('min')
     df_final = df_final.reset_index()
@@ -65,6 +65,7 @@ def amount_of_migrations(df):
 
 def main():
 
+    start = time.time()
     list = []
 
     df_instances = load('spots_activity.csv')
@@ -86,9 +87,11 @@ def main():
         print(instanceType, productDescription, number)
         list.append([instanceType, productDescription, number])
 
-    df_final = pd.DataFrame(list, columns=['InstanceType', 'ProductDescription', 'Migrations'])
+    df_final = pd.DataFrame(list, columns=['InstanceType', 'ProductDescription', 'Zones'])
     df_final.to_csv('possible_migrations.csv', index=False)
 
+    end = time.time()
+    print('Elapsed time:', end-start, 'seconds')
 
 if __name__ == "__main__":
     main()
