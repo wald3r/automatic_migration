@@ -1,2 +1,2 @@
-InstanceType,ProductDescription,Migrations
-m4.16xlarge,Linux/UNIX,1
+InstanceType,ProductDescription,Zones
+m4.16xlarge,Linux/UNIX,2

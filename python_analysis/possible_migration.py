@@ -2,8 +2,8 @@ import pandas as pd
 import time
 
 
-def load(name):
-    return pd.read_csv(name, delimiter=',')
+def load(name, dtype):
+    return pd.read_csv(name, low_memory=False)
 
 
 
@@ -68,19 +68,25 @@ def main():
     start = time.time()
     list = []
 
-    df_instances = load('spots_activity.csv')
+    df_instances = load('spots_activity_test.csv', None)
     df_instances = df_instances[df_instances['PriceChanges'] != 0]
 
     for ind in df_instances.index:
-        df = load('aws_spot_pricing.csv')
 
         instanceType = df_instances['InstanceType'][ind]
         productDescription = df_instances['ProductDescription'][ind]
 
-        df = df[df['InstanceType'] == instanceType]
-        df = df[df['ProductDescription'] == productDescription]
-        df = df.drop(['InstanceType'], axis=1)
-        df = df.drop(['ProductDescription'], axis=1)
+        df = pd.DataFrame(columns=['Timestamp', 'AvailabilityZone', 'SpotPrice'])
+
+        chunksize = 10 ** 6
+        for chunk in pd.read_csv('aws_spot_pricing.csv', sep=',', chunksize=chunksize):
+
+            chunks = chunk[chunk['InstanceType'] == instanceType]
+            chunks = chunks[chunks['ProductDescription'] == productDescription]
+            chunks = chunks.drop(['InstanceType'], axis=1)
+            chunks = chunks.drop(['ProductDescription'], axis=1)
+            df = pd.concat([df, chunks])
+
 
         number = amount_of_migrations(df)
 
