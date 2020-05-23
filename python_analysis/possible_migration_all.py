@@ -2,11 +2,6 @@ import pandas as pd
 import time
 
 
-def load(name, dtype):
-    return pd.read_csv(name, low_memory=False)
-
-
-
 def prepare_timestamps(df):
 
     df['Timestamp'] = pd.to_datetime(df['Timestamp'])
@@ -66,32 +61,37 @@ def main():
 
     #start = time.time()
 
-    df_instances = load('spots_activity.csv', None)
-    df_instances = df_instances[df_instances['PriceChanges'] != 0]
-
-    df_start = pd.DataFrame()
-
-    chunksize = 10 ** 6
-    for chunk in pd.read_csv('aws_spot_pricing.csv', sep=',', chunksize=chunksize):
-        df_start = pd.concat([df_start, chunk])
+    df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
+    df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
+    df_instances = df_instances.drop_duplicates()
 
     for ind in df_instances.index:
 
         instanceType = df_instances['InstanceType'][ind]
         productDescription = df_instances['ProductDescription'][ind]
 
-        df = df_start.copy()
+        df_start = pd.DataFrame()
 
+        chunksize = 10 ** 6
+        for chunk in pd.read_csv('aws_spot_pricing.csv', sep=',', chunksize=chunksize):
 
-        df = df[df['InstanceType'] == instanceType]
-        df = df[df['ProductDescription'] == productDescription]
-        df = df.drop(['InstanceType'], axis=1)
-        df = df.drop(['ProductDescription'], axis=1)
+            df = chunk[chunk['InstanceType'] == instanceType]
+            df = df[df['ProductDescription'] == productDescription]
+            df = df.drop(['InstanceType'], axis=1)
+            df = df.drop(['ProductDescription'], axis=1)
 
-        number = amount_of_migrations(df)
+            df_start = pd.concat([df_start, df])
 
-        with open('possible_migrations.csv', 'a') as f:
-            f.write("%s,%s,%s\n" % (instanceType, productDescription, number))
+        if df_start.empty:
+            pass
+
+        else:
+            number = amount_of_migrations(df_start)
+
+            with open('possible_migrations_all.csv', 'a') as f:
+                f.write("%s,%s,%s\n" % (instanceType, productDescription, number))
+
+            print(instanceType, productDescription, number)
 
 
     #end = time.time()

@@ -65,40 +65,43 @@ def main():
     start = time.time()
 
     df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
-    df_instances = df_instances[df_instances['PriceChanges'] != 0]
+    df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
+    df_instances = df_instances.drop_duplicates()
 
-    df_start = pd.DataFrame()
-
-    chunksize = 10 ** 6
-    for chunk in pd.read_csv('aws_spot_pricing.csv', sep=',', chunksize=chunksize):
-        df_start = pd.concat([df_start, chunk])
 
     for ind in df_instances.index:
 
         instanceType = df_instances['InstanceType'][ind]
         productDescription = df_instances['ProductDescription'][ind]
 
-        df = df_start.copy()
+        df_start = pd.DataFrame()
 
-        df = df[df['InstanceType'] == instanceType]
-        df = df[df['ProductDescription'] == productDescription]
-        df = df.drop(['InstanceType'], axis=1)
-        df = df.drop(['ProductDescription'], axis=1)
+        chunksize = 10 ** 6
+        for chunk in pd.read_csv('aws_spot_pricing.csv', sep=',', chunksize=chunksize):
 
-        migrations = amount_of_migrations(df)
+            df = chunk[chunk['InstanceType'] == instanceType]
+            df = df[df['ProductDescription'] == productDescription]
+            df = df.drop(['InstanceType'], axis=1)
+            df = df.drop(['ProductDescription'], axis=1)
+            df_start = pd.concat([df_start, df])
 
-        list = []
-        list.append([instanceType, productDescription])
-        migrations_transposed = migrations.transpose().reset_index(drop=True)
-        df_final = pd.DataFrame(list)
-        df_fillup = migrations_transposed.reset_index(drop=True)
+        if df_start.empty:
+            pass
+        else:
+            migrations = amount_of_migrations(df_start)
 
-        df_final = df_final.merge(df_fillup, left_index=True, right_index=True)
+            list = []
+            list.append([instanceType, productDescription])
+            migrations_transposed = migrations.transpose().reset_index(drop=True)
+            df_final = pd.DataFrame(list)
+            df_fillup = migrations_transposed.reset_index(drop=True)
 
-        with open('possible_migrations_region.csv', 'a') as f:
-            f.write('%s\n' %(df_final.to_string(header = False, index = False)))
+            df_final = df_final.merge(df_fillup, left_index=True, right_index=True)
 
-        print(df_final)
+            with open('possible_migrations_region.csv', 'a') as f:
+                f.write('%s\n' %(df_final.to_string(header = False, index = False)))
+
+            print(df_final)
 
 
     end = time.time()
