@@ -68,7 +68,7 @@ def main():
     start = time.time()
     list = []
 
-    df_instances = load('spots_activity_test.csv', None)
+    df_instances = load('spots_activity.csv', None)
     df_instances = df_instances[df_instances['PriceChanges'] != 0]
 
     for ind in df_instances.index:
