@@ -54,7 +54,6 @@ def amount_of_migrations(df):
     df_meanDay = df_groups['SpotPrice'].agg('mean')
 
     df_final = df_meanDay.reset_index()
-    #df_final = df_final.sort_values(by=['Year', 'Month', 'Day', 'SpotPrice'])
 
     df_final = df_final.groupby(['Year', 'Month', 'Day'])['AvailabilityZone', 'SpotPrice'].agg('min')
     df_final = df_final.reset_index()
@@ -65,39 +64,38 @@ def amount_of_migrations(df):
 
 def main():
 
-    start = time.time()
-    list = []
+    #start = time.time()
 
-    df_instances = load('spots_activity.csv', None)
+    df_instances = load('spots_activity_test.csv', None)
     df_instances = df_instances[df_instances['PriceChanges'] != 0]
+
+    df_start = pd.DataFrame()
+
+    chunksize = 10 ** 6
+    for chunk in pd.read_csv('aws_spot_pricing.csv', sep=',', chunksize=chunksize):
+        df_start = pd.concat([df_start, chunk])
 
     for ind in df_instances.index:
 
         instanceType = df_instances['InstanceType'][ind]
         productDescription = df_instances['ProductDescription'][ind]
 
-        df = pd.DataFrame(columns=['Timestamp', 'AvailabilityZone', 'SpotPrice'])
+        df = df_start.copy()
 
-        chunksize = 10 ** 6
-        for chunk in pd.read_csv('aws_spot_pricing.csv', sep=',', chunksize=chunksize):
 
-            chunks = chunk[chunk['InstanceType'] == instanceType]
-            chunks = chunks[chunks['ProductDescription'] == productDescription]
-            chunks = chunks.drop(['InstanceType'], axis=1)
-            chunks = chunks.drop(['ProductDescription'], axis=1)
-            df = pd.concat([df, chunks])
-
+        df = df[df['InstanceType'] == instanceType]
+        df = df[df['ProductDescription'] == productDescription]
+        df = df.drop(['InstanceType'], axis=1)
+        df = df.drop(['ProductDescription'], axis=1)
 
         number = amount_of_migrations(df)
 
-        print(instanceType, productDescription, number)
-        list.append([instanceType, productDescription, number])
+        with open('possible_migrations.csv', 'a') as f:
+            f.write("%s,%s,%s\n" % (instanceType, productDescription, number))
 
-    df_final = pd.DataFrame(list, columns=['InstanceType', 'ProductDescription', 'Zones'])
-    df_final.to_csv('possible_migrations.csv', index=False)
 
-    end = time.time()
-    print('Elapsed time:', end-start, 'seconds')
+    #end = time.time()
+    #print('Elapsed time:', end-start, 'seconds')
 
 if __name__ == "__main__":
     main()
