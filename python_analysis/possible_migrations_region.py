@@ -64,7 +64,7 @@ def main():
 
     start = time.time()
 
-    df_instances = pd.read_csv('spots_activity_test.csv', low_memory=False)
+    df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
     df_instances = df_instances[df_instances['PriceChanges'] != 0]
 
     df_start = pd.DataFrame()

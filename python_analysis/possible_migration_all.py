@@ -66,7 +66,7 @@ def main():
 
     #start = time.time()
 
-    df_instances = load('spots_activity_test.csv', None)
+    df_instances = load('spots_activity.csv', None)
     df_instances = df_instances[df_instances['PriceChanges'] != 0]
 
     df_start = pd.DataFrame()
