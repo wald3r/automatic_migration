@@ -47,19 +47,32 @@ def amount_of_migrations(df):
     df_old = df.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])['SpotPrice'].agg('sum').reset_index()
     df_old = df_old.drop(df_old[(df_old['Month'] == '03') & (df_old['Year'] == '2019')].index)
 
+
     df_new = df_old.loc[df_old.groupby(['Year', 'Month', 'Day'])['SpotPrice'].idxmin()].reset_index()
 
     start_zone = df_new['AvailabilityZone'][0]
     df_startZone = df_old[df_old['AvailabilityZone'] == start_zone]
 
+    df_startZone_sum = df_startZone['SpotPrice'].sum()
 
-    df_startZone = df_startZone.groupby(['AvailabilityZone'])['SpotPrice'].agg('sum').reset_index()
-    df_new = df_new.groupby(['AvailabilityZone'])['SpotPrice'].agg('sum').reset_index()
-    old_price = df_startZone['SpotPrice'][0]
-    new_price = df_new['SpotPrice'].sum()
-    migrations = df_new['AvailabilityZone'].count()
+    migrations = 0
+    sum = 0
+
+    for indx in df_new.index:
+        if(df_new['AvailabilityZone'][indx] != start_zone):
+            start_zone = df_new['AvailabilityZone'][indx]
+            migrations = migrations + 1
+
+        sum = sum + df_new['SpotPrice'][indx]
+
+    old_price = df_startZone_sum
+    new_price = sum
+    migrations = migrations
     saved = old_price - new_price
-    return (old_price, new_price, saved, migrations)
+    old_days = len(df_startZone.index)
+    new_days = len(df_new.index)
+
+    return (old_price, old_days, new_price, new_days, saved, migrations)
 
 
 def main():
@@ -91,12 +104,12 @@ def main():
             pass
 
         else:
-            old_price, new_price, saved, migrations = amount_of_migrations(df_start)
+            old_price, old_days, new_price, new_days, saved, migrations = amount_of_migrations(df_start)
 
             with open('possible_migrations_all_1.csv', 'a') as f:
-                f.write("%s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, old_price, new_price, saved, migrations))
+                f.write("%s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, old_price, old_days, new_price, new_days, saved, migrations))
 
-            print(instanceType, productDescription, old_price, new_price, saved, migrations)
+            #print(instanceType, productDescription, old_price, old_days, new_price, new_days, saved, migrations)
 
 
     #end = time.time()
