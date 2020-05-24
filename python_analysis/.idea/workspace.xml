@@ -2,8 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5fc9c358-610f-46c6-8f52-5e7ec42eb66f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/possible_migration_all.py" beforeDir="false" afterPath="$PROJECT_DIR$/possible_migration_all.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/possible_migrations_region.py" beforeDir="false" afterPath="$PROJECT_DIR$/possible_migrations_region.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../nohup.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.~lock.spots_activity.csv#" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migration_save_money.py" beforeDir="false" afterPath="$PROJECT_DIR$/migration_save_money.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/possible_migrations_all.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/possible_migrations_region.csv" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,22 +20,10 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/possible_migration_all.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="72" column="33" lean-forward="true" selection-start-line="72" selection-start-column="33" selection-end-line="72" selection-end-column="33" />
-              <folding>
-                <element signature="e#0#19#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/spots_activity_test.csv">
           <provider selected="true" editor-type-id="csv-text-editor">
-            <state relative-caret-position="60">
-              <caret line="4" selection-start-line="4" selection-end-line="4" />
+            <state relative-caret-position="15">
+              <caret line="1" column="36" selection-start-line="1" selection-start-column="36" selection-end-line="1" selection-end-column="36" />
             </state>
           </provider>
           <provider editor-type-id="csv-table-editor">
@@ -40,26 +34,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/active_pricing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="585">
-              <caret line="39" column="6" selection-start-line="39" selection-start-column="6" selection-end-line="39" selection-end-column="6" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/aws_spot_pricing_test.csv">
-          <provider selected="true" editor-type-id="LargeFileEditor">
-            <state relative-caret-position="45">
-              <caret line="3" column="58" selection-start-line="3" selection-start-column="48" selection-end-line="3" selection-end-column="58" />
+            <state relative-caret-position="90">
+              <caret line="18" column="13" lean-forward="true" selection-start-line="18" selection-start-column="13" selection-end-line="18" selection-end-column="13" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/possible_migrations_region.py">
+        <entry file="file://$PROJECT_DIR$/migration_save_money.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="85" column="46" selection-start-line="85" selection-start-column="46" selection-end-line="85" selection-end-column="46" />
+            <state relative-caret-position="458">
+              <caret line="112" column="12" selection-start-line="112" selection-start-column="12" selection-end-line="112" selection-end-column="12" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -83,12 +68,13 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/active_pricing.csv.py" />
-        <option value="$PROJECT_DIR$/active_pricing.py" />
         <option value="$PROJECT_DIR$/possible_migration.py" />
         <option value="$PROJECT_DIR$/possible_migrationr_all.py" />
-        <option value="$PROJECT_DIR$/spots_activity_test.csv" />
-        <option value="$PROJECT_DIR$/possible_migration_all.py" />
         <option value="$PROJECT_DIR$/possible_migrations_region.py" />
+        <option value="$PROJECT_DIR$/active_pricing.py" />
+        <option value="$PROJECT_DIR$/possible_migration_all.py" />
+        <option value="$PROJECT_DIR$/spots_activity_test.csv" />
+        <option value="$PROJECT_DIR$/migration_save_money.py" />
       </list>
     </option>
   </component>
@@ -103,8 +89,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="220" />
-    <option name="y" value="94" />
+    <option name="x" value="260" />
+    <option name="y" value="436" />
     <option name="width" value="1425" />
     <option name="height" value="891" />
   </component>
@@ -116,7 +102,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -133,6 +118,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -150,7 +136,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.possible_migrations_region">
+  <component name="RunManager" selected="Python.migration_save_money">
     <configuration name="active_pricing" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="python_analysis" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -164,6 +150,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/active_pricing.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="migration_save_money" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="python_analysis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/migration_save_money.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -216,9 +223,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.migration_save_money" />
+        <item itemvalue="Python.active_pricing" />
         <item itemvalue="Python.possible_migrations_region" />
         <item itemvalue="Python.possible_migration" />
-        <item itemvalue="Python.active_pricing" />
       </list>
     </recent_temporary>
   </component>
@@ -244,7 +252,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.4384449" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.26781857" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39956802" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -279,36 +287,27 @@
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/active_pricing.csv.py" />
-    <entry file="file://$PROJECT_DIR$/spots_activity.csv">
-      <provider selected="true" editor-type-id="csv-text-editor">
-        <state relative-caret-position="-675" />
-      </provider>
-      <provider editor-type-id="csv-table-editor">
-        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/active_pricing.py">
+    <entry file="file://$PROJECT_DIR$/possible_migrations.csv" />
+    <entry file="file://$PROJECT_DIR$/possible_migrations_region.csv" />
+    <entry file="file://$PROJECT_DIR$/possible_migrations_region.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="585">
-          <caret line="39" column="6" selection-start-line="39" selection-start-column="6" selection-end-line="39" selection-end-column="6" />
+        <state relative-caret-position="228">
+          <caret line="98" column="82" selection-start-line="98" selection-start-column="49" selection-end-line="98" selection-end-column="82" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/possible_migrations.csv">
-      <provider selected="true" editor-type-id="csv-text-editor" />
-      <provider editor-type-id="csv-table-editor">
-        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/spots_activity_test.csv">
-      <provider selected="true" editor-type-id="csv-text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" selection-start-line="4" selection-end-line="4" />
+    <entry file="file://$USER_HOME$/anaconda3/lib/python3.7/site-packages/pandas/core/indexes/base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="242">
+          <caret line="2661" column="26" lean-forward="true" selection-start-line="2661" selection-start-column="26" selection-end-line="2661" selection-end-column="26" />
         </state>
       </provider>
-      <provider editor-type-id="csv-table-editor">
-        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
-      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aws_spot_pricing.csv">
+      <provider selected="true" editor-type-id="LargeFileEditor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/aws_spot_pricing_test.csv">
       <provider selected="true" editor-type-id="LargeFileEditor">
@@ -317,26 +316,47 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/possible_migrations_region.csv">
-      <provider selected="true" editor-type-id="csv-text-editor" />
-      <provider editor-type-id="csv-table-editor">
-        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/possible_migration_all.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="72" column="33" lean-forward="true" selection-start-line="72" selection-start-column="33" selection-end-line="72" selection-end-column="33" />
+        <state relative-caret-position="170">
+          <caret line="67" column="34" lean-forward="true" selection-start-line="67" selection-start-column="4" selection-end-line="67" selection-end-column="34" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/possible_migrations_region.py">
+    <entry file="file://$PROJECT_DIR$/spots_activity.csv">
+      <provider selected="true" editor-type-id="csv-text-editor">
+        <state relative-caret-position="231">
+          <caret line="38449" column="51" selection-start-line="38449" selection-start-column="51" selection-end-line="38462" selection-end-column="52" />
+        </state>
+      </provider>
+      <provider editor-type-id="csv-table-editor">
+        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/spots_activity_test.csv">
+      <provider selected="true" editor-type-id="csv-text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" column="36" selection-start-line="1" selection-start-column="36" selection-end-line="1" selection-end-column="36" />
+        </state>
+      </provider>
+      <provider editor-type-id="csv-table-editor">
+        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/active_pricing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="85" column="46" selection-start-line="85" selection-start-column="46" selection-end-line="85" selection-end-column="46" />
+        <state relative-caret-position="90">
+          <caret line="18" column="13" lean-forward="true" selection-start-line="18" selection-start-column="13" selection-end-line="18" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/migration_save_money.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="458">
+          <caret line="112" column="12" selection-start-line="112" selection-start-column="12" selection-end-line="112" selection-end-column="12" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>

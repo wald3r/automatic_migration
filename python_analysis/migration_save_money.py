@@ -52,7 +52,6 @@ def amount_of_migrations(df):
 
     start_zone = df_new['AvailabilityZone'][0]
     df_startZone = df_old[df_old['AvailabilityZone'] == start_zone]
-
     df_startZone_sum = df_startZone['SpotPrice'].sum()
 
     migrations = 0
@@ -77,13 +76,13 @@ def amount_of_migrations(df):
 
 def main():
 
-    #start = time.time()
-
     df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
     df_instances = df_instances.drop_duplicates()
 
     for ind in df_instances.index:
+
+        start = time.time()
 
         instanceType = df_instances['InstanceType'][ind]
         productDescription = df_instances['ProductDescription'][ind]
@@ -109,11 +108,13 @@ def main():
             with open('possible_migrations_all_1.csv', 'a') as f:
                 f.write("%s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, old_price, old_days, new_price, new_days, saved, migrations))
 
-            #print(instanceType, productDescription, old_price, old_days, new_price, new_days, saved, migrations)
+            print(instanceType, productDescription, old_price, old_days, new_price, new_days, saved, migrations)
+
+            end = time.time()
+            print('Elapsed time:', end - start, 'seconds')
 
 
-    #end = time.time()
-    #print('Elapsed time:', end-start, 'seconds')
+
 
 if __name__ == "__main__":
     main()

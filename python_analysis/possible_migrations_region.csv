@@ -1,8 +1,0 @@
- p3.8xlarge  Red Hat Enterprise Linux  1  1  1  2  1  1  1  1  1  1  1
- m4.4xlarge  Windows  1  1  1  1  1  1  1  1  1  1  1  1  2  1
- f1.2xlarge  SUSE Linux  2  1  1  1
- t3a.large  Red Hat Enterprise Linux  1  1  1  1  2  1  1  1  1  2  1  1  1  2  1
- f1.4xlarge  Linux/UNIX  2  1  1  1
- m4.large  Linux/UNIX  1  1  1  1  1  1  2  1  1  1  2  1  2  1
- r5.xlarge  Windows  1  1  1  1  2  1  1  1  1  1  1  1  1  1  2  1
- t2.medium  SUSE Linux  1  1  1  1  1  1  1  1  1  1  1  2  1  2  1
