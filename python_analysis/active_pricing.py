@@ -3,7 +3,7 @@ import pandas as pd
 
 
 def load():
-    return pd.read_csv('aws_spot_pricing.csv', delimiter=',')
+    return pd.read_csv('aws_spot_pricing_test.csv', delimiter=',')
 
 
 
@@ -13,7 +13,7 @@ def active_pricing(df):
 
     df_tmp = df_grouped['SpotPrice'].agg(['min', 'max'])
 
-    df_minmax = pd.DataFrame(df_tmp.reset_index())
+    df_minmax = df_tmp.reset_index()
     df_minmax.set_index('InstanceType')
 
     list = []
@@ -37,6 +37,7 @@ def active_pricing(df):
     df_final = df_activity.merge(df_minmax)
 
     df_final = df_final.sort_values(by=['PriceChanges'])
+    print(df_final.head().to_string())
     #df_final.to_csv('spots_activity.csv', index=False)
 
 def main():
