@@ -40,9 +40,11 @@ def prepare_timestamps(df):
     return df
 
 
-def amount_of_migrations(df):
+def amount_of_migrations(df, instance, product):
 
     df = prepare_timestamps(df)
+    df = df.drop(df[(df['Month'] == '03') & (df['Year'] == '2019')].index)
+
 
     df['Region'] = df['AvailabilityZone'].str[:-1]
 
@@ -51,26 +53,52 @@ def amount_of_migrations(df):
     df_meanDay = df_groups['SpotPrice'].agg('mean')
 
     df_meanDay = df_meanDay.reset_index()
+    df_old = df_meanDay.copy()
 
-    df_min = df_meanDay.groupby(['Region', 'Year', 'Month', 'Day'])['AvailabilityZone', 'SpotPrice'].agg('min')
+
+    df_min = df_meanDay.loc[df_meanDay.groupby(['Region', 'Year', 'Month', 'Day'])['SpotPrice'].idxmin()].reset_index()
     df_min = df_min.reset_index()
 
-    migration_possibilites = df_min.groupby('Region')['AvailabilityZone'].nunique()
-    migration_possibilites = migration_possibilites.reset_index()
-    migration_possibilites = migration_possibilites.set_index('Region')
-    return migration_possibilites
+    migration_possibilites = df_min.groupby('Region')
+
+    for name, group in migration_possibilites:
+        flag = 1
+        migration = 0
+        zone = ''
+        for x in group.AvailabilityZone:
+            if(flag == 1):
+                df_tmp = df_old[df_old['AvailabilityZone'] == x]
+                flag = 0
+                zone = x
+            if(x != zone):
+                zone = x
+                migration = migration + 1
+
+        tmp_group = df_tmp.groupby(['Region'])
+        sum_old = tmp_group['SpotPrice'].sum().reset_index()['SpotPrice'][0]
+        sum_new = group.SpotPrice.sum()
+
+        diff = sum_old - sum_new
+        len_new = len(group)
+        len_old = len(df_tmp)
+
+        with open('possible_migrations_region.csv', 'a') as f:
+            f.write('%s, %s, %s, %s, %s, %s, %s, %s, %s\n' % (instance, product, name, migration, sum_old, len_old, sum_new, len_new, diff))
+
+
 
 def main():
 
-    start = time.time()
-
-    df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
+    df_instances = pd.read_csv('spots_activity_test.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
     df_instances = df_instances.drop_duplicates()
 
+    with open('possible_migrations_region.csv', 'a') as f:
+        f.write('%s, %s, %s, %s, %s, %s, %s, %s, %s\n' % ('Instance', 'Product/Description', 'Region', 'Migrations', 'SumStartingInstance', 'DaysStartingInstance', 'SumMigrations', 'DaysMigrations', 'Difference'))
 
     for ind in df_instances.index:
 
+        #start = time.time()
         instanceType = df_instances['InstanceType'][ind]
         productDescription = df_instances['ProductDescription'][ind]
 
@@ -88,24 +116,11 @@ def main():
         if df_start.empty:
             pass
         else:
-            migrations = amount_of_migrations(df_start)
+            amount_of_migrations(df_start, instanceType, productDescription)
+            #end = time.time()
 
-            list = []
-            list.append([instanceType, productDescription])
-            migrations_transposed = migrations.transpose().reset_index(drop=True)
-            df_final = pd.DataFrame(list)
-            df_fillup = migrations_transposed.reset_index(drop=True)
+            #print('Elapsed Time:', end-start)
 
-            df_final = df_final.merge(df_fillup, left_index=True, right_index=True)
-
-            with open('possible_migrations_region.csv', 'a') as f:
-                f.write('%s\n' %(df_final.to_string(header = False, index = False)))
-
-            print(df_final)
-
-
-    end = time.time()
-    print('Elapsed time:', end-start, 'seconds')
 
 if __name__ == "__main__":
     main()

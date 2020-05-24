@@ -44,28 +44,48 @@ def amount_of_migrations(df):
 
     df = prepare_timestamps(df)
 
-    df_groups = df.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])
+    df_old = df.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])['SpotPrice'].agg('sum').reset_index()
+    df_old = df_old.drop(df_old[(df_old['Month'] == '03') & (df_old['Year'] == '2019')].index)
 
-    df_meanDay = df_groups['SpotPrice'].agg('mean')
 
-    df_final = df_meanDay.reset_index()
+    df_new = df_old.loc[df_old.groupby(['Year', 'Month', 'Day'])['SpotPrice'].idxmin()].reset_index()
 
-    df_final = df_final.groupby(['Year', 'Month', 'Day'])['AvailabilityZone', 'SpotPrice'].agg('min')
-    df_final = df_final.reset_index()
+    start_zone = df_new['AvailabilityZone'][0]
+    df_startZone = df_old[df_old['AvailabilityZone'] == start_zone]
+    df_startZone_sum = df_startZone['SpotPrice'].sum()
 
-    df_groups = df_final.groupby('AvailabilityZone')
+    migrations = 0
+    sum = 0
 
-    return df_groups.ngroups
+    for indx in df_new.index:
+        if(df_new['AvailabilityZone'][indx] != start_zone):
+            start_zone = df_new['AvailabilityZone'][indx]
+            migrations = migrations + 1
+
+        sum = sum + df_new['SpotPrice'][indx]
+
+    old_price = df_startZone_sum
+    new_price = sum
+    migrations = migrations
+    saved = old_price - new_price
+    old_days = len(df_startZone.index)
+    new_days = len(df_new.index)
+
+    return (old_price, old_days, new_price, new_days, saved, migrations)
+
 
 def main():
-
-    #start = time.time()
 
     df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
     df_instances = df_instances.drop_duplicates()
 
+    with open('possible_migrations_all_v1.csv.csv', 'a') as f:
+        f.write("%s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'SumStartingInstance', 'DaysStartingInstance', 'SumMigrations', 'DaysMigrations', 'Difference', 'Migrations'))
+
     for ind in df_instances.index:
+
+        #start = time.time()
 
         instanceType = df_instances['InstanceType'][ind]
         productDescription = df_instances['ProductDescription'][ind]
@@ -86,16 +106,18 @@ def main():
             pass
 
         else:
-            number = amount_of_migrations(df_start)
+            old_price, old_days, new_price, new_days, saved, migrations = amount_of_migrations(df_start)
 
-            with open('possible_migrations_all.csv', 'a') as f:
-                f.write("%s,%s,%s\n" % (instanceType, productDescription, number))
+            with open('possible_migrations_all_v1.csv', 'a') as f:
+                f.write("%s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, old_price, old_days, new_price, new_days, saved, migrations))
 
-            print(instanceType, productDescription, number)
+            #print(instanceType, productDescription, old_price, old_days, new_price, new_days, saved, migrations)
+
+            #end = time.time()
+            #print('Elapsed time:', end - start, 'seconds')
 
 
-    #end = time.time()
-    #print('Elapsed time:', end-start, 'seconds')
+
 
 if __name__ == "__main__":
     main()
