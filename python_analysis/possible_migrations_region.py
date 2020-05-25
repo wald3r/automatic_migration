@@ -85,11 +85,9 @@ def amount_of_migrations(df, instance, product):
         with open('possible_migrations_region.csv', 'a') as f:
             f.write('%s, %s, %s, %s, %s, %s, %s, %s, %s\n' % (instance, product, name, migration, sum_old, len_old, sum_new, len_new, diff))
 
-
-
 def main():
 
-    df_instances = pd.read_csv('spots_activity_test.csv', low_memory=False)
+    df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
     df_instances = df_instances.drop_duplicates()
 
