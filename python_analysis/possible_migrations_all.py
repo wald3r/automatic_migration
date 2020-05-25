@@ -66,15 +66,21 @@ def amount_of_migrations(df):
     sum_new = 0
     sum_old = 0
     days = 0
-    flag = 0
+    flag_old = 0
+    flag_new = 0
 
     for indx in df_new.index:
-        if(days > len(df_startZone.index)):
+        if(days >= len(df_startZone.index)):
             break
 
         if(df_startZone['SpotPrice'][indx] > bidprice):
-            print('yes')
-            flag = 1
+            flag_old = 1
+
+
+        if(df_new['SpotPrice'][indx] > bidprice):
+            flag_new = 1
+
+        if(flag_new == 1 or flag_old == 1):
             break
 
         if(df_new['AvailabilityZone'][indx] != start_zone):
@@ -91,7 +97,7 @@ def amount_of_migrations(df):
     saved = old_price - new_price
 
 
-    return (old_price, days, new_price, saved, migrations, flag)
+    return (old_price, days, new_price, saved, migrations, flag_old, flag_new)
 
 
 def main():
@@ -103,7 +109,7 @@ def main():
     df_instances = df_instances.drop_duplicates().reset_index()
 
     with open('possible_migrations_all_v2.csv', 'a') as f:
-        f.write("%s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Migrations', 'Days', 'SumStartingInstance', 'SumMigrations', 'BidPrice', 'Difference'))
+        f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Migrations', 'Days', 'SumStartingInstance', 'SumMigrations', 'BidPriceStart', 'BidPriceMigrations', 'Difference'))
 
     for ind in df_instances.index:
 
@@ -126,12 +132,12 @@ def main():
             pass
 
         else:
-            old_price, days, new_price, saved, migrations, bidprice = amount_of_migrations(df_start)
+            old_price, days, new_price, saved, migrations, bidprice_old, bidprice_new = amount_of_migrations(df_start)
 
             with open('possible_migrations_all_v2.csv', 'a') as f:
-                f.write("%s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, migrations, days, old_price, new_price, bidprice, saved))
+                f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, migrations, days, old_price, new_price, bidprice_old, bidprice_new, saved))
 
-            print(instanceType, productDescription, migrations, days, old_price, new_price, bidprice, saved)
+            print(instanceType, productDescription, migrations, days, old_price, new_price, bidprice_old, bidprice_new, saved)
 
     end = time.time()
     print('Elapsed time:', end - start, 'seconds')
