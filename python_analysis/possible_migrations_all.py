@@ -40,52 +40,72 @@ def prepare_timestamps(df):
     return df
 
 
+def first_last(df):
+    return df.iloc[1:-1]
+
 def amount_of_migrations(df):
 
     df = prepare_timestamps(df)
 
     df_old = df.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])['SpotPrice'].agg('sum').reset_index()
-    df_old = df_old.drop(df_old[(df_old['Month'] == '03') & (df_old['Year'] == '2019')].index)
-
+    df_old = df_old.groupby('AvailabilityZone', group_keys=False).apply(first_last).reset_index()
 
     df_new = df_old.loc[df_old.groupby(['Year', 'Month', 'Day'])['SpotPrice'].idxmin()].reset_index()
 
+
     start_zone = df_new['AvailabilityZone'][0]
-    df_startZone = df_old[df_old['AvailabilityZone'] == start_zone]
-    df_startZone_sum = df_startZone['SpotPrice'].sum()
+    df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index()
+
+
+    bidprice = df_startZone['SpotPrice'][0] * 1.5
+
+    #df_startZone_sum = df_startZone['SpotPrice'].sum()
+
 
     migrations = 0
-    sum = 0
+    sum_new = 0
+    sum_old = 0
+    days = 0
+    flag = 0
 
     for indx in df_new.index:
+        if(days > len(df_startZone.index)):
+            break
+
+        if(df_startZone['SpotPrice'][indx] > bidprice):
+            print('yes')
+            flag = 1
+            break
+
         if(df_new['AvailabilityZone'][indx] != start_zone):
             start_zone = df_new['AvailabilityZone'][indx]
             migrations = migrations + 1
 
-        sum = sum + df_new['SpotPrice'][indx]
+        days = days + 1
+        sum_old = sum_old + df_startZone['SpotPrice'][indx]
+        sum_new = sum_new + df_new['SpotPrice'][indx]
 
-    old_price = df_startZone_sum
-    new_price = sum
+    old_price = sum_old
+    new_price = sum_new
     migrations = migrations
     saved = old_price - new_price
-    old_days = len(df_startZone.index)
-    new_days = len(df_new.index)
 
-    return (old_price, old_days, new_price, new_days, saved, migrations)
+
+    return (old_price, days, new_price, saved, migrations, flag)
 
 
 def main():
 
+    start = time.time()
+
     df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
-    df_instances = df_instances.drop_duplicates()
+    df_instances = df_instances.drop_duplicates().reset_index()
 
-    with open('possible_migrations_all_v1.csv.csv', 'a') as f:
-        f.write("%s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'SumStartingInstance', 'DaysStartingInstance', 'SumMigrations', 'DaysMigrations', 'Difference', 'Migrations'))
+    with open('possible_migrations_all_v2.csv', 'a') as f:
+        f.write("%s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Migrations', 'Days', 'SumStartingInstance', 'SumMigrations', 'BidPrice', 'Difference'))
 
     for ind in df_instances.index:
-
-        #start = time.time()
 
         instanceType = df_instances['InstanceType'][ind]
         productDescription = df_instances['ProductDescription'][ind]
@@ -106,15 +126,15 @@ def main():
             pass
 
         else:
-            old_price, old_days, new_price, new_days, saved, migrations = amount_of_migrations(df_start)
+            old_price, days, new_price, saved, migrations, bidprice = amount_of_migrations(df_start)
 
-            with open('possible_migrations_all_v1.csv', 'a') as f:
-                f.write("%s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, old_price, old_days, new_price, new_days, saved, migrations))
+            with open('possible_migrations_all_v2.csv', 'a') as f:
+                f.write("%s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, migrations, days, old_price, new_price, bidprice, saved))
 
-            #print(instanceType, productDescription, old_price, old_days, new_price, new_days, saved, migrations)
+            print(instanceType, productDescription, migrations, days, old_price, new_price, bidprice, saved)
 
-            #end = time.time()
-            #print('Elapsed time:', end - start, 'seconds')
+    end = time.time()
+    print('Elapsed time:', end - start, 'seconds')
 
 
 
