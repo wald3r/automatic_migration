@@ -39,12 +39,15 @@ def prepare_timestamps(df):
 
     return df
 
+def first_last(df):
+    return df.iloc[1:-1]
+
+
 
 def amount_of_migrations(df, instance, product):
 
     df = prepare_timestamps(df)
-    df = df.drop(df[(df['Month'] == '03') & (df['Year'] == '2019')].index)
-
+    df = df.groupby('AvailabilityZone', group_keys=False).apply(first_last).reset_index()
 
     df['Region'] = df['AvailabilityZone'].str[:-1]
 
@@ -65,6 +68,7 @@ def amount_of_migrations(df, instance, product):
         flag = 1
         migration = 0
         zone = ''
+
         for x in group.AvailabilityZone:
             if(flag == 1):
                 df_tmp = df_old[df_old['AvailabilityZone'] == x]

@@ -43,12 +43,14 @@ def prepare_timestamps(df):
 def first_last(df):
     return df.iloc[1:-1]
 
+
 def amount_of_migrations(df):
 
     df = prepare_timestamps(df)
 
     df_old = df.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])['SpotPrice'].agg('sum').reset_index()
     df_old = df_old.groupby('AvailabilityZone', group_keys=False).apply(first_last).reset_index()
+
 
     df_new = df_old.loc[df_old.groupby(['Year', 'Month', 'Day'])['SpotPrice'].idxmin()].reset_index()
 
@@ -74,14 +76,11 @@ def amount_of_migrations(df):
             break
 
         if(df_startZone['SpotPrice'][indx] > bidprice):
-            flag_old = 1
+            flag_old = flag_old + 1
 
 
         if(df_new['SpotPrice'][indx] > bidprice):
-            flag_new = 1
-
-        if(flag_new == 1 or flag_old == 1):
-            break
+            flag_new = flag_new + 1
 
         if(df_new['AvailabilityZone'][indx] != start_zone):
             start_zone = df_new['AvailabilityZone'][indx]
@@ -108,7 +107,7 @@ def main():
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
     df_instances = df_instances.drop_duplicates().reset_index()
 
-    with open('possible_migrations_all_v2.csv', 'a') as f:
+    with open('possible_migrations_all_v3.csv', 'a') as f:
         f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Migrations', 'Days', 'SumStartingInstance', 'SumMigrations', 'BidPriceStart', 'BidPriceMigrations', 'Difference'))
 
     for ind in df_instances.index:
@@ -134,7 +133,7 @@ def main():
         else:
             old_price, days, new_price, saved, migrations, bidprice_old, bidprice_new = amount_of_migrations(df_start)
 
-            with open('possible_migrations_all_v2.csv', 'a') as f:
+            with open('possible_migrations_all_v3.csv', 'a') as f:
                 f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, migrations, days, old_price, new_price, bidprice_old, bidprice_new, saved))
 
             print(instanceType, productDescription, migrations, days, old_price, new_price, bidprice_old, bidprice_new, saved)
