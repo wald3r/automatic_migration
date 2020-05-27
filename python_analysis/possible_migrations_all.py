@@ -65,7 +65,8 @@ def amount_of_migrations(df):
     #df_startZone_sum = df_startZone['SpotPrice'].sum()
 
 
-    migrations = 0
+    migrations_new = 0
+    migrations_old = 0
     sum_new = 0
     sum_old = 0
     days = 0
@@ -78,37 +79,40 @@ def amount_of_migrations(df):
 
         if(df_startZone['SpotPrice'][indx] > bidprice):
             flag_old = flag_old + 1
+            migrations_old = migrations_old + 1
+            start_zone = df_new['AvailabilityZone'][indx]
+            df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index()
 
         if(df_new['SpotPrice'][indx] > bidprice):
             flag_new = flag_new + 1
 
         if(df_new['AvailabilityZone'][indx] != start_zone):
             start_zone = df_new['AvailabilityZone'][indx]
-            migrations = migrations + 1
+            migrations_new = migrations_new + 1
 
         days = days + 1
         sum_old = sum_old + df_startZone['SpotPrice'][indx]
         sum_new = sum_new + df_new['SpotPrice'][indx]
 
+
     old_price = sum_old
     new_price = sum_new
-    migrations = migrations
     saved = old_price - new_price
 
 
-    return (old_price, days, new_price, saved, migrations, flag_old, flag_new)
+    return (old_price, days, new_price, saved, migrations_new, migrations_old, flag_old, flag_new)
 
 
 def main():
 
     start = time.time()
 
-    df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
+    df_instances = pd.read_csv('spots_activity_test.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
-    df_instances = df_instances.drop_duplicates().reset_index()
+    df_instances = df_instances.drop_duplicates().reset_index(drop=True)
 
-    with open('possible_migrations_all_v3.csv', 'a') as f:
-        f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Migrations', 'Days', 'SumStartingInstance', 'SumMigrations', 'BidPriceStart', 'BidPriceMigrations', 'Difference'))
+    with open('possible_migrations_all_v4.csv', 'a') as f:
+        f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Days', 'MigrationBidPrice', 'MigrationsMin','SumStartingInstance', 'SumMigrations', 'BidPriceStart', 'BidPriceMigrations', 'Difference'))
 
     for ind in df_instances.index:
 
@@ -131,12 +135,12 @@ def main():
             pass
 
         else:
-            old_price, days, new_price, saved, migrations, bidprice_old, bidprice_new = amount_of_migrations(df_start)
+            old_price, days, new_price, saved, migrations_new,migrations_old, bidprice_old, bidprice_new = amount_of_migrations(df_start)
 
-            with open('possible_migrations_all_v3.csv', 'a') as f:
-                f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, migrations, days, old_price, new_price, bidprice_old, bidprice_new, saved))
+            with open('possible_migrations_all_v4.csv', 'a') as f:
+                f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, days, migrations_old, migrations_new, old_price, new_price, bidprice_old, bidprice_new, saved))
 
-            print(instanceType, productDescription, migrations, days, old_price, new_price, bidprice_old, bidprice_new, saved)
+            print(instanceType, productDescription, days, migrations_old, migrations_new, old_price, new_price, bidprice_old, bidprice_new, saved)
 
     end = time.time()
     print('Elapsed time:', end - start, 'seconds')
