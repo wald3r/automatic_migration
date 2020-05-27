@@ -59,7 +59,8 @@ def amount_of_migrations(df):
     df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index()
 
 
-    bidprice = df_startZone['SpotPrice'][0] * 1.5
+    bidprice = df_startZone['SpotPrice'][0] * 1.50
+
 
     #df_startZone_sum = df_startZone['SpotPrice'].sum()
 
@@ -77,7 +78,6 @@ def amount_of_migrations(df):
 
         if(df_startZone['SpotPrice'][indx] > bidprice):
             flag_old = flag_old + 1
-
 
         if(df_new['SpotPrice'][indx] > bidprice):
             flag_new = flag_new + 1
