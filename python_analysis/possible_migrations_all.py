@@ -44,6 +44,16 @@ def first_last(df):
     return df.iloc[1:-1]
 
 
+
+def getPrice(df_new, df_startZone, indx):
+    year = df_new['Year'][indx]
+    month = df_new['Month'][indx]
+    day = df_new['Day'][indx]
+    filter1 = df_startZone["Year"] == year
+    filter2 = df_startZone['Month'] == month
+    filter3 = df_startZone['Day'] == day
+    return df_startZone.where(filter1 & filter2 & filter3).dropna().reset_index(drop=True)
+
 def amount_of_migrations(df):
 
     df = prepare_timestamps(df)
@@ -52,18 +62,14 @@ def amount_of_migrations(df):
     df_old = df_old.groupby('AvailabilityZone', group_keys=False).apply(first_last).reset_index()
 
 
-    df_new = df_old.loc[df_old.groupby(['Year', 'Month', 'Day'])['SpotPrice'].idxmin()].reset_index()
+    df_new = df_old.loc[df_old.groupby(['Year', 'Month', 'Day'])['SpotPrice'].idxmin()].reset_index(drop=True)
 
 
     start_zone = df_new['AvailabilityZone'][0]
-    df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index()
+    df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index(drop=True)
 
 
     bidprice = df_startZone['SpotPrice'][0] * 1.50
-
-
-    #df_startZone_sum = df_startZone['SpotPrice'].sum()
-
 
     migrations_new = 0
     migrations_old = 0
@@ -74,14 +80,10 @@ def amount_of_migrations(df):
     flag_new = 0
 
     for indx in df_new.index:
-        if(days >= len(df_startZone.index)):
-            break
 
-        if(df_startZone['SpotPrice'][indx] > bidprice):
-            flag_old = flag_old + 1
-            migrations_old = migrations_old + 1
-            start_zone = df_new['AvailabilityZone'][indx]
-            df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index()
+        pricedf = getPrice(df_new, df_startZone, indx)
+        if (pricedf.empty):
+            break
 
         if(df_new['SpotPrice'][indx] > bidprice):
             flag_new = flag_new + 1
@@ -90,8 +92,18 @@ def amount_of_migrations(df):
             start_zone = df_new['AvailabilityZone'][indx]
             migrations_new = migrations_new + 1
 
+        if (pricedf['SpotPrice'][0] > bidprice):
+            flag_old = flag_old + 1
+            migrations_old = migrations_old + 1
+            df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index(drop=True)
+            pricedf = getPrice(df_new, df_startZone, indx)
+            if (pricedf.empty):
+                break
+
+
+
         days = days + 1
-        sum_old = sum_old + df_startZone['SpotPrice'][indx]
+        sum_old = sum_old + pricedf['SpotPrice'][0]
         sum_new = sum_new + df_new['SpotPrice'][indx]
 
 
@@ -107,7 +119,7 @@ def main():
 
     start = time.time()
 
-    df_instances = pd.read_csv('spots_activity_test.csv', low_memory=False)
+    df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
     df_instances = df_instances.drop_duplicates().reset_index(drop=True)
 
