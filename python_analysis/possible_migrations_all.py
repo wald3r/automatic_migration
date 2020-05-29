@@ -61,9 +61,7 @@ def amount_of_migrations(df):
     df_old = df.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])['SpotPrice'].agg('sum').reset_index()
     df_old = df_old.groupby('AvailabilityZone', group_keys=False).apply(first_last).reset_index()
 
-    print(df_old.to_string())
     df_new = df_old.loc[df_old.groupby(['Year', 'Month', 'Day'])['SpotPrice'].idxmin()].reset_index(drop=True)
-
 
     start_zone = df_new['AvailabilityZone'][0]
     df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index(drop=True)
@@ -79,8 +77,6 @@ def amount_of_migrations(df):
     flag_old = 0
     flag_new = 0
 
-    print(df_startZone)
-    print(df_new.to_string())
     for indx in df_new.index:
 
         pricedf = getPrice(df_new, df_startZone, indx)
@@ -121,6 +117,8 @@ def main():
 
     start = time.time()
 
+    file_name = 'possible_migrations_all_v4.csv'
+
     df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
     df_instances = df_instances.drop_duplicates().reset_index(drop=True)
@@ -128,7 +126,7 @@ def main():
     file_exists = 0
 
     try:
-        df_already_begun = pd.read_csv('possible_migrations_all_v4.csv', sep=',')
+        df_already_begun = pd.read_csv(file_name, sep=',')
         start = len(df_already_begun.index)
         file_exists = 1
         df_instances = df_instances[start:]
@@ -137,7 +135,7 @@ def main():
         print('File does not exist yet!')
 
     if file_exists == 0:
-        with open('possible_migrations_all_v4.csv', 'a') as f:
+        with open(file_name, 'a') as f:
             f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Days', 'MigrationBidPrice', 'MigrationsMin','SumStartingInstance', 'SumMigrations', 'BidPriceStart', 'BidPriceMigrations', 'Difference'))
 
     for ind in df_instances.index:
@@ -163,10 +161,10 @@ def main():
         else:
             old_price, days, new_price, saved, migrations_new,migrations_old, bidprice_old, bidprice_new = amount_of_migrations(df_start)
 
-            with open('possible_migrations_all_v4.csv', 'a') as f:
+            with open(file_name, 'a') as f:
                 f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, days, migrations_old, migrations_new, old_price, new_price, bidprice_old, bidprice_new, saved))
 
-            print(instanceType, productDescription, days, migrations_old, migrations_new, old_price, new_price, bidprice_old, bidprice_new, saved)
+            #print(instanceType, productDescription, days, migrations_old, migrations_new, old_price, new_price, bidprice_old, bidprice_new, saved)
 
     end = time.time()
     print('Elapsed time:', end - start, 'seconds')
