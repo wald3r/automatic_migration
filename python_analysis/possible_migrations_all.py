@@ -1,6 +1,6 @@
 import pandas as pd
 import time
-
+import numpy as np
 
 def prepare_timestamps(df):
 
@@ -121,12 +121,24 @@ def main():
 
     start = time.time()
 
-    df_instances = pd.read_csv('spots_activity_test.csv', low_memory=False)
+    df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
     df_instances = df_instances.drop_duplicates().reset_index(drop=True)
 
-    with open('possible_migrations_all_v4.csv', 'a') as f:
-        f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Days', 'MigrationBidPrice', 'MigrationsMin','SumStartingInstance', 'SumMigrations', 'BidPriceStart', 'BidPriceMigrations', 'Difference'))
+    file_exists = 0
+
+    try:
+        df_already_begun = pd.read_csv('possible_migrations_all_v4.csv', sep=',')
+        start = len(df_already_begun.index)
+        file_exists = 1
+        df_instances = df_instances[start:]
+        print('File already exists!')
+    except:
+        print('File does not exist yet!')
+
+    if file_exists == 0:
+        with open('possible_migrations_all_v4.csv', 'a') as f:
+            f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Days', 'MigrationBidPrice', 'MigrationsMin','SumStartingInstance', 'SumMigrations', 'BidPriceStart', 'BidPriceMigrations', 'Difference'))
 
     for ind in df_instances.index:
 
