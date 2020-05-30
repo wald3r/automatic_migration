@@ -67,15 +67,15 @@ def amount_of_migrations(df):
     df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index(drop=True)
 
 
-    #bidprice = df_startZone['SpotPrice'][0] * 1.50
+    bidprice = df_startZone['SpotPrice'][0] * 1.50
 
     migrations_new = 0
-    #migrations_old = 0
+    migrations_old = 0
     sum_new = 0
     sum_old = 0
     days = 0
-    #flag_old = 0
-    #flag_new = 0
+    flag_old = 0
+    flag_new = 0
 
     for indx in df_new.index:
 
@@ -83,20 +83,20 @@ def amount_of_migrations(df):
         if (pricedf.empty):
             break
 
-        #if(df_new['SpotPrice'][indx] > bidprice):
-        #    flag_new = flag_new + 1
+        if(df_new['SpotPrice'][indx] > bidprice):
+            flag_new = flag_new + 1
 
         if(df_new['AvailabilityZone'][indx] != start_zone):
             start_zone = df_new['AvailabilityZone'][indx]
             migrations_new = migrations_new + 1
 
-        #if (pricedf['SpotPrice'][0] > bidprice):
-        #    flag_old = flag_old + 1
-        #    migrations_old = migrations_old + 1
-        #    df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index(drop=True)
-        #    pricedf = getPrice(df_new, df_startZone, indx)
-        #    if (pricedf.empty):
-        #        break
+        if (pricedf['SpotPrice'][0] > bidprice):
+            flag_old = flag_old + 1
+            migrations_old = migrations_old + 1
+            df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index(drop=True)
+            pricedf = getPrice(df_new, df_startZone, indx)
+            if (pricedf.empty):
+                break
 
 
 
@@ -109,15 +109,15 @@ def amount_of_migrations(df):
     new_price = sum_new
     saved = old_price - new_price
 
-    return (old_price, days, new_price, saved, migrations_new)
-    #return (old_price, days, new_price, saved, migrations_new, migrations_old, flag_old, flag_new)
+    #return (old_price, days, new_price, saved, migrations_new)
+    return (old_price, days, new_price, saved, migrations_new, migrations_old, flag_old, flag_new)
 
 
 def main():
 
     start = time.time()
 
-    file_name = 'possible_migrations_all_v5.csv'
+    file_name = 'possible_migrations_all_v4.csv'
 
     df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
@@ -136,8 +136,8 @@ def main():
 
     if file_exists == 0:
         with open(file_name, 'a') as f:
-           #f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Days', 'MigrationBidPrice', 'MigrationsMin','SumStartingInstance', 'SumMigrations', 'BidPriceStart', 'BidPriceMigrations', 'Difference'))
-            f.write("%s, %s, %s, %s, %s, %s, %s\n" % ('Instance','Product/Description','Days','MigrationsMin','SumStartingInstance','SumMigrations', 'Difference'))
+           f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n" % ('Instance', 'Product/Description', 'Days', 'MigrationBidPrice', 'MigrationsMin','SumStartingInstance', 'SumMigrations', 'BidPriceStart', 'BidPriceMigrations', 'Difference'))
+           # f.write("%s, %s, %s, %s, %s, %s, %s\n" % ('Instance','Product/Description','Days','MigrationsMin','SumStartingInstance','SumMigrations', 'Difference'))
 
     for ind in df_instances.index:
 
@@ -160,12 +160,13 @@ def main():
             pass
 
         else:
-            #old_price, days, new_price, saved, migrations_new,migrations_old, bidprice_old, bidprice_new = amount_of_migrations(df_start)
-            old_price, days, new_price, saved, migrations_new = amount_of_migrations(df_start)
+            old_price, days, new_price, saved, migrations_new,migrations_old, bidprice_old, bidprice_new = amount_of_migrations(df_start)
+
+            #old_price, days, new_price, saved, migrations_new = amount_of_migrations(df_start)
 
             with open(file_name, 'a') as f:
-                #f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, days, migrations_old, migrations_new, old_price, new_price, bidprice_old, bidprice_new, saved))
-                f.write("%s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, days, migrations_new, old_price, new_price, saved))
+                f.write("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, days, migrations_old, migrations_new, old_price, new_price, bidprice_old, bidprice_new, saved))
+                #f.write("%s, %s, %s, %s, %s, %s, %s\n" % (instanceType, productDescription, days, migrations_new, old_price, new_price, saved))
 
             print(instanceType, productDescription, days, migrations_new, old_price, new_price, saved)
 
