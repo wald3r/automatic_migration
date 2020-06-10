@@ -61,12 +61,14 @@ def get_dataframes(df):
     df_old = df.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])['SpotPrice'].agg('sum').reset_index()
     df_old = df_old.groupby('AvailabilityZone', group_keys=False).apply(first_last).reset_index()
 
+    print(df_old.to_string())
 
     df_new = df_old.loc[df_old.groupby(['Year', 'Month', 'Day'])['SpotPrice'].idxmin()].reset_index(drop=True)
 
-
     start_zone = df_new['AvailabilityZone'][0]
     df_startZone = df_old[df_old['AvailabilityZone'] == start_zone].reset_index(drop=True)
+
+
 
     list = []
 
@@ -84,6 +86,7 @@ def plot(migrations, start, list, instance, product):
 
     plt.plot(migrations['SpotPrice'], color='green')
     plt.plot(start['SpotPrice'], color='red')
+    plt.legend(['With Migrations', 'No Migrations'])
 
    # for xc in list:
    #     plt.axvline(x=xc)
@@ -95,13 +98,33 @@ def plot(migrations, start, list, instance, product):
 
 def main():
 
-        if(len(sys.argv) != 3):
+        if(len(sys.argv) != 2):
             print('Wrong number of arguments!')
             exit(1)
 
 
+        product_list = ['Red Hat Enterprise Linux', 'SUSE Linux', 'Linux/UNIX', 'Windows']
+
+        print('1: Red Hat Enterprise Linux')
+        print('2: SUSE Linux')
+        print('3: Linux/UNIX')
+        print('4: Windows')
+
+        number = 0
+        while(1):
+            try:
+                number = int(input("Choose Product/Description: "))
+                if(number == 1 or number == 2 or number == 3 or number == 4):
+                    break
+                else:
+                    print('Not possible. Try again.')
+            except:
+                print('Not possible. Try again.')
+
+
+        print('Start plotting...')
         instanceType = str(sys.argv[1])
-        productDescription = str(sys.argv[2])
+        productDescription = product_list[number-1]
 
         df_start = pd.DataFrame()
 
@@ -121,6 +144,7 @@ def main():
         else:
             df_migration, df_start, list = get_dataframes(df_start)
 
+            print(df_start.to_string())
             print(df_migration.to_string())
             print(list)
 

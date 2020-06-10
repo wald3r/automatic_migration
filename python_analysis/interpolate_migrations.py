@@ -14,10 +14,10 @@ def main():
     fileName = str(sys.argv[1])
     df = pd.read_csv(fileName, sep=',')
 
-    df.loc[(df[' Migrations'] == 0), ' Difference'] = 0
+    df.loc[(df[' MigrationsMin'] == 0), ' Difference'] = 0
     df = df[df[' Difference'] >= 0]
 
-    df = df.sort_values(by=' Difference', ascending=False).reset_index()
+    df = df.sort_values(by=' Difference', ascending=False).reset_index(drop=True)
 
     df.to_csv('interpolated_'+fileName)
 

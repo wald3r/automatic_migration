@@ -46,11 +46,18 @@ def main():
 
     start = time.time()
 
-    df_instances = pd.read_csv('spots_activity.csv', low_memory=False)
+    mapping = {'us-east-1b': 0, 'us-east-1a': 1, 'us-east-1f': 2, 'us-east-1c': 3, 'us-west-2a': 4,
+               'us-west-2c': 5, 'us-west-2b': 6, 'eu-central-1b': 7, 'eu-central-1a': 8, 'eu-west-2a': 9,
+               'eu-west-2b': 10, 'ap-southeast-1b': 11, 'ap-southeast-1a': 12, 'ca-central-1b': 13,
+               'us-east-2b': 14, 'us-east-2a': 15, 'ap-northeast-1c': 16, 'ap-northeast-1a': 17,
+               'ap-southeast-2a': 18, 'ap-northeast-2c': 19, 'ap-northeast-2a': 20, 'eu-west-1b': 21,
+               'eu-west-1a': 22, 'ap-southeast-2b': 23, 'us-east-1d': 24, 'eu-west-1c': 25, 'us-west-1c': 26, 'us-west-1a': 27, 'us-east-2c': 28, 'us-east-1e': 29, 'sa-east-1c': 30,
+               'sa-east-1b': 31, 'sa-east-1a': 32, 'eu-west-2c': 33, 'eu-central-1c': 34, 'ca-central-1a': 35, 'ap-southeast-2c': 36, 'ap-southeast-1c': 37, 'ap-south-1c': 38, 'ap-south-1b': 39,
+               'ap-south-1a': 40, 'ap-northeast-2b': 41, 'ap-northeast-1d': 42, 'ap-northeast-1b': 43, 'us-west-1b': 44}
+
+    df_instances = pd.read_csv('spots_activity_test.csv', low_memory=False)
     df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
     df_instances = df_instances.drop_duplicates().reset_index()
-
-    flag = 1
 
     for ind in df_instances.index:
 
@@ -69,21 +76,18 @@ def main():
             df_start = pd.concat([df_start, df])
 
 
+
         df_stamps = prepare_timestamps(df_start)
-        df_grouped = df_stamps.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])['SpotPrice'].agg('sum').reset_index()
-        df_grouped = df_grouped.groupby('AvailabilityZone', group_keys=False).apply(first_last).reset_index(drop=True)
-        df_grouped['InstanceType'] = instanceType
-        df_grouped['ProductDescription'] = productDescription
+        df_stamps['AvailabilityZone'] = df_stamps['AvailabilityZone'].replace(mapping)
+        print(df_stamps.head(100).to_string())
+        df_grouped_day = df_stamps.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])['SpotPrice'].agg(['mean', 'min', 'max', 'sum', 'count', 'mad', 'median']).reset_index()
+        #df_grouped_day['AvailabilityZone'] = df_grouped_day['AvailabilityZone'].replace(mapping)
 
-        if(flag == 1):
-            flag = 0
-            df_grouped.to_csv('training_data_v1.csv', mode='a', header=True)
+        df_grouped = df_grouped_day.groupby('AvailabilityZone', group_keys=False).apply(first_last).reset_index(drop=True)
 
-        else:
-            df_grouped.to_csv('training_data_v1.csv', mode='a', header=False)
-
-        print(df_grouped)
-
+        #df_final = pd.merge(df_stamps, df_grouped, left_on=['AvailabilityZone', 'Year', 'Month', 'Day'], right_on=['AvailabilityZone', 'Year', 'Month', 'Day'])
+        print(df_grouped.head(1000).to_string())
+        df_grouped.to_csv('training_data_v2.csv', header=True)
 
     end = time.time()
     print('Time elapsed:', end-start)
