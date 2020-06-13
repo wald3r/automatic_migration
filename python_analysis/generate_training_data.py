@@ -1,96 +1,94 @@
 
 import pandas as pd
-import time
+import uuid
 
-def prepare_timestamps(df):
 
-    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+class GenerateTrainingData(object):
 
-    df = df.drop_duplicates(subset=['Timestamp', 'AvailabilityZone'])
+    def __init__(self, file_name):
+        self.file_name = file_name
 
-    df = df.set_index("Timestamp")
-
-    df = df.groupby("AvailabilityZone")
-    df = df.resample('H').pad()
-
-    df = df.reset_index(level=0, drop=True)
-    df = df.reset_index()
-
-    df['Timestamp'] = df['Timestamp'].dt.strftime('%Y-%m-%d-%r')
-
-    df_split1 = df['Timestamp'].str.split('-', expand=True)
-    df_split1 = df_split1.rename(columns={0: 'Year', 1: 'Month'})
-
-    df_split2 = df_split1[2].str.split(' ', expand=True)
-    df_split2 = df_split2.rename(columns={0: 'Day'})
-
-    df_split3 = df_split1[3].str.split(':', expand=True)
-    df_split3 = df_split3.rename(columns={0: 'Hour'})
-
-    df_YearMonth = df_split1.drop([2, 3], axis=1)
-    df_Day = df_split2
-    df_Hour = df_split3.drop([1, 2], axis=1)
-
-    df = df.drop(['Timestamp'], axis=1)
-
-    df = df.merge(df_YearMonth, left_index=True, right_index=True)
-    df = df.merge(df_Day, left_index=True, right_index=True)
-    df = df.merge(df_Hour, left_index=True, right_index=True)
-
-    return df
-
-def first_last(df):
-    return df.iloc[1:-1]
-
-def main():
-
-    start = time.time()
+    id = uuid.uuid1()
 
     mapping = {'us-east-1b': 0, 'us-east-1a': 1, 'us-east-1f': 2, 'us-east-1c': 3, 'us-west-2a': 4,
-               'us-west-2c': 5, 'us-west-2b': 6, 'eu-central-1b': 7, 'eu-central-1a': 8, 'eu-west-2a': 9,
-               'eu-west-2b': 10, 'ap-southeast-1b': 11, 'ap-southeast-1a': 12, 'ca-central-1b': 13,
-               'us-east-2b': 14, 'us-east-2a': 15, 'ap-northeast-1c': 16, 'ap-northeast-1a': 17,
-               'ap-southeast-2a': 18, 'ap-northeast-2c': 19, 'ap-northeast-2a': 20, 'eu-west-1b': 21,
-               'eu-west-1a': 22, 'ap-southeast-2b': 23, 'us-east-1d': 24, 'eu-west-1c': 25, 'us-west-1c': 26, 'us-west-1a': 27, 'us-east-2c': 28, 'us-east-1e': 29, 'sa-east-1c': 30,
-               'sa-east-1b': 31, 'sa-east-1a': 32, 'eu-west-2c': 33, 'eu-central-1c': 34, 'ca-central-1a': 35, 'ap-southeast-2c': 36, 'ap-southeast-1c': 37, 'ap-south-1c': 38, 'ap-south-1b': 39,
-               'ap-south-1a': 40, 'ap-northeast-2b': 41, 'ap-northeast-1d': 42, 'ap-northeast-1b': 43, 'us-west-1b': 44}
+           'us-west-2c': 5, 'us-west-2b': 6, 'eu-central-1b': 7, 'eu-central-1a': 8, 'eu-west-2a': 9,
+           'eu-west-2b': 10, 'ap-southeast-1b': 11, 'ap-southeast-1a': 12, 'ca-central-1b': 13,
+           'us-east-2b': 14, 'us-east-2a': 15, 'ap-northeast-1c': 16, 'ap-northeast-1a': 17,
+           'ap-southeast-2a': 18, 'ap-northeast-2c': 19, 'ap-northeast-2a': 20, 'eu-west-1b': 21,
+           'eu-west-1a': 22, 'ap-southeast-2b': 23, 'us-east-1d': 24, 'eu-west-1c': 25, 'us-west-1c': 26,
+           'us-west-1a': 27, 'us-east-2c': 28, 'us-east-1e': 29, 'sa-east-1c': 30,
+           'sa-east-1b': 31, 'sa-east-1a': 32, 'eu-west-2c': 33, 'eu-central-1c': 34, 'ca-central-1a': 35,
+           'ap-southeast-2c': 36, 'ap-southeast-1c': 37, 'ap-south-1c': 38, 'ap-south-1b': 39,
+           'ap-south-1a': 40, 'ap-northeast-2b': 41, 'ap-northeast-1d': 42, 'ap-northeast-1b': 43, 'us-west-1b': 44}
 
-    df_instances = pd.read_csv('spots_activity_test.csv', low_memory=False)
-    df_instances = df_instances.drop(['AvailabilityZone', 'PriceChanges', 'min', 'max'], axis=1)
-    df_instances = df_instances.drop_duplicates().reset_index()
+    def prepare_timestamps(self, df):
 
-    for ind in df_instances.index:
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
 
-        instanceType = df_instances['InstanceType'][ind]
-        productDescription = df_instances['ProductDescription'][ind]
+        df = df.drop_duplicates(subset=['Timestamp', 'AvailabilityZone'])
 
-        df_start = pd.DataFrame()
+        df = df.set_index("Timestamp")
 
-        chunksize = 10 ** 6
-        for chunk in pd.read_csv('aws_spot_pricing.csv', sep=',', chunksize=chunksize):
-            df = chunk[chunk['InstanceType'] == instanceType]
-            df = df[df['ProductDescription'] == productDescription]
-            df = df.drop(['InstanceType'], axis=1)
-            df = df.drop(['ProductDescription'], axis=1)
+        df = df.groupby("AvailabilityZone")
+        df = df.resample('H').pad()
 
-            df_start = pd.concat([df_start, df])
+        df = df.reset_index(level=0, drop=True)
+        df = df.reset_index()
+
+        df['Timestamp'] = df['Timestamp'].dt.strftime('%Y-%m-%d-%r')
+
+        df_split1 = df['Timestamp'].str.split('-', expand=True)
+        df_split1 = df_split1.rename(columns={0: 'Year', 1: 'Month'})
+
+        df_split2 = df_split1[2].str.split(' ', expand=True)
+        df_split2 = df_split2.rename(columns={0: 'Day'})
+
+        df_split3 = df_split1[3].str.split(':', expand=True)
+        df_split3 = df_split3.rename(columns={0: 'Hour'})
+
+        df_YearMonth = df_split1.drop([2, 3], axis=1)
+        df_Day = df_split2
+        df_Hour = df_split3.drop([1, 2], axis=1)
+
+        df = df.drop(['Timestamp'], axis=1)
+
+        df = df.merge(df_YearMonth, left_index=True, right_index=True)
+        df = df.merge(df_Day, left_index=True, right_index=True)
+        df = df.merge(df_Hour, left_index=True, right_index=True)
+
+        return df
+
+    def first_last(self, df):
+        return df.iloc[1:-1]
+
+
+    def generate(self, instance_type, product_description):
+
+        try:
+            df_start = pd.DataFrame()
+
+            chunksize = 10 ** 6
+            for chunk in pd.read_csv('aws_spot_pricing.csv', sep=',', chunksize=chunksize):
+
+                df = chunk[chunk['InstanceType'] == instance_type]
+                df = df[df['ProductDescription'] == product_description]
+                df = df.drop(['InstanceType'], axis=1)
+                df = df.drop(['ProductDescription'], axis=1)
+
+                df_start = pd.concat([df_start, df])
 
 
 
-        df_stamps = prepare_timestamps(df_start)
-        df_stamps['AvailabilityZone'] = df_stamps['AvailabilityZone'].replace(mapping)
-        print(df_stamps.head(100).to_string())
-        df_grouped_day = df_stamps.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])['SpotPrice'].agg(['mean', 'min', 'max', 'sum', 'count', 'mad', 'median']).reset_index()
-        #df_grouped_day['AvailabilityZone'] = df_grouped_day['AvailabilityZone'].replace(mapping)
+            df_stamps = self.prepare_timestamps(df_start)
+            df_stamps['AvailabilityZone'] = df_stamps['AvailabilityZone'].replace(self.mapping)
 
-        df_grouped = df_grouped_day.groupby('AvailabilityZone', group_keys=False).apply(first_last).reset_index(drop=True)
+            #df_grouped_day = df_stamps.groupby(['AvailabilityZone', 'Year', 'Month', 'Day'])['SpotPrice'].agg(['mean', 'min', 'max', 'sum', 'count', 'mad', 'median']).reset_index()
+            #df_grouped = df_grouped_day.groupby('AvailabilityZone', group_keys=False).apply(self.first_last).reset_index(drop=True)
+            df_stamps.to_csv(self.file_name, header=True)
 
-        #df_final = pd.merge(df_stamps, df_grouped, left_on=['AvailabilityZone', 'Year', 'Month', 'Day'], right_on=['AvailabilityZone', 'Year', 'Month', 'Day'])
-        print(df_grouped.head(1000).to_string())
-        df_grouped.to_csv('training_data_v2.csv', header=True)
+            #df_grouped.to_csv(self.file_name, header=True)
 
-    end = time.time()
-    print('Time elapsed:', end-start)
+            return 1
+        except:
 
-if __name__ == "__main__":
-    main()
+            return 0

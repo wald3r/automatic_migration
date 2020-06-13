@@ -10,8 +10,7 @@ from keras.losses import MeanSquaredError
 from keras.losses import MeanAbsoluteError
 from keras.losses import MeanAbsolutePercentageError
 
-availability_zone = 1
-test_month = 4
+availability_zone = 14
 epochs10 = 10
 epochs100 = 100
 epochs500 = 500
@@ -20,7 +19,7 @@ epochs1000 = 1000
 architecture_name='model_architecture.json'
 weights_name = 'model_weights.h5'
 days = 1
-batch_size = 32
+batch_size = 24
 
 def generate_training_data(df):
 
@@ -33,6 +32,8 @@ def generate_training_data(df):
 
     scaled_data = scaler.fit_transform(df_tmp.iloc[:, 7:8].values)
 
+
+
     features_set = []
     labels = []
     for i in range(days, len(scaled_data)):
@@ -40,6 +41,7 @@ def generate_training_data(df):
         labels.append(scaled_data[i, 0])
 
     features_set, labels = np.array(features_set), np.array(labels)
+
 
     return (np.reshape(features_set, (features_set.shape[0], features_set.shape[1], 1)), labels, scaler)
 
@@ -116,7 +118,6 @@ def load_model():
 
 def create_model(training_features):
 
-    print(training_features.shape)
     print('Create ml model')
     model = Sequential()
 
@@ -172,6 +173,8 @@ def main():
     #print_errors(predictions1000, test_data, 1000)
     #save_model(model)
 
+    print(sum(predictions250))
+    print(sum(test_data))
     plot_all(predictions250, test_data, 250)
 
 
