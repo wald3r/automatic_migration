@@ -2,23 +2,25 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="08f21064-cd03-433a-9a7f-0ad4b942249e" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ml_model.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ml_model.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lstm_model.py" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/../spot_pricing/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../spot_pricing/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../spot_pricing/.idea/spot_pricing.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../spot_pricing/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../spot_pricing/collect_spot_prices.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../spot_pricing/split_price_history.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../spot_pricing/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/already_trained.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/generate_training_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/generate_training_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ml_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/ml_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/predict_ml_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/predict_ml_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/spots_activity.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/spots_activity_test.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_ml_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ml_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/training_data_v2.csv" beforeDir="false" afterPath="$PROJECT_DIR$/training_data_v2.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/training_data_v3.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../nohup.out" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../possible_migrations_all_1.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../python_analysis/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/already_trained.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/generate_training_data.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/ml_model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/ml_model_univariate.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/model_architecture_multivariate.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/model_weights_multivariate_multivariate.h5" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/predict_ml_model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/predictions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/train_ml_model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/training_data_v2.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../python_analysis/training_data_v3.csv" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,23 +29,38 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/predict_ml_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="55" column="30" lean-forward="true" selection-start-line="55" selection-start-column="30" selection-end-line="55" selection-end-column="30" />
+            <state relative-caret-position="255">
+              <caret line="17" selection-start-line="17" selection-end-line="17" />
+              <folding>
+                <element signature="e#1#29#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/train_ml_model.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="645">
+              <caret line="69" column="61" selection-start-line="69" selection-start-column="61" selection-end-line="69" selection-end-column="61" />
+              <folding>
+                <element signature="e#0#19#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/train_ml_model.py">
+        <entry file="file://$PROJECT_DIR$/generate_training_data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="86">
-              <caret line="6" column="10" selection-start-line="6" selection-start-column="10" selection-end-line="6" selection-end-column="10" />
+            <state relative-caret-position="524">
+              <caret line="77" column="43" selection-start-line="77" selection-start-column="43" selection-end-line="77" selection-end-column="43" />
               <folding>
-                <element signature="e#0#19#0" expanded="true" />
+                <element signature="e#1#20#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -52,7 +69,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ml_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="839">
+              <caret line="109" selection-start-line="109" selection-end-line="109" />
               <folding>
                 <element signature="e#0#52#0" expanded="true" />
               </folding>
@@ -68,15 +86,17 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
+        <option value="$PROJECT_DIR$/ml_model.py" />
         <option value="$PROJECT_DIR$/predict_ml_model.py" />
         <option value="$PROJECT_DIR$/train_ml_model.py" />
+        <option value="$PROJECT_DIR$/generate_training_data.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="67" />
-    <option name="y" value="25" />
-    <option name="width" value="1150" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="884" />
+    <option name="y" value="27" />
+    <option name="width" value="1026" />
     <option name="height" value="1053" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -85,6 +105,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -96,7 +117,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -114,7 +134,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.train_ml_model">
+  <component name="RunManager" selected="Python.predict_ml_model">
     <configuration name="predict_ml_model" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="ml_model" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -159,8 +179,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.train_ml_model" />
         <item itemvalue="Python.predict_ml_model" />
+        <item itemvalue="Python.train_ml_model" />
       </list>
     </recent_temporary>
   </component>
@@ -178,51 +198,84 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
+    <frame x="884" y="27" width="1026" height="1053" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Favorites" side_tool="true" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24972677" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21036889" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Version Control" />
-      <window_info anchor="bottom" id="Python Console" />
-      <window_info anchor="bottom" id="Terminal" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32937366" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32937366" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.30669546" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
     </layout>
+    <layout-to-restore>
+      <window_info id="Favorites" order="0" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="1" visible="true" weight="0.24972677" />
+      <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Terminal" order="0" />
+      <window_info anchor="bottom" id="Event Log" order="1" side_tool="true" />
+      <window_info anchor="bottom" id="Version Control" order="2" />
+      <window_info anchor="bottom" id="Python Console" order="3" />
+      <window_info anchor="bottom" id="Message" order="4" />
+      <window_info anchor="bottom" id="Find" order="5" weight="0.32937366" />
+      <window_info active="true" anchor="bottom" id="Run" order="6" visible="true" weight="0.30669546" />
+      <window_info anchor="bottom" id="Debug" order="7" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="8" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="9" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="10" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout-to-restore>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/predict_ml_model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+          <folding>
+            <element signature="e#1#29#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ml_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
+        <state relative-caret-position="839">
+          <caret line="109" selection-start-line="109" selection-end-line="109" />
           <folding>
             <element signature="e#0#52#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/predict_ml_model.py">
+    <entry file="file://$PROJECT_DIR$/train_ml_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="55" column="30" lean-forward="true" selection-start-line="55" selection-start-column="30" selection-end-line="55" selection-end-column="30" />
+        <state relative-caret-position="645">
+          <caret line="69" column="61" selection-start-line="69" selection-start-column="61" selection-end-line="69" selection-end-column="61" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/train_ml_model.py">
+    <entry file="file://$PROJECT_DIR$/generate_training_data.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="86">
-          <caret line="6" column="10" selection-start-line="6" selection-start-column="10" selection-end-line="6" selection-end-column="10" />
+        <state relative-caret-position="524">
+          <caret line="77" column="43" selection-start-line="77" selection-start-column="43" selection-end-line="77" selection-end-column="43" />
           <folding>
-            <element signature="e#0#19#0" expanded="true" />
+            <element signature="e#1#20#0" expanded="true" />
           </folding>
         </state>
       </provider>

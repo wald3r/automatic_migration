@@ -1,14 +1,12 @@
 
 import pandas as pd
-import uuid
-
+import os
 
 class GenerateTrainingData(object):
 
     def __init__(self, file_name):
         self.file_name = file_name
 
-    id = uuid.uuid1()
 
     mapping = {'us-east-1b': 0, 'us-east-1a': 1, 'us-east-1f': 2, 'us-east-1c': 3, 'us-west-2a': 4,
            'us-west-2c': 5, 'us-west-2b': 6, 'eu-central-1b': 7, 'eu-central-1a': 8, 'eu-west-2a': 9,
@@ -68,12 +66,16 @@ class GenerateTrainingData(object):
             df_start = pd.DataFrame()
 
             chunksize = 10 ** 6
-            for chunk in pd.read_csv('aws_spot_pricing.csv', sep=',', chunksize=chunksize):
+
+            path = os.path.normpath(os.getcwd() + os.sep + os.pardir)
+            filepath = path + 'spot_pricing/pricing_history/'+instance_type
+            for chunk in pd.read_csv(filepath, sep=',', chunksize=chunksize):
 
                 df = chunk[chunk['InstanceType'] == instance_type]
                 df = df[df['ProductDescription'] == product_description]
                 df = df.drop(['InstanceType'], axis=1)
                 df = df.drop(['ProductDescription'], axis=1)
+                df = df[df['Training'] == 0]
 
                 df_start = pd.concat([df_start, df])
 
