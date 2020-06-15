@@ -74,7 +74,8 @@ class GenerateTrainingData(object):
                 df = chunk[chunk['InstanceType'] == instance_type]
                 df = df[df['ProductDescription'] == product_description]
                 if(0 == len(df)):
-                    raise Exception('Error: Invalid product description!')
+                    print('Error: Invalid product description!')
+                    raise Exception()
                 df = df.drop(['InstanceType'], axis=1)
                 df = df.drop(['ProductDescription'], axis=1)
                 if(flag == 0):

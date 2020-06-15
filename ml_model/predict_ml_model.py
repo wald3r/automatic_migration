@@ -31,10 +31,8 @@ def main():
     shape = 2
     test_size = 24
 
-
     instance_type = str(sys.argv[1])
     product_description = str(sys.argv[2])
-
 
     mlobj = MLModel(weights_name, architecture_name, shape, ticks, epochs, batch_size, test_size, ticks)
     try:
@@ -47,7 +45,8 @@ def main():
     #product_description = 'Linux/UNIX'
 
     #gen = GenerateTrainingData('training_data_v3.csv')
-    #gen.generate(instance_type, product_description, 1)
+    #if(gen.generate(instance_type, product_description, 1) == 0):
+    #    exit(0)
 
     df = pd.read_csv('training_data_v2.csv', sep=',')
 
