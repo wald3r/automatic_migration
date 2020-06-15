@@ -31,23 +31,23 @@ def main():
     shape = 2
     test_size = 24
 
-    try:
-        instance_type = str(sys.argv[1])
-        product_description = str(sys.argv[2])
-    except:
-        print('Wrong arguments!')
-        exit(0)
+
+    instance_type = str(sys.argv[1])
+    product_description = str(sys.argv[2])
+
 
     mlobj = MLModel(weights_name, architecture_name, shape, ticks, epochs, batch_size, test_size, ticks)
-
-    model = mlobj.load_model()
-    model.compile(optimizer='nadam', loss='mean_squared_error', metrics=['accuracy'])
+    try:
+        model = mlobj.load_model()
+        model.compile(optimizer='nadam', loss='mean_squared_error', metrics=['accuracy'])
+    except:
+        print('Error: Model does not exist!')
 
     #instance_type = 'm4.16xlarge'
     #product_description = 'Linux/UNIX'
 
     #gen = GenerateTrainingData('training_data_v3.csv')
-    #gen.generate(instance_type, product_description)
+    #gen.generate(instance_type, product_description, 1)
 
     df = pd.read_csv('training_data_v2.csv', sep=',')
 

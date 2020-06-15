@@ -38,7 +38,7 @@ def main():
     instance_type = str(sys.argv[1])
     product_description = str(sys.argv[2])
 
-    if(gen.generate(instance_type, product_description)):
+    if(gen.generate(instance_type, product_description, 0)):
 
         df = pd.read_csv('training_data_v2.csv', sep=',')
 

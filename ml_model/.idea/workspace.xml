@@ -2,23 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="08f21064-cd03-433a-9a7f-0ad4b942249e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../spot_pricing/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../spot_pricing/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../spot_pricing/.idea/spot_pricing.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../spot_pricing/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../spot_pricing/collect_spot_prices.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../spot_pricing/split_price_history.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../spot_pricing/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/already_trained.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/generate_training_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/generate_training_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ml_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/ml_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/predict_ml_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/predict_ml_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/spots_activity.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/spots_activity_test.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/train_ml_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ml_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/training_data_v2.csv" beforeDir="false" afterPath="$PROJECT_DIR$/training_data_v2.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/training_data_v3.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../nohup.out" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../possible_migrations_all_1.csv" beforeDir="false" />
     </list>
@@ -33,8 +19,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/predict_ml_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="17" selection-start-line="17" selection-end-line="17" />
+            <state relative-caret-position="74">
+              <caret line="35" column="4" selection-start-line="35" selection-start-column="4" selection-end-line="35" selection-end-column="4" />
               <folding>
                 <element signature="e#1#29#0" expanded="true" />
               </folding>
@@ -45,8 +31,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train_ml_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="645">
-              <caret line="69" column="61" selection-start-line="69" selection-start-column="61" selection-end-line="69" selection-end-column="61" />
+            <state relative-caret-position="-45">
+              <caret line="15" column="7" lean-forward="true" selection-start-line="15" selection-start-column="7" selection-end-line="15" selection-end-column="7" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -57,8 +43,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/generate_training_data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="524">
-              <caret line="77" column="43" selection-start-line="77" selection-start-column="43" selection-end-line="77" selection-end-column="43" />
+            <state relative-caret-position="1110">
+              <caret line="74" selection-start-line="74" selection-end-line="74" />
               <folding>
                 <element signature="e#1#20#0" expanded="true" />
               </folding>
@@ -69,7 +55,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ml_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="839">
+            <state relative-caret-position="1005">
               <caret line="109" selection-start-line="109" selection-end-line="109" />
               <folding>
                 <element signature="e#0#52#0" expanded="true" />
@@ -240,19 +226,9 @@
     </layout-to-restore>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/predict_ml_model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" selection-start-line="17" selection-end-line="17" />
-          <folding>
-            <element signature="e#1#29#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ml_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="839">
+        <state relative-caret-position="1005">
           <caret line="109" selection-start-line="109" selection-end-line="109" />
           <folding>
             <element signature="e#0#52#0" expanded="true" />
@@ -260,10 +236,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/predict_ml_model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="74">
+          <caret line="35" column="4" selection-start-line="35" selection-start-column="4" selection-end-line="35" selection-end-column="4" />
+          <folding>
+            <element signature="e#1#29#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/train_ml_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="645">
-          <caret line="69" column="61" selection-start-line="69" selection-start-column="61" selection-end-line="69" selection-end-column="61" />
+        <state relative-caret-position="-45">
+          <caret line="15" column="7" lean-forward="true" selection-start-line="15" selection-start-column="7" selection-end-line="15" selection-end-column="7" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>
@@ -272,8 +258,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/generate_training_data.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="524">
-          <caret line="77" column="43" selection-start-line="77" selection-start-column="43" selection-end-line="77" selection-end-column="43" />
+        <state relative-caret-position="1110">
+          <caret line="74" selection-start-line="74" selection-end-line="74" />
           <folding>
             <element signature="e#1#20#0" expanded="true" />
           </folding>

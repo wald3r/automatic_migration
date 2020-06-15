@@ -60,7 +60,7 @@ class GenerateTrainingData(object):
         return df.iloc[1:-1]
 
 
-    def generate(self, instance_type, product_description):
+    def generate(self, instance_type, product_description, flag):
 
         try:
             df_start = pd.DataFrame()
@@ -73,9 +73,12 @@ class GenerateTrainingData(object):
 
                 df = chunk[chunk['InstanceType'] == instance_type]
                 df = df[df['ProductDescription'] == product_description]
+                if(0 == len(df)):
+                    raise Exception('Error: Invalid product description!')
                 df = df.drop(['InstanceType'], axis=1)
                 df = df.drop(['ProductDescription'], axis=1)
-                df = df[df['Training'] == 0]
+                if(flag == 0):
+                    df = df[df['Training'] == 0]
 
                 df_start = pd.concat([df_start, df])
 
@@ -92,5 +95,5 @@ class GenerateTrainingData(object):
 
             return 1
         except:
-
+            print('Error: Could not generate training data!')
             return 0
