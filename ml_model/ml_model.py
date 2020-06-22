@@ -5,7 +5,7 @@ from keras.losses import MeanSquaredError
 from keras.losses import MeanAbsoluteError
 from keras.losses import MeanAbsolutePercentageError
 from sklearn.preprocessing import MinMaxScaler
-
+import os
 import numpy as np
 
 class MLModel(object):
@@ -24,11 +24,13 @@ class MLModel(object):
 
     def load_model(self):
 
+        path = os.getcwd()+'/models/'
+
         try:
-            with open(self.architecture_name, 'r') as f:
+            with open(path+self.architecture_name, 'r') as f:
                 model = model_from_json(f.read())
 
-            model.load_weights(self.weights_name)
+            model.load_weights(path+self.weights_name)
             print('Model loaded')
             return model
 
@@ -39,8 +41,11 @@ class MLModel(object):
 
     def save_model(self, model):
 
-        model.save_weights(self.weights_name)
-        with open(self.architecture_name, 'w') as f:
+
+        path = os.getcwd()+'/models/'
+        print(path+self.weights_name)
+        model.save_weights(path+self.weights_name)
+        with open(path+self.architecture_name, 'w') as f:
             f.write(model.to_json())
 
         print('Model saved!')
@@ -90,7 +95,7 @@ class MLModel(object):
 
         #df_tmp = df_tmp[['AvailabilityZone', 'mean', 'min', 'max', 'count', 'mad', 'median', 'sum']]
         #df_tmp = df_tmp[['AvailabilityZone', 'sum']]
-        df_tmp = df_tmp[['AvailabilityZone', 'SpotPrice']]
+        df_tmp = df_tmp[['SpotPrice']]
 
         df_tmp = df_tmp.head(len(df_tmp)-self.test_size)
         scaler = MinMaxScaler(feature_range=(0, 1))
@@ -116,14 +121,14 @@ class MLModel(object):
 
         #df_tmp = df[['AvailabilityZone','mean', 'min', 'max', 'count', 'mad', 'median', 'sum']]
         #df_tmp = df[['AvailabilityZone', 'sum']]
-        df_tmp = df[['AvailabilityZone', 'SpotPrice']]
+        df_tmp = df[['SpotPrice']]
 
         df_tmp = df_tmp.tail(self.test_size)
 
 
         #df_total = df[['AvailabilityZone','mean', 'min', 'max', 'count', 'mad', 'median', 'sum']]
         #df_total = df[['AvailabilityZone', 'sum']]
-        df_total = df[['AvailabilityZone', 'SpotPrice']]
+        df_total = df[['SpotPrice']]
 
 
         test_data = df_total[len(df_total) - len(df_tmp) - self.ticks:].values

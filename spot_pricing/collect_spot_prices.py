@@ -8,47 +8,66 @@ utc=pytz.UTC
 
 client=boto3.client('ec2', region_name='us-west-2')
 
+instances = pd.read_csv('instances.csv', sep=',').values
 regions = client.describe_regions()
 
-#df = pd.read_csv('collection_history.csv', sep=',')
-
-#start=df.index[len(df)]['1']
-start=utc.localize(datetime.datetime(2020, 5, 1))
-end=utc.localize(datetime.datetime.now())
 
 token = ''
 
-for x in regions['Regions']:
+for y in instances:
 
-    client=boto3.client('ec2', region_name=x['RegionName'])
+    df_history = pd.read_csv('collection_history.csv', sep=',')
+    filtered = df_history[df_history['instance'] == y[0]].reset_index(drop=True)
+    filtered1 = df_history[df_history['instance'] != y[0]].reset_index(drop=True)
+    filtered1 = filtered1.drop(columns={'Unnamed: 0'}, axis=1)
 
-    df = pd.DataFrame(columns=['Timestamp', 'AvailabilityZone', 'InstanceType', 'ProductDescription', 'SpotPrice'])
+    end = utc.localize(datetime.datetime.now())
 
-    print('Collecting spot price history from:', x['RegionName'])
-
-    while(1):
-        prices = client.describe_spot_price_history(StartTime=start,
-                                                    EndTime=end,
-                                                    NextToken=token)
-
-        token = prices['NextToken']
-        print('Token', token)
-        for y in prices['SpotPriceHistory']:
-            df.loc[len(df)] = [y['Timestamp'], y['AvailabilityZone'], y['InstanceType'], y['ProductDescription'], y['SpotPrice']]
-
-        if(token == ''):
-            break
-
-    if(df.empty):
-        pass
+    if(filtered.empty):
+        start = utc.localize(datetime.datetime(2020, 5, 1))
     else:
-        #df = df.loc[(df.Timestamp > start)]
-        df = df.iloc[::-1]
-        df['Training'] = 0
-        df_groups = df.groupby(['InstanceType'])
-        for name, group in df_groups:
-            group.to_csv(os.getcwd() + '/pricing_history/' + name, index=False, header=False, mode='a')
+        start = utc.localize(datetime.datetime.strptime(filtered['end'][0], '%Y-%m-%d %H:%M:%S.%f+00:00'))
 
-        with open(os.getcwd()+'/collection_history.csv', 'a') as f:
-            print(start, end, x['RegionName'])
-            f.write("%s, %s, %s\n" % (start, end, x['RegionName']))
+    if(start.date() != datetime.datetime.today().date()):
+
+        print(y[0] + ' - collecting spot price history - '+str(start)+' - '+str(end))
+
+        df = pd.DataFrame(columns=['Timestamp', 'AvailabilityZone', 'InstanceType', 'ProductDescription', 'SpotPrice'])
+
+        for x in regions['Regions']:
+
+            client=boto3.client('ec2', region_name=x['RegionName'])
+
+            while(1):
+                prices = client.describe_spot_price_history(StartTime=start,
+                                                            EndTime=end,
+                                                            NextToken=token,
+                                                            InstanceTypes=[y[0]])
+
+                token = prices['NextToken']
+                print('Region:', x['RegionName'], 'Token', token)
+                for z in prices['SpotPriceHistory']:
+                    df.loc[len(df)] = [z['Timestamp'], z['AvailabilityZone'], z['InstanceType'], z['ProductDescription'], z['SpotPrice']]
+
+                if(token == ''):
+                    break
+
+
+
+        df = df.loc[(df.Timestamp > start)]
+        if (df.empty):
+            print('Pass')
+        else:
+            df = df.iloc[::-1]
+            df['Training'] = 0
+            df = df.sort_values('Timestamp').reset_index(drop=True)
+            df_groups = df.groupby(['InstanceType'])
+            for name, group in df_groups:
+                group.to_csv(os.getcwd() + '/pricing_history/' + name, index=False, header=False, mode='a')
+
+            filtered1.loc[len(filtered1)] = [start, end, y[0]]
+            filtered1.to_csv(os.getcwd()+'/collection_history.csv', mode='w')
+            print(start, end, y)
+
+    else:
+        print('Skipped', y[0])
