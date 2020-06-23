@@ -40,7 +40,7 @@ def main():
     product_description = str(sys.argv[2])
 
     epochs = 500
-    ticks = 15
+    ticks = 60
     batch_size = 32
     shape = 1
     test_size = 24

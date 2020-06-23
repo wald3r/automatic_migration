@@ -42,8 +42,9 @@ class MLModel(object):
     def save_model(self, model):
 
 
-        path = os.getcwd()+'/models/'
-        print(path+self.weights_name)
+        folder_name = self.architecture_name.replace('_architecture.json', '')
+        path = os.getcwd()+'/models/'+folder_name+'/'
+        os.mkdir(path)
         model.save_weights(path+self.weights_name)
         with open(path+self.architecture_name, 'w') as f:
             f.write(model.to_json())
