@@ -7,7 +7,7 @@ const App = () => {
 
   return(
     <div className='header'>
-      <h1>Automatic Migration</h1>
+      <h1>Elastic Migration Tool</h1>
     </div>
   )
 }
