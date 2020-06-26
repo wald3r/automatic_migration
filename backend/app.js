@@ -8,7 +8,7 @@ const databaseHelper = require('./utils/databaseHelper')
 
 //Create Table
 db = databaseHelper.openDatabase()
-const values = 'type TEXT NOT NULL, product TEXT NOT NULL, worldwide INT, region TEXT, simulation INT'
+const values = 'type TEXT NOT NULL, product TEXT NOT NULL, worldwide INT NOT NULL, region TEXT, simulation INT NOT NULL, createdAt TEXT, updatedAt Text'
 databaseHelper.createTable(db, 'instance', values)
 databaseHelper.closeDatabase(db)
 
