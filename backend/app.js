@@ -4,17 +4,14 @@ const bodyparser = require('body-parser')
 const instancesRouter = require('./controllers/instances')
 const cors = require('cors')
 const databaseHelper = require('./utils/databaseHelper')
-const fs = require('fs')
 
-const dbName = './sqlite.db'
 
-try{
-    db = databaseHelper.openDatabase()
-    databaseHelper.createTable(db, 'instance', 'id INT')
-    databaseHelper.closeDatabase(db)
-}catch(exception){
-    console.log('hello')
-}
+//Create Table
+db = databaseHelper.openDatabase()
+const values = 'type TEXT NOT NULL, product TEXT NOT NULL, worldwide INT, region TEXT, simulation INT'
+databaseHelper.createTable(db, 'instance', values)
+databaseHelper.closeDatabase(db)
+
 
 app.use(express.static('build'))
 app.use(cors())

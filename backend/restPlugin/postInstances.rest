@@ -1,0 +1,10 @@
+POST http://localhost:3001/api/instances
+Content-Type: application/json
+
+{
+    "type": "t2.micro",
+    "product": "Windows",
+    "worldwide": 1,
+    "region": null,
+    "simulation": 1
+}
