@@ -35,6 +35,69 @@ test('Get all instances', async () => {
     expect(response.body).toHaveLength(5)
 })
 
+test('update non existing instance', async () => {
+
+  newObj = {
+    type: 't44.micro',
+    product: 'linux',
+    bidprice: 0.99,
+    region: null,
+    simulation: 1
+  }
+  const id = 10
+
+  await api
+    .put(`/api/instances/${id}`)
+    .send(newObj)
+    .expect(200)
+
+
+    let outcome = null
+    db = await databaseHelper.openDatabase()
+    await new Promise ((resolve) => {
+      db.get(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName} WHERE rowid= ?`, id, (err, row) => {
+          outcome = row
+          resolve()
+        })
+    })
+    db = await databaseHelper.closeDatabase(db)
+    expect(outcome).toBe(undefined)
+})
+
+
+test('update one instance', async () => {
+
+  newObj = {
+    type: 't44.micro',
+    product: 'linux',
+    bidprice: 0.99,
+    region: null,
+    simulation: 1
+  }
+  const id = 1
+
+  await api
+    .put(`/api/instances/${id}`)
+    .send(newObj)
+    .expect(200)
+
+
+  let outcome = null
+  db = await databaseHelper.openDatabase()
+  await new Promise ((resolve) => {
+    db.get(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName} WHERE rowid= ?`, id, (err, row) => {
+      outcome = row
+      resolve()
+    })
+  })
+  db = await databaseHelper.closeDatabase(db)
+  expect(outcome.rowid).toBe(1)
+  expect(outcome.type).toBe(newObj.type)
+  expect(outcome.product).toBe(newObj.product)
+  expect(outcome.bidprice).toBe(newObj.bidprice)
+  expect(outcome.simulation).toBe(newObj.simulation)
+})
+
 test('post one instance', async () => {
 
   newObj = {
@@ -45,7 +108,7 @@ test('post one instance', async () => {
     simulation: 0
   }
 
-  const response = await api
+  await api
     .post('/api/instances/')
     .send(newObj)
     .expect(200)
@@ -62,6 +125,7 @@ test('post one instance', async () => {
           resolve()
         })
     })
+    db = await databaseHelper.closeDatabase(db)
 
   expect(outcome[0].type).toBe('t44.micro')
   expect(outcome[0].bidprice).toBe(0.99)
@@ -96,7 +160,7 @@ test('Remove one instance', async () => {
   const id = 1
   let outcome = null
 
-  const response = await api
+  await api
     .delete(`/api/instances/${id}`)
     .expect(200)
 

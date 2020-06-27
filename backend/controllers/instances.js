@@ -11,8 +11,8 @@ instancesRouter.get('/', async(request, response, next) => {
 
     const db = await databaseHelper.openDatabase()
     let responseArray = []
-    await new Promise((resolve, reject) => {
-      db.serialize(async (callback) => {
+    await new Promise((resolve) => {
+      db.serialize(async () => {
         db.all(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName}`, (err, rows) => {
           rows.map(row =>{
             console.log(row.rowid + ": " + row.createdAt + ', ' + row.updatedAt + ', ' + row.type + ', ' + row.product + ', ' + row.region + ', ' + row.simulation)
@@ -40,7 +40,7 @@ instancesRouter.get('/:id', async(request,response, next) => {
     const db = await databaseHelper.openDatabase()
     db.get(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName} WHERE rowid=${id}`, (err, row) => {
       if(err){
-        response.status(500).send(err.message)
+        response.status(500).send(`${parameters.instanceTableName}: ${err.message}`)
       }else if (row === undefined) {
         response.status(500).send(`No entry under rowid ${id}`)
       }else{
@@ -56,6 +56,34 @@ instancesRouter.get('/:id', async(request,response, next) => {
     next(exception)
   }
 })
+
+
+instancesRouter.put('/:id', async(request, response, next) => {
+
+  const id = request.params.id
+  const body = request.body
+  db = await databaseHelper.openDatabase()
+  const params = [body.bidprice, body.type, body.product, body.region, body.simulation, timeHelper.utc_timestamp, id]
+  await new Promise((resolve) => {
+    db.run(`UPDATE ${parameters.instanceTableName} 
+          SET bidprice = ?, type = ?, product = ?, region = ?, simulation = ?, updatedAt = ?
+          WHERE rowid=?`, params,(err) => {
+      if (err) {
+        console.error(`${parameters.instanceTableName}: ${err.message}`)
+        response.status(500).send(err.message)
+        resolve()
+      }else{
+        console.log(`${parameters.instanceTableName}: Row updated ${id}`)
+        response.status(200).send('Successfully updated')
+        resolve()
+      }
+    })
+  })
+    
+  await databaseHelper.closeDatabase(db)
+
+})
+
 
 
 instancesRouter.post('/', async(request, response, next) => {
@@ -88,16 +116,15 @@ instancesRouter.delete('/:id', async(request, response, next) => {
   db.run(`DELETE FROM ${parameters.instanceTableName} WHERE rowid=?`, id, (err) => {
     if (err) {
       console.error(err.message)
-      response.status(500).send(err.message)
+      response.status(500).send(`${parameters.instanceTableName}: ${err.message}`)
     }else{
-      console.log(`Row deleted ${id}`)
+      console.log(`${parameters.instanceTableName}: Row deleted ${id}`)
       response.status(200).send('Successfully deleted')
     }
     
   })
 
   await databaseHelper.closeDatabase(db)
-
 
 })
 
