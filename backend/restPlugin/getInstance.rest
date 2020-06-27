@@ -1,1 +1,1 @@
-GET http://localhost:3001/api/instances/3
+GET http://localhost:3001/api/instances/1

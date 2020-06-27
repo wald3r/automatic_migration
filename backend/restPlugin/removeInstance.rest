@@ -1,1 +1,1 @@
-DELETE http://localhost:3001/api/instances/da
+DELETE http://localhost:3001/api/instances/6
