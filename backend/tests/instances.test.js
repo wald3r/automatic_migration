@@ -3,7 +3,7 @@ const app = require('../app')
 const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
-
+const instancesTableHelper = require('../utils/instancesTableHelper')
 
 const api = supertest(app)
 
@@ -33,6 +33,39 @@ test('Get all instances', async () => {
     .expect('Content-Type', /application\/json/)
 
     expect(response.body).toHaveLength(5)
+})
+
+test('post one instance', async () => {
+
+  newObj = {
+    type: 't44.micro',
+    product: 'windows',
+    bidprice: 0.99,
+    region: null,
+    simulation: 0
+  }
+
+  const response = await api
+    .post('/api/instances/')
+    .send(newObj)
+    .expect(200)
+
+    let outcome = null
+    db = await databaseHelper.openDatabase()
+    await new Promise ((resolve) => {
+      db.all(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName} WHERE 
+        type='t44.micro' AND
+        product='windows' AND
+        bidprice='0.99'` , 
+        (err, rows) => {
+          outcome = rows
+          resolve()
+        })
+    })
+
+  expect(outcome[0].type).toBe('t44.micro')
+  expect(outcome[0].bidprice).toBe(0.99)
+
 })
 
 
