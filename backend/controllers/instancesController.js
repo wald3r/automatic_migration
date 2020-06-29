@@ -91,22 +91,49 @@ instancesRouter.post('/', async(request, response, next) => {
   const body = request.body
   console.log(body)
   try{
+    let outcome = undefined
     let db = await databaseHelper.openDatabase()
-    db.serialize(() => {
-      const stmt = db.prepare(`INSERT INTO ${parameters.instanceTableName} VALUES (?, ?, ?, ?, ?, ?, ?)`)
-      stmt.run(body.type, body.product, body.bidprice, body.region, body.simulation, timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
-      stmt.finalize()
-    })
-    db.all(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName} WHERE 
-        type = ${body.type}`, (err ,rows) => {
+    await new Promise((resolve, reject) => {
+      db.get(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName} WHERE 
+        type = '${body.type}' AND
+        product = '${body.product}' AND
+        simulation = '${body.simulation}'`, (err ,row) => {
         if(err){
-          response.status(500).send(`${parameters.instanceTableName}: ${err.message}`)
+          console.error(`${parameters.instanceTableName}: ${err.message}`)
+          reject()
         }else{
-          resObj = instancesTableHelper.createInstanceObject(rows.rowid, rows.type, rows.product, rows.bidprice, rows.region, rows.simulation, rows.createdAt, rows.updatedAt)
-          console.log(resObj)
-          response.status(200).json(resObj)
+          outcome = row
+          resolve()
         }
+      })
     })
+    console.log(outcome)
+    if(outcome === undefined){
+
+      let list = []
+      await new Promise((resolve, reject) => {
+        db.serialize(() => {
+          const stmt = db.prepare(`INSERT INTO ${parameters.instanceTableName} VALUES (?, ?, ?, ?, ?, ?, ?)`)
+          stmt.run(body.type, body.product, body.bidprice, body.region, body.simulation, timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
+          stmt.finalize()
+          db.all(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName}`, (err ,rows) => {
+              if(err){
+                response.status(500).send(`${parameters.instanceTableName}: ${err.message}`)
+                reject()
+              }else{
+                rows.map(row => {
+                  resObj = instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.createdAt, row.updatedAt)
+                  list.concat(resObj)
+                })
+              }
+          })
+          response.status(200).json(list)
+          resolve()
+        })
+      }) 
+    }else{
+      response.status(500).send('Instance already exists!')
+    }
     await databaseHelper.closeDatabase(db)
     
 

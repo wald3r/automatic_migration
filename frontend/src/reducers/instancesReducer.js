@@ -24,11 +24,8 @@ export const deleteInstance = (obj) => {
   }
 }
 
-export const newInstance = (obj) => {
+export const newInstance = (data) => {
   return async dispatch => {
-    const response = await instancesService.newInstance(obj)
-    console.log(response.body)
-    let data = response.body
     dispatch({
       type:'NEWINSTANCE',
       data
@@ -43,7 +40,7 @@ const instancesReducer = (state = [], action) => {
   case 'DELETEINSTANCE':
     return state.filter(i => i.id !== action.id)
   case 'NEWINSTANCE':
-    return state.concat(action.data)
+    return action.data
   default:
     return state
   }

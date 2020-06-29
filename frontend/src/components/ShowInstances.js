@@ -4,6 +4,7 @@ import { Table, Button } from 'react-bootstrap'
 import { deleteInstance, newInstance } from '../reducers/instancesReducer'
 import ConfirmationModal from './modals/ConfirmationModal'
 import CreateInstanceModal from './modals/CreateInstanceModal'
+import instancesService from '../services/instancesService'
 
 const ShowInstances = ( props ) => {
 
@@ -18,8 +19,11 @@ const ShowInstances = ( props ) => {
 
   const createInstance = async (obj, event) => {
     event.preventDefault()
-    await props.newInstance(obj)
-    console.log(obj)
+    const response = await instancesService.newInstance(obj)
+    if(response.status === 200){
+      await props.newInstance(response.data)
+    }
+    window.location.reload()
   }
 
   const handleDeletion = (instance) => {

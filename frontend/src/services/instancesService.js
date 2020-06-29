@@ -14,7 +14,6 @@ const getAllInstances = async () => {
 const newInstance = async (obj) => {
 
   const response = await axios.post(baseUrl, obj)
-  console.log(response.data)
   return response
 }
 
