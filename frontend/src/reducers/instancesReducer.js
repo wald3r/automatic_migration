@@ -24,14 +24,26 @@ export const deleteInstance = (obj) => {
   }
 }
 
+export const newInstance = (obj) => {
+  return async dispatch => {
+    const response = await instancesService.newInstance(obj)
+    console.log(response.body)
+    let data = response.body
+    dispatch({
+      type:'NEWINSTANCE',
+      data
+    })
+  }
+}
+
 const instancesReducer = (state = [], action) => {
-  console.log(action.type)
   switch (action.type){
   case 'ALLINSTANCES':
     return action.data
   case 'DELETEINSTANCE':
-    let tmp = state.filter(i => i.id !== action.id)
-    return tmp
+    return state.filter(i => i.id !== action.id)
+  case 'NEWINSTANCE':
+    return state.concat(action.data)
   default:
     return state
   }

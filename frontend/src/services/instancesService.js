@@ -11,10 +11,16 @@ const getAllInstances = async () => {
 
 }
 
+const newInstance = async (obj) => {
+
+  const response = await axios.post(baseUrl, obj)
+  console.log(response.data)
+  return response
+}
 
 const deleteInstance = async (obj) => {
   const response = await axios.delete(`${baseUrl}/${obj.id}`)
   return response
 }
 
-export default { getAllInstances, deleteInstance }
+export default { getAllInstances, deleteInstance, newInstance }

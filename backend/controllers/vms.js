@@ -1,11 +1,10 @@
-const instancesRouter = require('express').Router()
+const vmsRouter = require('express').Router()
 const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
-const instancesTableHelper = require('../utils/instancesTableHelper')
 
 
-instancesRouter.get('/', async(request, response, next) => {
+vmsRouter.get('/', async(request, response, next) => {
 
   try{
 
@@ -33,7 +32,7 @@ instancesRouter.get('/', async(request, response, next) => {
 
 })
 
-instancesRouter.get('/:id', async(request,response, next) => {
+vmsRouter.get('/:id', async(request,response, next) => {
 
   const id = request.params.id
   try{
@@ -58,7 +57,7 @@ instancesRouter.get('/:id', async(request,response, next) => {
 })
 
 
-instancesRouter.put('/:id', async(request, response, next) => {
+vmsRouter.put('/:id', async(request, response, next) => {
 
   const id = request.params.id
   const body = request.body
@@ -86,30 +85,21 @@ instancesRouter.put('/:id', async(request, response, next) => {
 
 
 
-instancesRouter.post('/', async(request, response, next) => {
+vmsRouter.post('/', async(request, response, next) => {
 
   const body = request.body
   console.log(body)
   try{
-    let db = await databaseHelper.openDatabase()
+    const db = await databaseHelper.openDatabase()
     db.serialize(() => {
       const stmt = db.prepare(`INSERT INTO ${parameters.instanceTableName} VALUES (?, ?, ?, ?, ?, ?, ?)`)
       stmt.run(body.type, body.product, body.bidprice, body.region, body.simulation, timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
       stmt.finalize()
     })
-    db.all(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName} WHERE 
-        type = ${body.type}`, (err ,rows) => {
-        if(err){
-          response.status(500).send(`${parameters.instanceTableName}: ${err.message}`)
-        }else{
-          resObj = instancesTableHelper.createInstanceObject(rows.rowid, rows.type, rows.product, rows.bidprice, rows.region, rows.simulation, rows.createdAt, rows.updatedAt)
-          console.log(resObj)
-          response.status(200).json(resObj)
-        }
-    })
+    response.status(200).send('Successfully added!')
+
     await databaseHelper.closeDatabase(db)
     
-
   }catch(exception){
     return response.status(500).send(exception.message)
   }
@@ -117,7 +107,7 @@ instancesRouter.post('/', async(request, response, next) => {
 
 })
 
-instancesRouter.delete('/:id', async(request, response, next) => {
+vmsRouter.delete('/:id', async(request, response, next) => {
 
   const id = request.params.id
 
@@ -138,4 +128,4 @@ instancesRouter.delete('/:id', async(request, response, next) => {
 })
 
 
-module.exports = instancesRouter
+module.exports = vmsRouter

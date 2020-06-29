@@ -5,6 +5,6 @@ Content-Type: application/json
     "type": "t2.micro",
     "product": "Windows",
     "bidprice": 0.25,
-    "region": null,
+    "region": "Worldwide",
     "simulation": 1
 }
