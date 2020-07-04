@@ -3,7 +3,7 @@ const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
 const instancesTableHelper = require('../utils/instancesTableHelper')
-
+const ml_model = require('../utils/ml_model')
 
 instancesRouter.get('/', async(request, response, next) => {
 
@@ -15,8 +15,7 @@ instancesRouter.get('/', async(request, response, next) => {
       db.serialize(async () => {
         db.all(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName}`, (err, rows) => {
           rows.map(row =>{
-            console.log(row.rowid + ": " + row.createdAt + ', ' + row.updatedAt + ', ' + row.type + ', ' + row.product + ', ' + row.region + ', ' + row.simulation)
-            resObj = instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.createdAt, row.updatedAt)
+            resObj = instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.status, row.createdAt, row.updatedAt)
             responseArray = responseArray.concat(resObj)
           })
           resolve(responseArray)
@@ -44,7 +43,6 @@ instancesRouter.get('/:id', async(request,response, next) => {
       }else if (row === undefined) {
         response.status(500).send(`No entry under rowid ${id}`)
       }else{
-        console.log(row.rowid + ": " + row.createdAt + ', ' + row.bidprice + ', ' + row.updatedAt + ', ' + row.type + ', ' + row.product + ', ' + row.region + ', ' + row.simulation)
         resObj = instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.createdAt, row.updatedAt)
         response.status(200).json(resObj)
       }
@@ -63,10 +61,10 @@ instancesRouter.put('/:id', async(request, response, next) => {
   const id = request.params.id
   const body = request.body
   db = await databaseHelper.openDatabase()
-  const params = [body.bidprice, body.type, body.product, body.region, body.simulation, timeHelper.utc_timestamp, id]
+  const params = [body.bidprice, body.type, body.product, body.region, body.simulation, timeHelper.utc_timestamp, body.status, id]
   await new Promise((resolve) => {
     db.run(`UPDATE ${parameters.instanceTableName} 
-          SET bidprice = ?, type = ?, product = ?, region = ?, simulation = ?, updatedAt = ?
+          SET bidprice = ?, type = ?, product = ?, region = ?, simulation = ?, updatedAt = ?, status = ?
           WHERE rowid=?`, params,(err) => {
       if (err) {
         console.error(`${parameters.instanceTableName}: ${err.message}`)
@@ -107,14 +105,13 @@ instancesRouter.post('/', async(request, response, next) => {
         }
       })
     })
-    console.log(outcome)
     if(outcome === undefined){
 
       let list = []
       await new Promise((resolve, reject) => {
         db.serialize(() => {
-          const stmt = db.prepare(`INSERT INTO ${parameters.instanceTableName} VALUES (?, ?, ?, ?, ?, ?, ?)`)
-          stmt.run(body.type, body.product, body.bidprice, body.region, body.simulation, timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
+          const stmt = db.prepare(`INSERT INTO ${parameters.instanceTableName} VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+          stmt.run(body.type, body.product, body.bidprice, body.region, body.simulation, 'training', timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
           stmt.finalize()
           db.all(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName}`, (err ,rows) => {
               if(err){
@@ -122,7 +119,7 @@ instancesRouter.post('/', async(request, response, next) => {
                 reject()
               }else{
                 rows.map(row => {
-                  resObj = instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.createdAt, row.updatedAt)
+                  let resObj = instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.status, row.createdAt, row.updatedAt)
                   list.concat(resObj)
                 })
               }
@@ -131,6 +128,7 @@ instancesRouter.post('/', async(request, response, next) => {
           resolve()
         })
       }) 
+      ml_model.trainModel(body.type, body.product)
     }else{
       response.status(500).send('Instance already exists!')
     }

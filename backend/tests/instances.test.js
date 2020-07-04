@@ -11,14 +11,14 @@ beforeEach(async () => {
 
     db = await databaseHelper.openDatabase()
     db.serialize(() => {
-      const values = 'type TEXT NOT NULL, product TEXT NOT NULL, bidprice FLOAT NOT NULL, region TEXT, simulation INT NOT NULL, createdAt TEXT, updatedAt Text'
+      const values = 'type TEXT NOT NULL, product TEXT NOT NULL, bidprice FLOAT NOT NULL, region TEXT, simulation INT NOT NULL, status TEXT , createdAt TEXT, updatedAt Text'
       databaseHelper.createTable(db, parameters.instanceTableName, values)
-      const stmt = db.prepare(`INSERT INTO ${parameters.instanceTableName} VALUES (?, ?, ?, ?, ?, ?, ?)`)
-      stmt.run('t2.micro', 'Windows', 0.25, null, 0, timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
-      stmt.run('t3.micro', 'Windows', 0.35, null, 0, timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
-      stmt.run('t4.micro', 'Windows', 0.45, null, 0, timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
-      stmt.run('t5.micro', 'Windows', 0.55, null, 0, timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
-      stmt.run('t6.micro', 'Windows', 0.65, null, 0, timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
+      const stmt = db.prepare(`INSERT INTO ${parameters.instanceTableName} VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      stmt.run('t2.micro', 'Windows', 0.25, null, 0, 'training', timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
+      stmt.run('t3.micro', 'Windows', 0.35, null, 0, 'training', timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
+      stmt.run('t4.micro', 'Windows', 0.45, null, 0, 'training', timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
+      stmt.run('t5.micro', 'Windows', 0.55, null, 0, 'training', timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
+      stmt.run('t6.micro', 'Windows', 0.65, null, 0, 'training', timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
 
       stmt.finalize()
     })
@@ -72,6 +72,7 @@ test('update one instance', async () => {
     product: 'linux',
     bidprice: 0.99,
     region: null,
+    status: 'training',
     simulation: 1
   }
   const id = 1
@@ -90,12 +91,14 @@ test('update one instance', async () => {
       resolve()
     })
   })
+  console.log(outcome)
   db = await databaseHelper.closeDatabase(db)
   expect(outcome.rowid).toBe(1)
   expect(outcome.type).toBe(newObj.type)
   expect(outcome.product).toBe(newObj.product)
   expect(outcome.bidprice).toBe(newObj.bidprice)
   expect(outcome.simulation).toBe(newObj.simulation)
+  expect(outcome.status).toBe('training')
 })
 
 test('post one instance', async () => {

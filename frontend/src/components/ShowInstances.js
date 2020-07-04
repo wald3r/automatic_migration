@@ -5,16 +5,22 @@ import { deleteInstance, newInstance } from '../reducers/instancesReducer'
 import ConfirmationModal from './modals/ConfirmationModal'
 import CreateInstanceModal from './modals/CreateInstanceModal'
 import instancesService from '../services/instancesService'
+import { useToasts } from 'react-toast-notifications'
 
 const ShowInstances = ( props ) => {
 
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false)
   const [showCreateInstanceModal, setShowCreateInstanceModal] = useState(false)
+  const { addToast } = useToasts()
 
   const [instanceToDelete, setInstanceToDelete] = useState(null)
 
   const deleteInstance = async () => {
     await props.deleteInstance(instanceToDelete)
+    addToast(`${instanceToDelete.type} was deleted.`, {
+      appearance: 'success',
+      autoDismiss: true,
+    })
   }
 
   const createInstance = async (obj, event) => {
@@ -22,6 +28,10 @@ const ShowInstances = ( props ) => {
     const response = await instancesService.newInstance(obj)
     if(response.status === 200){
       await props.newInstance(response.data)
+      addToast('test', {
+        appearance: 'success',
+        autoDismiss: true,
+      })
     }
     window.location.reload()
   }
@@ -34,7 +44,6 @@ const ShowInstances = ( props ) => {
   const handleCreation = () => {
     setShowCreateInstanceModal(true)
   }
-
   return (
     <div>
       <CreateInstanceModal
@@ -55,6 +64,7 @@ const ShowInstances = ( props ) => {
             <th>Product</th>
             <th>BidPrice</th>
             <th>Region</th>
+            <th>Status</th>
             <th>Simulation</th>
             <th></th>
           </tr>
@@ -66,6 +76,7 @@ const ShowInstances = ( props ) => {
               <td id='idInstanceProduct'>{instance.product}</td>
               <td id='idInstanceBidPrice'>{instance.bidprice}</td>
               <td id='idInstanceRegion'>{instance.region}</td>
+              <td id='idInstanceStatus'>{instance.status}</td>
               <td id='idInstanceSimulation'>{instance.simulation}</td>
               <td>
                 <Button id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Instance' onClick={() => handleDeletion(instance)}><i className="fa fa-trash" /></Button>

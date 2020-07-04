@@ -11,7 +11,7 @@ const dbFileName = () => {
 
 const instanceTableName = 'instance'
 const vmTableName = 'vm'
-const instanceTableValues = 'rowid, type, product, bidprice, region, simulation, createdAt, updatedAt'
+const instanceTableValues = 'rowid, type, product, bidprice, region, simulation, status, createdAt, updatedAt'
 const vmTableValues = 'rowid, instance, zone, path, ip, createdAt, updatedAt'
 
 

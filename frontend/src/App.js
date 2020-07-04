@@ -8,6 +8,7 @@ import instancesData from './data/instances.csv'
 import zonesData from './data/zones.csv'
 import { setInstancesList } from './reducers/instancesListReducer'
 import { setZonesList } from './reducers/zonesListReducer'
+import { ToastProvider } from 'react-toast-notifications'
 
 const App = ( props ) => {
 
@@ -24,9 +25,11 @@ const App = ( props ) => {
 
   return(
     <div className='header'>
-      <h1>Elastic Migration Tool</h1>
-      <br/>
-      <ShowInstances />
+      <ToastProvider>
+        <h1>Elastic Migration Tool</h1>
+        <br/>
+        <ShowInstances />
+      </ToastProvider>
     </div>
   )
 }
