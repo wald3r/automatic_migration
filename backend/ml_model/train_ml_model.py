@@ -42,8 +42,8 @@ def main():
     instance_type = str(sys.argv[1])
     product_description = str(sys.argv[2])
 
-    epochs = 250
-    ticks = 60
+    epochs = 10
+    ticks = 15
     batch_size = 32
     shape = 1
     test_size = 24

@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 
 const CreateInstanceModal = ( { showCreateInstanceModal, setCreateInstanceModal, handleCreation, ...props } ) => {
 
-  const productList = ['Linux/Unix', 'Windows', 'RedHat', 'Linux-Suse']
+  const productList = ['Linux/UNIX', 'Windows', 'Red Hat Enterprise Linux', 'SUSE Linux']
   const [simulation, setSimulation] = useState(false)
   const [type, setType] = useState('r5.4xlarge')
   const [bidprice, setBidprice] = useState(null)

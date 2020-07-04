@@ -24,8 +24,7 @@ class MLModel(object):
 
     def load_model(self):
 
-        path = os.getcwd()+'/models/'
-
+        path = os.getcwd()+'/ml_model/models/'
         try:
             with open(path+self.architecture_name, 'r') as f:
                 model = model_from_json(f.read())
@@ -43,7 +42,8 @@ class MLModel(object):
 
 
         folder_name = self.architecture_name.replace('_architecture.json', '')
-        path = os.getcwd()+'/models/'+folder_name+'/'
+        path = os.getcwd()+'/ml_model/models/'+folder_name+'/'
+        print(path)
         os.mkdir(path)
         model.save_weights(path+self.weights_name)
         with open(path+self.architecture_name, 'w') as f:

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test jest --verbose --runInBand",
-    "dev": "NODE_ENV=dev nodemon index.js",
+    "dev": "NODE_ENV=dev nodemon --ignore './ml_model' index.js",
     "start": "NODE_ENV=prod node index.js"
   },
   "author": "Daniel Walder",
