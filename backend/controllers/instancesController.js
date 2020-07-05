@@ -3,7 +3,7 @@ const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
 const instancesTableHelper = require('../utils/instancesTableHelper')
-const ml_model = require('../utils/ml_model')
+const mlModel = require('../utils/mlModel')
 
 instancesRouter.get('/', async(request, response, next) => {
 
@@ -127,8 +127,10 @@ instancesRouter.post('/', async(request, response, next) => {
           response.status(200).json(list)
           resolve()
         })
-      }) 
-      ml_model.trainModel(body.type, body.product)
+      })
+      if(process.env.NODE_ENV !== 'test'){ 
+        await mlModel.trainModel(body.type, body.product)
+      }
     }else{
       response.status(500).send('Instance already exists!')
     }
@@ -151,7 +153,9 @@ instancesRouter.delete('/:id', async(request, response, next) => {
       console.error(err.message)
       response.status(500).send(`${parameters.instanceTableName}: ${err.message}`)
     }else{
-      ml_model.deleteModel(request.body.obj.type, request.body.obj.product)
+      if(process.env.NODE_ENV !== 'test'){
+        mlModel.deleteModel(request.body.obj.type, request.body.obj.product)
+      }
       console.log(`${parameters.instanceTableName}: Row deleted ${id}`)
       response.status(200).send('Successfully deleted')
     }

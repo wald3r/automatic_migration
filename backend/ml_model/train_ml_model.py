@@ -56,23 +56,24 @@ def main():
         df = pd.read_csv('training_data_v2.csv', sep=',')
 
         zones = df['AvailabilityZone'].drop_duplicates().values
-
-        for x in zones:
+        print(zones)
+        #for x in zones:
+        for x in ['ap-northeast-1a', 'ap-northeast-1c']:
             try:
                 print('Train AvailabilityZone: ' + str(x))
                 rep_product_description = replace_name(product_description)
                 architecture_name = instance_type + '_' + rep_product_description + '_' + str(x) + '_architecture.json'
                 weights_name = instance_type + '_' + rep_product_description + '_'+ str(x) + '_weights.h5'
 
-
                 mlobj = MLModel(weights_name, architecture_name, shape, ticks, epochs, batch_size, test_size, ticks, instance_type, rep_product_description)
                 model = mlobj.getModel()
 
                 model.compile(optimizer='nadam', loss='mean_squared_error', metrics=['accuracy'])
 
-
                 training_features, labels, scaler = mlobj.generate_training_data(df, x)
+
                 model = mlobj.train(model, training_features, labels)
+
                 mlobj.save_model(model)
 
             except:

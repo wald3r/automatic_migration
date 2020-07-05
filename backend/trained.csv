@@ -13,3 +13,25 @@ r5.4xlarge, Linux/UNIX
 t2.small, Linux/UNIX
 r5.4xlarge, Red Hat Enterprise Linux
 m4.16xlarge, Red Hat Enterprise Linux
+r5.2xlarge, Red Hat Enterprise Linux
+m5.8xlarge, SUSE Linux
+r3.8xlarge, Linux/UNIX
+r5.4xlarge, Windows
+r3.8xlarge, SUSE Linux
+r5.4xlarge, Windows
+r5.4xlarge, Linux/UNIX
+r5.4xlarge, SUSE Linux
+r5.4xlarge, Linux/UNIX
+r5.4xlarge, Linux/UNIX
+r5.4xlarge, Red Hat Enterprise Linux
+m4.16xlarge, Red Hat Enterprise Linux
+r3.8xlarge, Linux/UNIX
+r5.4xlarge, SUSE Linux
+g3.8xlarge, Red Hat Enterprise Linux
+r5.4xlarge, Linux/UNIX
+r5.4xlarge, Windows
+r5.4xlarge, Windows
+r5dn.xlarge, Linux/UNIX
+m5ad.large, Linux/UNIX
+r5.4xlarge, Red Hat Enterprise Linux
+r5.4xlarge, Linux/UNIX

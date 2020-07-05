@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const bodyparser = require('body-parser')
 const instancesRouter = require('./controllers/instancesController')
-const vmsRouter = require('./controllers/vms')
+const imagesRouter = require('./controllers/imagesController')
 const cors = require('cors')
 const databaseHelper = require('./utils/databaseHelper')
 const parameter = require('./parameters')
@@ -22,7 +22,7 @@ app.use(express.static('build'))
 app.use(cors())
 app.use(bodyparser.json())
 app.use('/api/instances', instancesRouter)
-app.use('/api/vms', vmsRouter)
+app.use('/api/images', imagesRouter)
 
 
 
