@@ -10,12 +10,14 @@ const dbFileName = () => {
 }
 
 const instanceTableName = 'instance'
-const vmTableName = 'vm'
+const imageTableName = 'image'
+
 const instanceTableValues = 'rowid, type, product, bidprice, region, simulation, status, createdAt, updatedAt'
-const vmTableValues = 'rowid, instance, zone, path, ip, createdAt, updatedAt'
+const imageTableValues = 'rowid, instanceId, zone, path, ip, key, createdAt, updatedAt'
 
 const mlTrainFile = '/home/walder/workspace/automatic_migration/backend/ml_model/train_ml_model.py'
 const mlDeleteFile = '/home/walder/workspace/automatic_migration/backend/ml_model/delete_ml_model.py'
+const mlPredictFile = '/home/walder/workspace/automatic_migration/backend/ml_model/predict_ml_model.py'
 
 
-module.exports = { dbFileName, instanceTableName, instanceTableValues, vmTableName, vmTableValues, mlTrainFile, mlDeleteFile }
+module.exports = { dbFileName, instanceTableName, instanceTableValues, imageTableName, imageTableValues, mlTrainFile, mlDeleteFile, mlPredictFile }

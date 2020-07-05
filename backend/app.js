@@ -11,9 +11,9 @@ const parameter = require('./parameters')
 const checkDatabase = async () => {
     db = await databaseHelper.openDatabase()
     const valuesInstances = 'type TEXT NOT NULL, product TEXT NOT NULL, bidprice FLOAT NOT NULL, region TEXT, simulation INT NOT NULL, status TEXT, createdAt TEXT, updatedAt Text'
-    const valuesVms = `instanceId INTEGER NOT NULL, zone TEXT, path TEXT, ip TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameter.instanceTableName}(rowid)`
+    const valuesImages= `instanceId INTEGER NOT NULL, zone TEXT, path TEXT, ip TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameter.instanceTableName}(rowid)`
     databaseHelper.createTable(db, parameter.instanceTableName, valuesInstances)
-    databaseHelper.createTable(db, parameter.vmTableName, valuesVms)
+    databaseHelper.createTable(db, parameter.instanceTableName, valuesImages)
     await databaseHelper.closeDatabase(db)
 }
 

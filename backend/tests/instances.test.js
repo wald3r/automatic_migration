@@ -154,7 +154,7 @@ test('Get one instance that does not exist', async () => {
     .expect(500)
     .expect('Content-Type', 'text/html; charset=utf-8')
 
-  expect(response.text).toBe(`No entry under rowid ${id}`)
+  expect(response.text).toBe(`Could not retrieve rowid ${id}`)
 
 })
 
@@ -174,6 +174,7 @@ test('Remove one instance', async () => {
       resolve()
     })
   })
+  await databaseHelper.closeDatabase(db)
   expect(outcome).toBe(undefined)
 
 })

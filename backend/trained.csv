@@ -35,3 +35,6 @@ r5dn.xlarge, Linux/UNIX
 m5ad.large, Linux/UNIX
 r5.4xlarge, Red Hat Enterprise Linux
 r5.4xlarge, Linux/UNIX
+r5.4xlarge, Windows
+g3.8xlarge, Red Hat Enterprise Linux
+r5.4xlarge, Linux/UNIX

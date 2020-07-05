@@ -10,18 +10,8 @@ instancesRouter.get('/', async(request, response, next) => {
   try{
 
     const db = await databaseHelper.openDatabase()
-    let responseArray = []
-    await new Promise((resolve) => {
-      db.serialize(async () => {
-        db.all(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName}`, (err, rows) => {
-          rows.map(row =>{
-            resObj = instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.status, row.createdAt, row.updatedAt)
-            responseArray = responseArray.concat(resObj)
-          })
-          resolve(responseArray)
-        })
-      })
-    })
+    let responseArray = await databaseHelper.selectAllRows(db, parameters.instanceTableValues, parameters.instanceTableName)
+    responseArray = responseArray.map(row => instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.status, row.createdAt, row.updatedAt))
     await databaseHelper.closeDatabase(db)
     return response.status(200).json(responseArray)
 
@@ -37,17 +27,12 @@ instancesRouter.get('/:id', async(request,response, next) => {
   const id = request.params.id
   try{
     const db = await databaseHelper.openDatabase()
-    db.get(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName} WHERE rowid=${id}`, (err, row) => {
-      if(err){
-        response.status(500).send(`${parameters.instanceTableName}: ${err.message}`)
-      }else if (row === undefined) {
-        response.status(500).send(`No entry under rowid ${id}`)
-      }else{
-        resObj = instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.createdAt, row.updatedAt)
-        response.status(200).json(resObj)
-      }
-      
-    })
+    let row = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, id)
+    if(row === null){
+      response.status(500).send(`Could not retrieve rowid ${id}`)
+    }else{
+      response.status(200).json(instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.status, row.createdAt, row.updatedAt))
+    }
     await databaseHelper.closeDatabase(db)
 
   }catch(exception){
@@ -62,22 +47,13 @@ instancesRouter.put('/:id', async(request, response, next) => {
   const body = request.body
   db = await databaseHelper.openDatabase()
   const params = [body.bidprice, body.type, body.product, body.region, body.simulation, timeHelper.utc_timestamp, body.status, id]
-  await new Promise((resolve) => {
-    db.run(`UPDATE ${parameters.instanceTableName} 
-          SET bidprice = ?, type = ?, product = ?, region = ?, simulation = ?, updatedAt = ?, status = ?
-          WHERE rowid=?`, params,(err) => {
-      if (err) {
-        console.error(`${parameters.instanceTableName}: ${err.message}`)
-        response.status(500).send(err.message)
-        resolve()
-      }else{
-        console.log(`${parameters.instanceTableName}: Row updated ${id}`)
-        response.status(200).send('Successfully updated')
-        resolve()
-      }
-    })
-  })
-    
+  const values = 'bidprice = ?, type = ?, product = ?, region = ?, simulation = ?, updatedAt = ?, status = ?'
+  const status = await databaseHelper.updateById(db, parameters.instanceTableName, values, params)
+  if(status === 500){
+    response.status(500).send(err.message)
+  }else{
+    response.status(200).send('Successfully updated')
+  }
   await databaseHelper.closeDatabase(db)
 
 })
@@ -148,20 +124,11 @@ instancesRouter.delete('/:id', async(request, response, next) => {
 
   const id = request.params.id
   const db = await databaseHelper.openDatabase()
-  db.run(`DELETE FROM ${parameters.instanceTableName} WHERE rowid=?`, id, (err) => {
-    if (err) {
-      console.error(err.message)
-      response.status(500).send(`${parameters.instanceTableName}: ${err.message}`)
-    }else{
-      if(process.env.NODE_ENV !== 'test'){
-        mlModel.deleteModel(request.body.obj.type, request.body.obj.product)
-      }
-      console.log(`${parameters.instanceTableName}: Row deleted ${id}`)
-      response.status(200).send('Successfully deleted')
-    }
-    
-  })
-
+  await databaseHelper.deleteRow(db, parameters.instanceTableName, id)
+  if(process.env.NODE_ENV !== 'test'){
+    mlModel.deleteModel(request.body.obj.type, request.body.obj.product)
+  }
+  response.status(200).send('Successfully deleted')
   await databaseHelper.closeDatabase(db)
 
 })

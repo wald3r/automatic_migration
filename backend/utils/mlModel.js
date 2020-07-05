@@ -33,19 +33,9 @@ const trainModel = async (instance, product) => {
         }
       })
     })
-    await new Promise((resolve, reject) => {
-      db.run(`UPDATE ${parameters.instanceTableName} 
-            SET status = ?, updatedAt = ?
-            WHERE rowid= ?`, ['trained', timeHelper.utc_timestamp, outcome.rowid],(err) => {
-        if (err) {
-          console.error(`${parameters.instanceTableName}: ${err.message}`)
-          reject()
-        }else{
-          console.log(`${parameters.instanceTableName}: Row updated ${outcome.rowid}`)
-          resolve()
-        }
-      })
-    })
+    const params = ['trained', timeHelper.utc_timestamp, outcome.rowid]
+    const values = 'status = ?, updatedAt = ?'
+    await databaseHelper.updateById(db, parameters.instanceTableName, values, params)
     await databaseHelper.closeDatabase(db)
   })
 }
@@ -53,7 +43,6 @@ const trainModel = async (instance, product) => {
 
 const deleteModel = (instance, product) => {
 
-  console.log(parameters.mlDeleteFile)
   const python = spawn('python3', [parameters.mlDeleteFile, instance, product])
   console.log(`Delete training ml model ${instance} ${product}`)
 
