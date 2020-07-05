@@ -42,7 +42,7 @@ def main():
     instance_type = str(sys.argv[1])
     product_description = str(sys.argv[2])
 
-    epochs = 10
+    epochs = 1
     ticks = 15
     batch_size = 32
     shape = 1
@@ -62,9 +62,10 @@ def main():
                 print('Train AvailabilityZone: ' + str(x))
                 rep_product_description = replace_name(product_description)
                 architecture_name = instance_type + '_' + rep_product_description + '_' + str(x) + '_architecture.json'
-                weights_name = instance_type + '_' + rep_product_description + '_'+ str(x) + '__weights.h5'
+                weights_name = instance_type + '_' + rep_product_description + '_'+ str(x) + '_weights.h5'
 
-                mlobj = MLModel(weights_name, architecture_name, shape, ticks, epochs, batch_size, test_size, ticks)
+
+                mlobj = MLModel(weights_name, architecture_name, shape, ticks, epochs, batch_size, test_size, ticks, instance_type, rep_product_description)
                 model = mlobj.getModel()
 
                 model.compile(optimizer='nadam', loss='mean_squared_error', metrics=['accuracy'])

@@ -145,13 +145,13 @@ instancesRouter.post('/', async(request, response, next) => {
 instancesRouter.delete('/:id', async(request, response, next) => {
 
   const id = request.params.id
-
   const db = await databaseHelper.openDatabase()
   db.run(`DELETE FROM ${parameters.instanceTableName} WHERE rowid=?`, id, (err) => {
     if (err) {
       console.error(err.message)
       response.status(500).send(`${parameters.instanceTableName}: ${err.message}`)
     }else{
+      ml_model.deleteModel(request.body.obj.type, request.body.obj.product)
       console.log(`${parameters.instanceTableName}: Row deleted ${id}`)
       response.status(200).send('Successfully deleted')
     }

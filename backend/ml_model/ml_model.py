@@ -7,10 +7,11 @@ from keras.losses import MeanAbsolutePercentageError
 from sklearn.preprocessing import MinMaxScaler
 import os
 import numpy as np
+import shutil
 
 class MLModel(object):
 
-    def __init__(self, weights_name, architecture_name, input_shape_1, input_shape_2, epochs, batch_size, test_size, ticks):
+    def __init__(self, weights_name, architecture_name, input_shape_1, input_shape_2, epochs, batch_size, test_size, ticks, instance, product):
         self.weights_name = weights_name
         self.architecture_name = architecture_name
         self.input_shape_1 = input_shape_1
@@ -20,11 +21,13 @@ class MLModel(object):
         self.output_shape = input_shape_1
         self.ticks = ticks
         self.test_size = test_size
-
+        self.instance = instance
+        self.product = product
 
     def load_model(self):
 
-        path = os.getcwd()+'/ml_model/models/'
+        folder_name = self.instance+'_'+self.product
+        path = os.getcwd()+'/ml_model/models/'+folder_name+'/'
         try:
             with open(path+self.architecture_name, 'r') as f:
                 model = model_from_json(f.read())
@@ -41,15 +44,24 @@ class MLModel(object):
     def save_model(self, model):
 
 
-        folder_name = self.architecture_name.replace('_architecture.json', '')
+        folder_name = self.instance+'_'+self.product
         path = os.getcwd()+'/ml_model/models/'+folder_name+'/'
-        print(path)
-        os.mkdir(path)
+        if not os.path.exists(path):
+            os.mkdir(path)
         model.save_weights(path+self.weights_name)
         with open(path+self.architecture_name, 'w') as f:
             f.write(model.to_json())
 
         print('Model saved!')
+
+    def delete_model(self):
+
+        path = os.getcwd()+'/ml_model/models/'+self.instance+'_'+self.product
+        try:
+            shutil.rmtree(path)
+
+        except OSError as e:
+            print('Could not delete %s - %s' %(e.filename, e.strerror))
 
 
     def getModel(self):

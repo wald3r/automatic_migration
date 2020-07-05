@@ -4,3 +4,12 @@ r5.2xlarge, Linux/UNIX
 c1.xlarge, SUSE Linux
 r5.4xlarge, Red Hat Enterprise Linux
 g4dn.8xlarge, SUSE Linux
+r4.xlarge, Linux/UNIX
+m5.8xlarge, Linux/UNIX
+r5d.metal, Linux/UNIX
+r5.4xlarge, SUSE Linux
+r3.8xlarge, Red Hat Enterprise Linux
+r5.4xlarge, Linux/UNIX
+t2.small, Linux/UNIX
+r5.4xlarge, Red Hat Enterprise Linux
+m4.16xlarge, Red Hat Enterprise Linux

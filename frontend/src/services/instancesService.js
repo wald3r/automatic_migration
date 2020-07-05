@@ -18,7 +18,7 @@ const newInstance = async (obj) => {
 }
 
 const deleteInstance = async (obj) => {
-  const response = await axios.delete(`${baseUrl}/${obj.id}`)
+  const response = await axios.delete(`${baseUrl}/${obj.id}`, { data: { obj } })
   return response
 }
 

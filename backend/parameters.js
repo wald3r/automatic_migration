@@ -15,6 +15,7 @@ const instanceTableValues = 'rowid, type, product, bidprice, region, simulation,
 const vmTableValues = 'rowid, instance, zone, path, ip, createdAt, updatedAt'
 
 const mlTrainFile = '/home/walder/workspace/automatic_migration/backend/ml_model/train_ml_model.py'
+const mlDeleteFile = '/home/walder/workspace/automatic_migration/backend/ml_model/delete_ml_model.py'
 
 
-module.exports = { dbFileName, instanceTableName, instanceTableValues, vmTableName, vmTableValues, mlTrainFile }
+module.exports = { dbFileName, instanceTableName, instanceTableValues, vmTableName, vmTableValues, mlTrainFile, mlDeleteFile }
