@@ -2,7 +2,7 @@ const {spawn} = require('child_process')
 const parameters = require('../parameters')
 const databaseHelper = require('../utils/databaseHelper')
 const timeHelper = require('../utils/timeHelper')
-const d3 = require('d3-request')
+const csv = require('csv-parse/lib/es5')
 const fs = require('fs')
 
 const replace_name = (name) => {
@@ -80,10 +80,11 @@ const predictModel = (instance, product) => {
 
   python.stdout.on('close', async () => {
     const predictionData = require(`${parameters.mlPredictions}${instance}_${replace_name(product)}.csv`)
-    d3.csv(predictionData, (err, data) => {
-      if (error) throw error
-      console.log(data[0])
-    })
+    fs.createReadStream(predictionData)
+      .pipe(csv())
+      .on('data', (row) => {
+        console.log(row.toString())
+      })
   })
 }
 

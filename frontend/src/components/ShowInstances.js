@@ -145,8 +145,7 @@ const ShowInstances = ( props ) => {
               </td>
             </tr>
             {props.images.filter(image => image.instanceId === instance.id).map(image => (
-              <tr style={ { display: showImages === false ? 'None': '' } } key={image.id}>
-                <td>{image.instanceId}</td>
+              <tr style={ { display: showImages === false ? 'None' : '' } } key={image.id}>
                 <td>{image.path}</td>
                 <td>{image.key}</td>
                 <td>

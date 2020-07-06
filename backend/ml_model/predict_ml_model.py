@@ -75,7 +75,7 @@ def main():
             sum_prediction = sum(test_data[:,column])
 
             with open('predictions/'+instance_type+'_'+rep_product_description+'.csv', 'a') as f:
-                f.write("%s, %s, %s, %s\n" % (instance_type, product_description, x, round(sum_prediction, 4)))
+                f.write("%s,%s\n" % (x, round(sum_prediction, 4)))
 
             #print(round(mape_outcome, 4), round(sum_test, 4), round(sum_prediction - sum_test, 4))
             #with open('predictions.csv', 'a') as f:

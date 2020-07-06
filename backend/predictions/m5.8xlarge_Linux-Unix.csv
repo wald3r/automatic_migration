@@ -1,2 +1,9 @@
-m5.8xlarge, Linux/UNIX, ap-northeast-1a, 13.569
-m5.8xlarge, Linux/UNIX, ap-northeast-1c, 13.4136
+zone,price
+ap-northeast-1a,13.569
+ap-northeast-1c,13.4136
+ap-northeast-1a,13.569
+ap-northeast-1c,13.4136
+ap-northeast-1a,13.569
+ap-northeast-1c,13.4136
+ap-northeast-1a,13.569
+ap-northeast-1c,13.4136
