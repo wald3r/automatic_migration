@@ -38,3 +38,6 @@ r5.4xlarge, Linux/UNIX
 r5.4xlarge, Windows
 g3.8xlarge, Red Hat Enterprise Linux
 r5.4xlarge, Linux/UNIX
+i3.16xlarge, SUSE Linux
+c4.4xlarge, Red Hat Enterprise Linux
+m5.8xlarge, Linux/UNIX

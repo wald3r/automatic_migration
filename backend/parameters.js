@@ -18,6 +18,6 @@ const imageTableValues = 'rowid, instanceId, zone, path, ip, key, createdAt, upd
 const mlTrainFile = '/home/walder/workspace/automatic_migration/backend/ml_model/train_ml_model.py'
 const mlDeleteFile = '/home/walder/workspace/automatic_migration/backend/ml_model/delete_ml_model.py'
 const mlPredictFile = '/home/walder/workspace/automatic_migration/backend/ml_model/predict_ml_model.py'
+const mlPredictions = '/home/walder/workspace/automatic_migration/backend/predictions/'
 
-
-module.exports = { dbFileName, instanceTableName, instanceTableValues, imageTableName, imageTableValues, mlTrainFile, mlDeleteFile, mlPredictFile }
+module.exports = { mlPredictions, dbFileName, instanceTableName, instanceTableValues, imageTableName, imageTableValues, mlTrainFile, mlDeleteFile, mlPredictFile }

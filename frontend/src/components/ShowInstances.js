@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import { Table, Button, Badge } from 'react-bootstrap'
 import { deleteInstance, newInstance } from '../reducers/instancesReducer'
+import { deleteImage, newImage } from '../reducers/imagesReducer'
 import ConfirmationModal from './modals/ConfirmationModal'
 import CreateInstanceModal from './modals/CreateInstanceModal'
 import RunImageModal from './modals/RunImageModal'
@@ -9,22 +10,37 @@ import instancesService from '../services/instancesService'
 import imagesService from '../services/imagesService'
 import { useToasts } from 'react-toast-notifications'
 
+
 const ShowInstances = ( props ) => {
 
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false)
   const [showCreateInstanceModal, setShowCreateInstanceModal] = useState(false)
   const [showRunImageModal, setShowRunImageModal] = useState(false)
   const [instanceToRunWithImage, setInstanceToRunWithimage] = useState(null)
+  const [showImages, setShowImages] = useState(false)
+  const [instanceToDelete, setInstanceToDelete] = useState(null)
+  const [imageToDelete, setImageToDelete] = useState(null)
+
   const { addToast } = useToasts()
 
-  const [instanceToDelete, setInstanceToDelete] = useState(null)
 
-  const deleteInstance = async () => {
-    await props.deleteInstance(instanceToDelete)
-    addToast(`${instanceToDelete.type} was deleted.`, {
-      appearance: 'success',
-      autoDismiss: true,
-    })
+  const deleteObject = async () => {
+
+    if(instanceToDelete !== null){
+      await props.deleteInstance(instanceToDelete)
+      addToast(`${instanceToDelete.type} was deleted.`, {
+        appearance: 'success',
+        autoDismiss: true,
+      })
+      setInstanceToDelete(null)
+    }else{
+      await props.deleteImage(imageToDelete)
+      addToast(`${imageToDelete.path} was deleted.`, {
+        appearance: 'success',
+        autoDismiss: true,
+      })
+      setImageToDelete(null)
+    }
   }
 
   const createInstance = async (obj, event) => {
@@ -40,7 +56,12 @@ const ShowInstances = ( props ) => {
     window.location.reload()
   }
 
-  const handleDeletion = (instance) => {
+  const handleImageDeletion = (image) => {
+    setImageToDelete(image)
+    setShowDeleteConfirmationModal(true)
+  }
+
+  const handleInstanceDeletion = (instance) => {
     setInstanceToDelete(instance)
     setShowDeleteConfirmationModal(true)
   }
@@ -51,14 +72,14 @@ const ShowInstances = ( props ) => {
 
   const runImage = async (obj, event) => {
     event.preventDefault()
-    console.log('test')
-    const finalObj = { instanceId: instanceToRunWithImage.id, docker: obj.docker, key: obj.key }
+    const finalObj = { instanceId: instanceToRunWithImage.id, path: obj.docker, key: obj.key }
     const response = await imagesService.newImage(finalObj)
     if(response.status === 200){
       addToast(`New Image added to ${instanceToRunWithImage.type}`, {
         appearance: 'success',
         autoDismiss: true,
       })
+      props.newImage(response.data)
     }
   }
 
@@ -94,7 +115,7 @@ const ShowInstances = ( props ) => {
       <ConfirmationModal
         showConfirmationModal={showDeleteConfirmationModal}
         setConfirmation={setShowDeleteConfirmationModal}
-        handleConfirmation={deleteInstance}
+        handleConfirmation={deleteObject}
       />
       <Button onClick={(handleCreation)}>New</Button>
       <Table responsive className='table table-hover'>
@@ -109,9 +130,9 @@ const ShowInstances = ( props ) => {
             <th></th>
           </tr>
         </thead>
-        <tbody>
-          {props.instances.map(instance =>
-            <tr id='idInstanceRow' key={instance.id}>
+        {props.instances.map(instance => (
+          <tbody key={instance.id}>
+            <tr id='idInstanceRow' onClick={() => setShowImages(!showImages)}>
               <td id='idInstanceType'>{instance.type}</td>
               <td id='idInstanceProduct'>{instance.product}</td>
               <td id='idInstanceBidPrice'>{instance.bidprice}</td>
@@ -120,12 +141,21 @@ const ShowInstances = ( props ) => {
               <td id='idInstanceSimulation'>{simulationConverter(instance.simulation)}</td>
               <td>
                 <Button style={{ display: instance.status === 'trained' ? '' : 'none' }} id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Run Image' onClick={() => handleRunImage(instance)}><i className="fa fa-plus" /></Button>
-                <Button id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Instance' onClick={() => handleDeletion(instance)}><i className="fa fa-trash" /></Button>
+                <Button id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Instance' onClick={() => handleInstanceDeletion(instance)}><i className="fa fa-trash" /></Button>
               </td>
             </tr>
-
-          )}
-        </tbody>
+            {props.images.filter(image => image.instanceId === instance.id).map(image => (
+              <tr style={ { display: showImages === false ? 'None': '' } } key={image.id}>
+                <td>{image.instanceId}</td>
+                <td>{image.path}</td>
+                <td>{image.key}</td>
+                <td>
+                  <Button id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Images' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        ))}
       </Table>
     </div>
   )
@@ -134,12 +164,15 @@ const ShowInstances = ( props ) => {
 const mapStateToProps = (state) => {
   return {
     instances: state.instances,
+    images: state.images,
   }
 }
 
 const mapDispatchToProps = {
   deleteInstance,
-  newInstance
+  newInstance,
+  deleteImage,
+  newImage,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ShowInstances)

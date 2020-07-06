@@ -10,4 +10,17 @@ const newImage = async (obj) => {
 }
 
 
-export default { newImage }
+const getAllImages = async () => {
+
+  const response = await axios.get(baseUrl)
+  return response
+}
+
+
+const deleteImage = async (obj) => {
+
+  const response = await axios.delete(`${baseUrl}/${obj.id}`)
+  return response
+}
+
+export default { newImage, getAllImages, deleteImage }

@@ -1,8 +1,25 @@
 const {spawn} = require('child_process')
-const fs = require('fs');
 const parameters = require('../parameters')
 const databaseHelper = require('../utils/databaseHelper')
 const timeHelper = require('../utils/timeHelper')
+const d3 = require('d3-request')
+const fs = require('fs')
+
+const replace_name = (name) => {
+
+    if(name === 'Linux/UNIX')
+        return 'Linux-Unix'
+
+    if(name == 'Red Hat Enterprise Linux')
+        return 'RedHat'
+
+    if(name == 'SUSE Linux')
+        return 'Linux-Suse'
+
+    return name
+
+}
+
 
 const trainModel = async (instance, product) => {
 
@@ -14,7 +31,7 @@ const trainModel = async (instance, product) => {
   //  console.log(data.toString())
   //})
 
-  python.on('close', async (code) => {
+  python.on('close', async () => {
     console.log(`Finished training model ${instance} ${product}`)
     
 
@@ -48,8 +65,27 @@ const deleteModel = (instance, product) => {
 
   python.stdout.on('data', (data) => {
     console.log(data.toString())
+    fs.unlinkSync(`${parameters.mlPredictions}${instance}_${replace_name(product)}.csv`)
   })
 }
 
 
-module.exports = { trainModel, deleteModel }
+const predictModel = (instance, product) => {
+  const python = spawn('python3', [parameters.mlPredictFile, instance, product])
+  console.log(`Prediction of ml model ${instance} ${product}`)
+
+  python.stdout.on('data', (data) => {
+    console.log(data.toString())
+  })
+
+  python.stdout.on('close', async () => {
+    const predictionData = require(`${parameters.mlPredictions}${instance}_${replace_name(product)}.csv`)
+    d3.csv(predictionData, (err, data) => {
+      if (error) throw error
+      console.log(data[0])
+    })
+  })
+}
+
+
+module.exports = { trainModel, deleteModel, predictModel }

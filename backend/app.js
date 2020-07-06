@@ -11,9 +11,9 @@ const parameter = require('./parameters')
 const checkDatabase = async () => {
     db = await databaseHelper.openDatabase()
     const valuesInstances = 'type TEXT NOT NULL, product TEXT NOT NULL, bidprice FLOAT NOT NULL, region TEXT, simulation INT NOT NULL, status TEXT, createdAt TEXT, updatedAt Text'
-    const valuesImages= `instanceId INTEGER NOT NULL, zone TEXT, path TEXT, ip TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameter.instanceTableName}(rowid)`
+    const valuesImages= `instanceId INTEGER NOT NULL, zone TEXT, path TEXT, ip TEXT, key TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameter.instanceTableName}(rowid) ON DELETE CASCADE`
     databaseHelper.createTable(db, parameter.instanceTableName, valuesInstances)
-    databaseHelper.createTable(db, parameter.instanceTableName, valuesImages)
+    databaseHelper.createTable(db, parameter.imageTableName, valuesImages)
     await databaseHelper.closeDatabase(db)
 }
 

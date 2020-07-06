@@ -13,7 +13,6 @@ const openDatabase = async () => {
       if (err) {
         return console.error(err.message);
       }
-      console.log('Connected to the SQlite database.')
       resolve()
 
     })
@@ -36,6 +35,18 @@ const selectAllRows = async(db, tableValues, tableName) => {
     })
   })
 
+}
+
+const insertRow = async(db, tableName, tableValues, params) => {
+
+  return await new Promise((resolve) => {
+    db.serialize(() => {
+      const stmt = db.prepare(`INSERT INTO ${tableName} VALUES ${tableValues}`)
+      stmt.run(params)    
+      stmt.finalize()
+      resolve(200)
+    })
+  })
 }
 
 const updateById = async(db, tableName, tableValues, params) => {
@@ -90,11 +101,10 @@ const closeDatabase = async (db) => {
       if (err) {
         return console.error(err.message)
       }
-      console.log('Close the database connection.')
       resolve()
     })
   })
 }
 
 
-module.exports = { updateById, selectAllRows, openDatabase, closeDatabase, createTable, deleteRow, selectById }
+module.exports = { insertRow, updateById, selectAllRows, openDatabase, closeDatabase, createTable, deleteRow, selectById }

@@ -72,7 +72,6 @@ class GenerateTrainingData(object):
             chunksize = 10 ** 6
 
             path = os.path.normpath(os.getcwd() + os.sep + os.pardir)
-            print(path)
             filepath = path + '/backend/spot_pricing/pricing_history/'+instance_type
             for chunk in pd.read_csv(filepath, sep=',', chunksize=chunksize):
                 df = chunk[chunk['InstanceType'] == instance_type]
