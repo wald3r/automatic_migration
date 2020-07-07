@@ -6,7 +6,8 @@ const imagesRouter = require('./controllers/imagesController')
 const cors = require('cors')
 const databaseHelper = require('./utils/databaseHelper')
 const parameter = require('./parameters')
-
+const scheduler = require('./utils/scheduler')
+const spotInstance = require('./utils/spotInstances')
 
 const checkDatabase = async () => {
     db = await databaseHelper.openDatabase()
@@ -17,7 +18,10 @@ const checkDatabase = async () => {
     await databaseHelper.closeDatabase(db)
 }
 
+spotInstance.requestSpotInstance('t2.micro', 'eu-west-2a', 1)
+scheduler.scheduleCollectSpotPrices
 checkDatabase()
+
 app.use(express.static('build'))
 app.use(cors())
 app.use(bodyparser.json())

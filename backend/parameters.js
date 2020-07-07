@@ -20,4 +20,6 @@ const mlDeleteFile = '/home/walder/workspace/automatic_migration/backend/ml_mode
 const mlPredictFile = '/home/walder/workspace/automatic_migration/backend/ml_model/predict_ml_model.py'
 const mlPredictions = '/home/walder/workspace/automatic_migration/backend/predictions/'
 
-module.exports = { mlPredictions, dbFileName, instanceTableName, instanceTableValues, imageTableName, imageTableValues, mlTrainFile, mlDeleteFile, mlPredictFile }
+const collectSpotPricesFile = '/home/walder/workspace/automatic_migration/backend/spot_pricing/collect_spot_prices.py'
+
+module.exports = { mlPredictions, dbFileName, instanceTableName, instanceTableValues, imageTableName, imageTableValues, mlTrainFile, mlDeleteFile, mlPredictFile, collectSpotPricesFile }
