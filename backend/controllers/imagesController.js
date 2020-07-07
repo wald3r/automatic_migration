@@ -3,7 +3,6 @@ const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
 const imagesTableHelper = require('../utils/imagesTableHelper')
-const { mlDeleteFile } = require('../parameters')
 const mlModel = require('../utils/mlModel')
 
 
@@ -68,9 +67,9 @@ imagesRouter.post('/', async(request, response, next) => {
   const body = request.body
   db = await databaseHelper.openDatabase()
   const params = [body.instanceId, null, body.path, null, body.key, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
-  await databaseHelper.insertRow(db, parameters.imageTableName, '(?, ?, ?, ?, ?, ?, ?)', params)
+  await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?)', params)
   const row = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, body.instanceId)
-  mlModel.predictModel(row.type, row.product)
+  mlModel.predictModel(row.type, row.product, row.simulation, row.bidprice)
   let responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
   responseArray = responseArray.map(row => imagesTableHelper.createImageObject(row.rowid, row.instanceId, row.zone, row.path, row.ip, row.key, row.createdAt, row.updatedAt))
   response.status(200).json(responseArray)

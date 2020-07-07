@@ -2,21 +2,22 @@ const {spawn} = require('child_process')
 const parameters = require('../parameters')
 const databaseHelper = require('../utils/databaseHelper')
 const timeHelper = require('../utils/timeHelper')
-const d3 = require('d3-request')
 const fs = require('fs')
+const spotInstances = require('./spotInstances')
 
 const replace_name = (name) => {
 
     if(name === 'Linux/UNIX')
         return 'Linux-Unix'
 
-    if(name == 'Red Hat Enterprise Linux')
+    else if(name === 'Red Hat Enterprise Linux')
         return 'RedHat'
 
-    if(name == 'SUSE Linux')
+    else if(name === 'SUSE Linux')
         return 'Linux-Suse'
 
-    return name
+    else
+      return name
 
 }
 
@@ -65,21 +66,22 @@ const deleteModel = (instance, product) => {
 
   python.stdout.on('data', (data) => {
     console.log(data.toString())
-    fs.unlinkSync(`${parameters.mlPredictions}${instance}_${replace_name(product)}.csv`)
+    const fileToDelete = `${parameters.mlPredictions}${instance}_${replace_name(product)}.csv`
+    if (fs.existsSync(fileToDelete)) {
+      fs.unlinkSync(fileToDelete)
+    }
+    
   })
 }
 
 
-const predictModel = (instance, product) => {
+const predictModel = (instance, product, simulation, bidprice) => {
   const python = spawn('python3', [parameters.mlPredictFile, instance, product])
-  console.log(`Prediction of ml model ${instance} ${product}`)
+  console.log(`Started prediction of ml model ${instance} ${product}`)
 
   python.stdout.on('close', async () => {
     const path = `${__dirname}/${instance}_${replace_name(product)}.csv`
-    console.log(path)
-    d3.csv(path, (data) => {
-      console.log(data)
-    })
+    spotInstances.requestSpotInstance(instance, 'eu-west-2a', spotInstances.getImageId(product), bidprice, simulation)
   })
 }
 

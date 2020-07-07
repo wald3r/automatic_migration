@@ -86,7 +86,7 @@ instancesRouter.post('/', async(request, response, next) => {
       let list = []
       await new Promise((resolve, reject) => {
         db.serialize(() => {
-          const stmt = db.prepare(`INSERT INTO ${parameters.instanceTableName} VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+          const stmt = db.prepare(`INSERT INTO ${parameters.instanceTableName} VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)`)
           stmt.run(body.type, body.product, body.bidprice, body.region, body.simulation, 'training', timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
           stmt.finalize()
           db.all(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName}`, (err ,rows) => {

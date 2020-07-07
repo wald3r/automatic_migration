@@ -5,20 +5,19 @@ const instancesRouter = require('./controllers/instancesController')
 const imagesRouter = require('./controllers/imagesController')
 const cors = require('cors')
 const databaseHelper = require('./utils/databaseHelper')
-const parameter = require('./parameters')
+const parameters = require('./parameters')
 const scheduler = require('./utils/scheduler')
-const spotInstance = require('./utils/spotInstances')
 
 const checkDatabase = async () => {
     db = await databaseHelper.openDatabase()
-    const valuesInstances = 'type TEXT NOT NULL, product TEXT NOT NULL, bidprice FLOAT NOT NULL, region TEXT, simulation INT NOT NULL, status TEXT, createdAt TEXT, updatedAt Text'
-    const valuesImages= `instanceId INTEGER NOT NULL, zone TEXT, path TEXT, ip TEXT, key TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameter.instanceTableName}(rowid) ON DELETE CASCADE`
-    databaseHelper.createTable(db, parameter.instanceTableName, valuesInstances)
-    databaseHelper.createTable(db, parameter.imageTableName, valuesImages)
+    const valuesInstances = 'rowid INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, product TEXT NOT NULL, bidprice FLOAT NOT NULL, region TEXT, simulation INT NOT NULL, status TEXT, createdAt TEXT, updatedAt Text'
+    const valuesImages= `rowid INTEGER PRIMARY KEY AUTOINCREMENT, instanceId INTEGER NOT NULL, zone TEXT, path TEXT, ip TEXT, key TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameters.instanceTableName} (rowid) ON DELETE CASCADE`
+    db.run('PRAGMA foreign_keys = ON')
+    databaseHelper.createTable(db, parameters.instanceTableName, valuesInstances)
+    databaseHelper.createTable(db, parameters.imageTableName, valuesImages)
     await databaseHelper.closeDatabase(db)
 }
 
-spotInstance.requestSpotInstance('t2.micro', 'eu-west-2a', 1)
 scheduler.scheduleCollectSpotPrices
 checkDatabase()
 
