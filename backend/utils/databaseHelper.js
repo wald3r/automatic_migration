@@ -81,7 +81,7 @@ const selectById = async(db, tableValues, tableName, id) => {
   })
 }
 
-const deleteRow = async (db, tableName, id) => {
+const deleteRowById = async (db, tableName, id) => {
   return new Promise((resolve) => {
     db.run(`DELETE FROM ${tableName} WHERE rowid=?`, id, (err) => {
       if (err) {
@@ -89,6 +89,20 @@ const deleteRow = async (db, tableName, id) => {
         resolve()
       }else{
         console.log(`${tableName}: Row deleted ${id}`)
+        resolve()
+      }
+    })
+  })
+}
+
+const deleteRowsByValue = async (db, tableName, param, value) => {
+  return new Promise((resolve) => {
+    db.run(`DELETE FROM ${tableName} WHERE ${value}=?`, param, (err) => {
+      if (err) {
+        console.error(`${tableName}: ${err.message}`)
+        resolve()
+      }else{
+        console.log(`${tableName}: Rows with ${value} ${param} deleted`)
         resolve()
       }
     })
@@ -107,4 +121,4 @@ const closeDatabase = async (db) => {
 }
 
 
-module.exports = { insertRow, updateById, selectAllRows, openDatabase, closeDatabase, createTable, deleteRow, selectById }
+module.exports = { insertRow, updateById, selectAllRows, openDatabase, closeDatabase, createTable, deleteRowById, selectById, deleteRowsByValue }

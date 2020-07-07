@@ -124,7 +124,8 @@ instancesRouter.delete('/:id', async(request, response, next) => {
 
   const id = request.params.id
   const db = await databaseHelper.openDatabase()
-  await databaseHelper.deleteRow(db, parameters.instanceTableName, id)
+  await databaseHelper.deleteRowById(db, parameters.instanceTableName, id)
+  await databaseHelper.deleteRowsByValue(db, parameters.imageTableName, id, 'instanceId')
   if(process.env.NODE_ENV !== 'test'){
     mlModel.deleteModel(request.body.obj.type, request.body.obj.product)
   }
