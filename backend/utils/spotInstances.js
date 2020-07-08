@@ -1,5 +1,7 @@
 const AWS = require('aws-sdk')
 const parameters = require('../parameters')
+const databaseHelper = require('./databaseHelper')
+const timeHelper = require('./timeHelper')
 
 const getImageId = (product) => {
 
@@ -23,7 +25,7 @@ const isSimulation = (number) => {
   return true
 }
 
-const requestSpotInstance = (instance, zone, image, bidprice, simulation) => {
+const requestSpotInstance = async (instance, zone, image, bidprice, simulation, id) => {
 
   AWS.config.getCredentials((err) => {
     if (err) console.log(err.stack)
@@ -40,38 +42,85 @@ const requestSpotInstance = (instance, zone, image, bidprice, simulation) => {
     InstanceCount: 1, 
     DryRun: isSimulation(simulation),
     LaunchSpecification: {
-     IamInstanceProfile: {
-      Arn: "arn:aws:iam::123456789012:instance-profile/my-iam-role"
-     }, 
      ImageId: image, 
      InstanceType: instance, 
-     KeyName: "my-key-pair", 
      Placement: {
       AvailabilityZone: zone
      }, 
      SecurityGroupIds: [
-        "sg-1a2b3c4d"
+        "sg-05bef23ea3a35d239"
      ]
     }, 
     SpotPrice: `${bidprice}`, 
     Type: "one-time"
   }
 
-  ec2.requestSpotInstances(params, function(err, data) {
+
+  ec2.requestSpotInstances(params, async (err, data) => {
     console.log(`Requesting instance with following parameters: 
       DryRun: ${params.DryRun} 
       Image: ${params.LaunchSpecification.ImageId} 
       InstanceType: ${params.LaunchSpecification.InstanceType} 
       Zone: ${params.LaunchSpecification.Placement.AvailabilityZone}
-      BidPrice: ${params.SpotPrice}  
+      BidPrice: ${params.SpotPrice}
     `)
     if (err) console.log(err.message)
     else{
+      const db = await databaseHelper.openDatabase()
+      const ip = '0.0.0.0'
+      const params = [data.SpotInstanceRequests[0].SpotInstanceRequestId, zone, ip, timeHelper.utc_timestamp, id]
+      const values = 'requestId = ?, zone = ?, ip = ?, updatedAt = ?'
+      await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+      await databaseHelper.closeDatabase(db)
       console.log(data)
     }     
   
   })
 }
 
+const cancelSpotInstance = async (id) => {
 
-module.exports = { getImageId, requestSpotInstance }
+  AWS.config.getCredentials((err) => {
+    if (err) console.log(err.stack)
+    else {
+      console.log('Authenticated with AWS')
+    }
+  })
+
+  AWS.config.update({region: 'eu-west-3'})
+  const ec2 = new AWS.EC2({apiVersion: '2016-11-15'})
+
+
+  var params = {
+    SpotInstanceRequestIds: [id]
+  }
+
+  let instanceIds = []
+
+  await new Promise((resolve) => {
+    ec2.describeSpotInstanceRequests(params, async (err, data) =>  {
+     if (err) console.log(err, err.stack)
+     else{
+        data.SpotInstanceRequests.map(instance => {
+          instanceIds = instanceIds.concat(instance.InstanceId)
+        })
+       resolve()
+     }
+    })
+  })
+  ec2.terminateInstances({ InstanceIds: instanceIds }, function(err, data) {
+    if (err) console.log(err, err.stack)
+    else     console.log(data)
+  })
+
+  ec2.cancelSpotInstanceRequests(params, function(err, data) {
+    if (err) console.log(err, err.stack)
+    else     console.log(data)         
+      
+  })
+
+}
+
+
+
+module.exports = { getImageId, requestSpotInstance, cancelSpotInstance }

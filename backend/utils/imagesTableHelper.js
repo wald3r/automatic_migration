@@ -1,10 +1,11 @@
 
 
-const createImageObject = (rowid, instanceId, zone, path, ip, key, createdAt, updatedAt) => {
+const createImageObject = (rowid, instanceId, requestId, zone, path, ip, key, createdAt, updatedAt) => {
 
   let obj = {
       id: rowid,
       instanceId: instanceId,
+      requestId: requestId,
       zone: zone,
       path: path,
       ip: ip,

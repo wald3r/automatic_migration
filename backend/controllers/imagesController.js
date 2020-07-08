@@ -4,7 +4,7 @@ const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
 const imagesTableHelper = require('../utils/imagesTableHelper')
 const mlModel = require('../utils/mlModel')
-
+const spotInstances = require('../utils/spotInstances')
 
 imagesRouter.get('/', async(request, response, next) => {
 
@@ -12,7 +12,7 @@ imagesRouter.get('/', async(request, response, next) => {
 
     const db = await databaseHelper.openDatabase()
     let responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
-    responseArray = responseArray.map(row => imagesTableHelper.createImageObject(row.rowid, row.instanceId, row.zone, row.path, row.ip, row.key, row.createdAt, row.updatedAt))
+    responseArray = responseArray.map(row => imagesTableHelper.createImageObject(row.rowid, row.instanceId, row.requestId, row.zone, row.path, row.ip, row.key, row.createdAt, row.updatedAt))
     await databaseHelper.closeDatabase(db)
     return response.status(200).json(responseArray)
 
@@ -66,12 +66,12 @@ imagesRouter.post('/', async(request, response, next) => {
 
   const body = request.body
   db = await databaseHelper.openDatabase()
-  const params = [body.instanceId, null, body.path, null, body.key, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
-  await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?)', params)
-  const row = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, body.instanceId)
-  mlModel.predictModel(row.type, row.product, row.simulation, row.bidprice)
+  const params = [body.instanceId, null, null, body.path, null, body.key, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+  const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+  const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, body.instanceId)
+  mlModel.predictModel(instanceRow.type, instanceRow.product, instanceRow.simulation, instanceRow.bidprice, imageId)
   let responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
-  responseArray = responseArray.map(row => imagesTableHelper.createImageObject(row.rowid, row.instanceId, row.zone, row.path, row.ip, row.key, row.createdAt, row.updatedAt))
+  responseArray = responseArray.map(row => imagesTableHelper.createImageObject(row.rowid, row.instanceId, row.requestId, row.zone, row.path, row.ip, row.key, row.createdAt, row.updatedAt))
   response.status(200).json(responseArray)
   await databaseHelper.closeDatabase(db)
 })
@@ -81,7 +81,12 @@ imagesRouter.delete('/:id', async(request, response, next) => {
 
   const id = request.params.id
   const db = await databaseHelper.openDatabase()
-  await databaseHelper.deleteRow(db, parameters.imageTableName, id)
+  const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, id)
+  const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, imageRow.instanceId)
+  await databaseHelper.deleteRowById(db, parameters.imageTableName, id)     
+  if(instanceRow.simulation === 0){
+    spotInstances.cancelSpotInstance(imageRow.requestId)
+  }
   response.status(200).send('Successfully deleted')
   await databaseHelper.closeDatabase(db)
 

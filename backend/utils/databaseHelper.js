@@ -42,9 +42,11 @@ const insertRow = async(db, tableName, tableValues, params) => {
   return await new Promise((resolve) => {
     db.serialize(() => {
       const stmt = db.prepare(`INSERT INTO ${tableName} VALUES ${tableValues}`)
-      stmt.run(params)    
-      stmt.finalize()
-      resolve(200)
+      stmt.run(params, function(err){
+      if(err) console.log(err)
+        stmt.finalize()
+        resolve(this.lastID)
+      })
     })
   })
 }

@@ -11,7 +11,7 @@ const scheduler = require('./utils/scheduler')
 const checkDatabase = async () => {
     db = await databaseHelper.openDatabase()
     const valuesInstances = 'rowid INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, product TEXT NOT NULL, bidprice FLOAT NOT NULL, region TEXT, simulation INT NOT NULL, status TEXT, createdAt TEXT, updatedAt Text'
-    const valuesImages= `rowid INTEGER PRIMARY KEY AUTOINCREMENT, instanceId INTEGER NOT NULL, zone TEXT, path TEXT, ip TEXT, key TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameters.instanceTableName} (rowid) ON DELETE CASCADE`
+    const valuesImages= `rowid INTEGER PRIMARY KEY AUTOINCREMENT, instanceId INTEGER NOT NULL, requestId TEXT, zone TEXT, path TEXT, ip TEXT, key TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameters.instanceTableName} (rowid) ON DELETE CASCADE`
     db.run('PRAGMA foreign_keys = ON')
     databaseHelper.createTable(db, parameters.instanceTableName, valuesInstances)
     databaseHelper.createTable(db, parameters.imageTableName, valuesImages)

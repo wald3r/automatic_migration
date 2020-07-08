@@ -13,7 +13,7 @@ const instanceTableName = 'instance'
 const imageTableName = 'image'
 
 const instanceTableValues = 'rowid, type, product, bidprice, region, simulation, status, createdAt, updatedAt'
-const imageTableValues = 'rowid, instanceId, zone, path, ip, key, createdAt, updatedAt'
+const imageTableValues = 'rowid, instanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
 
 const mlTrainFile = '/home/walder/workspace/automatic_migration/backend/ml_model/train_ml_model.py'
 const mlDeleteFile = '/home/walder/workspace/automatic_migration/backend/ml_model/delete_ml_model.py'
@@ -26,6 +26,8 @@ const linuxImage = 'ami-0d7d2b94a26cf241f'
 const redHatImage = 'ami-09e973def6bd1ad96'
 const suseImage = 'ami-02752a8e80a726bf0'
 const windowsImage = 'ami-09d4ce9830b19973e'
+
+const iAmUser = 'arn:aws:iam::534860216796:user/automatic_migration'
 
 module.exports = { 
     mlPredictions, 
@@ -42,5 +44,6 @@ module.exports = {
     redHatImage,
     suseImage,
     windowsImage,
+    iAmUser
 
 }
