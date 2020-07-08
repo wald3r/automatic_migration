@@ -11,7 +11,6 @@ instancesRouter.get('/', async(request, response, next) => {
 
     const db = await databaseHelper.openDatabase()
     let responseArray = await databaseHelper.selectAllRows(db, parameters.instanceTableValues, parameters.instanceTableName)
-    responseArray = responseArray.map(row => instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.status, row.createdAt, row.updatedAt))
     await databaseHelper.closeDatabase(db)
     return response.status(200).json(responseArray)
 
@@ -22,16 +21,16 @@ instancesRouter.get('/', async(request, response, next) => {
 
 })
 
-instancesRouter.get('/:id', async(request,response, next) => {
+instancesRouter.get('/:rowid', async(request,response, next) => {
 
-  const id = request.params.id
+  const rowid = request.params.rowid
   try{
     const db = await databaseHelper.openDatabase()
-    let row = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, id)
+    let row = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, rowid)
     if(row === null){
-      response.status(500).send(`Could not retrieve rowid ${id}`)
+      response.status(500).send(`Could not retrieve rowid ${rowid}`)
     }else{
-      response.status(200).json(instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.status, row.createdAt, row.updatedAt))
+      response.status(200).json(row)
     }
     await databaseHelper.closeDatabase(db)
 
@@ -41,12 +40,12 @@ instancesRouter.get('/:id', async(request,response, next) => {
 })
 
 
-instancesRouter.put('/:id', async(request, response, next) => {
+instancesRouter.put('/:rowi', async(request, response, next) => {
 
-  const id = request.params.id
+  const rowid = request.params.rowid
   const body = request.body
   db = await databaseHelper.openDatabase()
-  const params = [body.bidprice, body.type, body.product, body.region, body.simulation, timeHelper.utc_timestamp, body.status, id]
+  const params = [body.bidprice, body.type, body.product, body.region, body.simulation, timeHelper.utc_timestamp, body.status, rowid]
   const values = 'bidprice = ?, type = ?, product = ?, region = ?, simulation = ?, updatedAt = ?, status = ?'
   const status = await databaseHelper.updateById(db, parameters.instanceTableName, values, params)
   if(status === 500){
@@ -81,31 +80,23 @@ instancesRouter.post('/', async(request, response, next) => {
         }
       })
     })
+
     if(outcome === undefined){
 
       let list = []
-      await new Promise((resolve, reject) => {
-        db.serialize(() => {
-          const stmt = db.prepare(`INSERT INTO ${parameters.instanceTableName} VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)`)
-          stmt.run(body.type, body.product, body.bidprice, body.region, body.simulation, 'training', timeHelper.utc_timestamp, timeHelper.utc_timestamp)    
-          stmt.finalize()
-          db.all(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName}`, (err ,rows) => {
-              if(err){
-                response.status(500).send(`${parameters.instanceTableName}: ${err.message}`)
-                reject()
-              }else{
-                rows.map(row => {
-                  let resObj = instancesTableHelper.createInstanceObject(row.rowid, row.type, row.product, row.bidprice, row.region, row.simulation, row.status, row.createdAt, row.updatedAt)
-                  list.concat(resObj)
-                })
-              }
-          })
-          response.status(200).json(list)
-          resolve()
-        })
-      })
+      const params = [body.type, body.product, body.bidprice, body.region, body.simulation, 'training', timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+      const instanceId = await databaseHelper.insertRow(db, parameters.instanceTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+      if(instanceId === -1){
+        response.status(500).send(`${parameters.instanceTableName}: Could not insert row`)
+      }
+      const instance = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, instanceId)
+      if(instance === null){
+        response.status(500).send(`${parameters.instanceTableName}: Could not prepare message for sending`)
+      }
+      response.status(200).json(instance)
+    
       if(process.env.NODE_ENV !== 'test'){ 
-        await mlModel.trainModel(body.type, body.product)
+        await mlModel.trainModel(body.type, body.product, body.simulation)
       }
     }else{
       response.status(500).send('Instance already exists!')
@@ -120,12 +111,12 @@ instancesRouter.post('/', async(request, response, next) => {
 
 })
 
-instancesRouter.delete('/:id', async(request, response, next) => {
+instancesRouter.delete('/:rowid', async(request, response, next) => {
 
-  const id = request.params.id
+  const rowid = request.params.rowid
   const db = await databaseHelper.openDatabase()
-  await databaseHelper.deleteRowById(db, parameters.instanceTableName, id)
-  await databaseHelper.deleteRowsByValue(db, parameters.imageTableName, id, 'instanceId') //on delete cascade alternative
+  await databaseHelper.deleteRowById(db, parameters.instanceTableName, rowid)
+  await databaseHelper.deleteRowsByValue(db, parameters.imageTableName, rowid, 'instanceId') //on delete cascade alternative
   if(process.env.NODE_ENV !== 'test'){
     mlModel.deleteModel(request.body.obj.type, request.body.obj.product)
   }

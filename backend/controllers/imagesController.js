@@ -12,7 +12,6 @@ imagesRouter.get('/', async(request, response, next) => {
 
     const db = await databaseHelper.openDatabase()
     let responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
-    responseArray = responseArray.map(row => imagesTableHelper.createImageObject(row.rowid, row.instanceId, row.requestId, row.zone, row.path, row.ip, row.key, row.createdAt, row.updatedAt))
     await databaseHelper.closeDatabase(db)
     return response.status(200).json(responseArray)
 
@@ -23,14 +22,14 @@ imagesRouter.get('/', async(request, response, next) => {
 
 })
 
-imagesRouter.get('/:id', async(request,response, next) => {
+imagesRouter.get('/:rowid', async(request,response, next) => {
 
-  const id = request.params.id
+  const rowid = request.params.rowid
   try{
     const db = await databaseHelper.openDatabase()
-    let outcome = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, id)
+    let outcome = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
     if(outcome === null){
-      response.status(500).send(`Could not retrieve rowid ${id}`)
+      response.status(500).send(`Could not retrieve rowid ${rowid}`)
     }else{
       response.status(200).json(outcome)
     }
@@ -42,12 +41,12 @@ imagesRouter.get('/:id', async(request,response, next) => {
 })
 
 
-imagesRouter.put('/:id', async(request, response, next) => {
+imagesRouter.put('/:rowid', async(request, response, next) => {
 
-  const id = request.params.id
+  const rowid = request.params.rowid
   const body = request.body
   db = await databaseHelper.openDatabase()
-  const params = [body.instanceId, body.zone, body.path, body.ip, body.key, timeHelper.utc_timestamp, id]
+  const params = [body.instanceId, body.zone, body.path, body.ip, body.key, timeHelper.utc_timestamp, rowid]
   const values = 'instanceId = ?, zone = ?, path = ?, ip = ?, key = ?, updatedAt = ?'
   const status = await databaseHelper.updateById(db, parameters.imageTableName, values, params)
   if(status === 500){
@@ -68,22 +67,27 @@ imagesRouter.post('/', async(request, response, next) => {
   db = await databaseHelper.openDatabase()
   const params = [body.instanceId, null, null, body.path, null, body.key, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
   const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+  if(imageId === -1){
+    response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
+  }
   const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, body.instanceId)
   mlModel.predictModel(instanceRow.type, instanceRow.product, instanceRow.simulation, instanceRow.bidprice, imageId)
-  let responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
-  responseArray = responseArray.map(row => imagesTableHelper.createImageObject(row.rowid, row.instanceId, row.requestId, row.zone, row.path, row.ip, row.key, row.createdAt, row.updatedAt))
-  response.status(200).json(responseArray)
+  const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, imageId)
+  if(imageRow === null){
+    response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)
+  }
+  response.status(200).json(imageRow)
   await databaseHelper.closeDatabase(db)
 })
 
 
-imagesRouter.delete('/:id', async(request, response, next) => {
+imagesRouter.delete('/:rowid', async(request, response, next) => {
 
-  const id = request.params.id
+  const rowid = request.params.rowid
   const db = await databaseHelper.openDatabase()
-  const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, id)
+  const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
   const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, imageRow.instanceId)
-  await databaseHelper.deleteRowById(db, parameters.imageTableName, id)     
+  await databaseHelper.deleteRowById(db, parameters.imageTableName, rowid)     
   if(instanceRow.simulation === 0){
     spotInstances.cancelSpotInstance(imageRow.requestId)
   }

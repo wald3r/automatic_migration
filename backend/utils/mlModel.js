@@ -22,9 +22,8 @@ const replace_name = (name) => {
 }
 
 
-const trainModel = async (instance, product) => {
+const trainModel = async (instance, product, simulation) => {
 
-  console.log(parameters.mlTrainFile)
   const python = spawn('python3', [parameters.mlTrainFile, instance, product])
   console.log(`Start training ml model ${instance} ${product}`)
 
@@ -41,7 +40,8 @@ const trainModel = async (instance, product) => {
     await new Promise((resolve, reject) => {
       db.get(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName} WHERE 
         type = '${instance}' AND
-        product = '${product}'`, (err ,row) => {
+        product = '${product}' AND
+        simulation = '${simulation}'`, (err ,row) => {
         if(err){
           console.error(`${parameters.instanceTableName}: ${err.message}`)
           reject()

@@ -43,9 +43,13 @@ const insertRow = async(db, tableName, tableValues, params) => {
     db.serialize(() => {
       const stmt = db.prepare(`INSERT INTO ${tableName} VALUES ${tableValues}`)
       stmt.run(params, function(err){
-      if(err) console.log(err)
-        stmt.finalize()
-        resolve(this.lastID)
+        if(err){
+          console.log(err)
+          resolve(-1)
+        }else{ 
+          stmt.finalize()
+          resolve(this.lastID)
+        }
       })
     })
   })

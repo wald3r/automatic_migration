@@ -25,18 +25,26 @@ const isSimulation = (number) => {
   return true
 }
 
-const requestSpotInstance = async (instance, zone, image, bidprice, simulation, id) => {
+const getEC2Object = async () => {
 
-  AWS.config.getCredentials((err) => {
-    if (err) console.log(err.stack)
-    else {
-      console.log('Authenticated with AWS')
-    }
+  await new Promise((resolve) => {
+    AWS.config.getCredentials((err) => {
+      if (err) console.log(err.stack)
+      else {
+        console.log('Authenticated with AWS')
+      }
+    })
   })
 
   AWS.config.update({region: 'eu-west-3'})
   const ec2 = new AWS.EC2({apiVersion: '2016-11-15'})
 
+  return ec2
+}
+
+const requestSpotInstance = async (instance, zone, image, bidprice, simulation, id) => {
+
+  const ec2 = await getEC2Object()
 
   var params = {
     InstanceCount: 1, 
@@ -57,13 +65,6 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
 
 
   ec2.requestSpotInstances(params, async (err, data) => {
-    console.log(`Requesting instance with following parameters: 
-      DryRun: ${params.DryRun} 
-      Image: ${params.LaunchSpecification.ImageId} 
-      InstanceType: ${params.LaunchSpecification.InstanceType} 
-      Zone: ${params.LaunchSpecification.Placement.AvailabilityZone}
-      BidPrice: ${params.SpotPrice}
-    `)
     if (err) console.log(err.message)
     else{
       const db = await databaseHelper.openDatabase()
@@ -80,16 +81,7 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
 
 const cancelSpotInstance = async (id) => {
 
-  AWS.config.getCredentials((err) => {
-    if (err) console.log(err.stack)
-    else {
-      console.log('Authenticated with AWS')
-    }
-  })
-
-  AWS.config.update({region: 'eu-west-3'})
-  const ec2 = new AWS.EC2({apiVersion: '2016-11-15'})
-
+  const ec2 = await getEC2Object()
 
   var params = {
     SpotInstanceRequestIds: [id]
@@ -108,6 +100,7 @@ const cancelSpotInstance = async (id) => {
      }
     })
   })
+
   ec2.terminateInstances({ InstanceIds: instanceIds }, function(err, data) {
     if (err) console.log(err, err.stack)
     else     console.log(data)
