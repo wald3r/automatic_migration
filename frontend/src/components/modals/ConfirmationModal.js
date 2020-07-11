@@ -3,7 +3,7 @@ import { Modal, Button } from 'react-bootstrap'
 
 
 
-const ConfirmationModal = ( {showConfirmationModal, setConfirmation, handleConfirmation } ) => {
+const ConfirmationModal = ( { showConfirmationModal, setConfirmation, handleConfirmation } ) => {
 
   const saveChanges = () => {
     setConfirmation(false)

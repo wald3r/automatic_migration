@@ -27,9 +27,12 @@ const redHatImage = 'ami-09e973def6bd1ad96'
 const suseImage = 'ami-02752a8e80a726bf0'
 const windowsImage = 'ami-09d4ce9830b19973e'
 
-const iAmUser = 'arn:aws:iam::534860216796:user/automatic_migration'
+const keyFileName = 'automatic_migration'
+const ec2Username = 'ec2-user'
 
 module.exports = { 
+    keyFileName,
+    ec2Username,
     mlPredictions, 
     dbFileName, 
     instanceTableName, 
@@ -43,7 +46,5 @@ module.exports = {
     linuxImage,
     redHatImage,
     suseImage,
-    windowsImage,
-    iAmUser
-
+    windowsImage
 }

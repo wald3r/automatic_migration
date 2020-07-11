@@ -16,10 +16,10 @@ export const getInstances = () => {
 export const deleteInstance = (obj) => {
   return async dispatch => {
     await instancesService.deleteInstance(obj)
-    let id = obj.id
+    let rowid = obj.rowid
     dispatch({
       type:'DELETEINSTANCE',
-      id
+      rowid
     })
   }
 }
@@ -38,9 +38,9 @@ const instancesReducer = (state = [], action) => {
   case 'ALLINSTANCES':
     return action.data
   case 'DELETEINSTANCE':
-    return state.filter(i => i.id !== action.id)
+    return state.filter(i => i.rowid !== action.rowid)
   case 'NEWINSTANCE':
-    return action.data
+    return state.concat(action.data)
   default:
     return state
   }

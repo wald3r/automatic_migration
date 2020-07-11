@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk')
 const parameters = require('../parameters')
 const databaseHelper = require('./databaseHelper')
+const sshConnection = require('./sshConnection')
 const timeHelper = require('./timeHelper')
 
 const getImageId = (product) => {
@@ -29,9 +30,12 @@ const getEC2Object = async () => {
 
   await new Promise((resolve) => {
     AWS.config.getCredentials((err) => {
-      if (err) console.log(err.stack)
-      else {
+      if (err) {
+        console.log(err.stack)
+        resolve()
+      }else {
         console.log('Authenticated with AWS')
+        resolve()
       }
     })
   })
@@ -42,16 +46,60 @@ const getEC2Object = async () => {
   return ec2
 }
 
+
+const describeSpotInstanceRequests = async (id, ec2) => {
+  
+  var params = {
+    SpotInstanceRequestIds: [id]
+  }
+
+  let instanceIds = []
+
+  return await new Promise((resolve) => {
+    ec2.describeSpotInstanceRequests(params, async (err, data) =>  {
+     if (err) {
+       console.log(err, err.stack)
+       resolve(undefined)
+     }else{
+        console.log(data.SpotInstanceRequests)
+        data.SpotInstanceRequests.map(instance => {
+          instanceIds = instanceIds.concat(instance.InstanceId)
+        })
+       resolve(instanceIds)
+     }
+    })
+  })
+
+}
+
+const waitForInstanceToBoot = async (ec2, ids) => {
+
+  let status = undefined
+
+  while(status !== 'ok'){
+    await new Promise((resolve) => {
+      ec2.describeInstanceStatus({ InstanceIds: ids, IncludeAllInstances: true }, async (err, data) => {
+        if (err) console.log(err, err.stack) 
+        else {
+          status = data.InstanceStatuses[0].InstanceStatus.Status
+          resolve(status)
+        }       
+      })
+    })
+  }
+}
+
 const requestSpotInstance = async (instance, zone, image, bidprice, simulation, id) => {
 
   const ec2 = await getEC2Object()
-
-  var params = {
+  
+  const params = {
     InstanceCount: 1, 
     DryRun: isSimulation(simulation),
     LaunchSpecification: {
      ImageId: image, 
-     InstanceType: instance, 
+     InstanceType: instance,
+     KeyName: parameters.keyFileName, 
      Placement: {
       AvailabilityZone: zone
      }, 
@@ -63,48 +111,78 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
     Type: "one-time"
   }
 
+  let requestId = null
+  await new Promise((resolve) => {
+    ec2.requestSpotInstances(params, async (err, data) => {
+      if (err) {
+        console.log(err.message)
+        resolve()
+      }
+      else{
 
-  ec2.requestSpotInstances(params, async (err, data) => {
-    if (err) console.log(err.message)
-    else{
-      const db = await databaseHelper.openDatabase()
-      const ip = '0.0.0.0'
-      const params = [data.SpotInstanceRequests[0].SpotInstanceRequestId, zone, ip, timeHelper.utc_timestamp, id]
-      const values = 'requestId = ?, zone = ?, ip = ?, updatedAt = ?'
-      await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-      await databaseHelper.closeDatabase(db)
-      console.log(data)
-    }     
+        const db = await databaseHelper.openDatabase()
+        const params = [data.SpotInstanceRequests[0].SpotInstanceRequestId, zone, timeHelper.utc_timestamp, id]
+        requestId = data.SpotInstanceRequests[0].SpotInstanceRequestId
+        const values = 'requestId = ?, zone = ?, updatedAt = ?'
+        await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+        await databaseHelper.closeDatabase(db)
+        console.log(data)
+        resolve()
+      }
+    })
+  })
+  const ip = await getPublicIpFromRequest(ec2, requestId, id)
+  const instanceIds = await describeSpotInstanceRequests(requestId, ec2)
+  await waitForInstanceToBoot(ec2, instanceIds)
+  sshConnection.setUpServer(ip, '/home/walder/workspace/automatic_migration/backend/automatic_migration.pem', '/home/walder/workspace/automatic_migration/backend/utils')
+}
+
+
+const getPublicIpFromRequest = async (ec2, requestId, id) => {
   
+  let instanceIds = undefined
+  while(true){
+    instanceIds = await describeSpotInstanceRequests(requestId, ec2)    
+    await new Promise((resolve) => {
+      setTimeout(() => { 
+        console.log("Waiting for instance id")
+        resolve()
+      }, 3000)
+    })
+
+    if(instanceIds[0] !== undefined) break
+  }
+  return await new Promise((resolve) => {
+    ec2.describeInstances({ InstanceIds: instanceIds }, async (err, data) => {
+      if (err) console.log(err, err.stack) 
+      else {
+        const db = await databaseHelper.openDatabase()
+        const ip = data.Reservations[0].Instances[0].PublicIpAddress
+        const params = [ip, timeHelper.utc_timestamp, id]
+        const values = 'ip = ?, updatedAt = ?'
+        await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+        await databaseHelper.closeDatabase(db)
+        resolve(ip)
+      }       
+    })
   })
 }
+
 
 const cancelSpotInstance = async (id) => {
 
   const ec2 = await getEC2Object()
 
-  var params = {
-    SpotInstanceRequestIds: [id]
-  }
-
-  let instanceIds = []
-
-  await new Promise((resolve) => {
-    ec2.describeSpotInstanceRequests(params, async (err, data) =>  {
-     if (err) console.log(err, err.stack)
-     else{
-        data.SpotInstanceRequests.map(instance => {
-          instanceIds = instanceIds.concat(instance.InstanceId)
-        })
-       resolve()
-     }
-    })
-  })
-
+  instanceIds = await describeSpotInstanceRequests(id, ec2)
+  
   ec2.terminateInstances({ InstanceIds: instanceIds }, function(err, data) {
     if (err) console.log(err, err.stack)
     else     console.log(data)
   })
+
+  var params = {
+    SpotInstanceRequestIds: [id]
+  }
 
   ec2.cancelSpotInstanceRequests(params, function(err, data) {
     if (err) console.log(err, err.stack)

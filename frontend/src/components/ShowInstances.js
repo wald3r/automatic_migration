@@ -72,7 +72,7 @@ const ShowInstances = ( props ) => {
 
   const runImage = async (obj, event) => {
     event.preventDefault()
-    const finalObj = { instanceId: instanceToRunWithImage.id, path: obj.docker, key: obj.key }
+    const finalObj = { instanceId: instanceToRunWithImage.rowid, path: obj.docker, key: obj.key }
     const response = await imagesService.newImage(finalObj)
     if(response.status === 200){
       addToast(`New Image added to ${instanceToRunWithImage.type}`, {
@@ -131,7 +131,7 @@ const ShowInstances = ( props ) => {
           </tr>
         </thead>
         {props.instances.map(instance => (
-          <tbody key={instance.id}>
+          <tbody key={instance.rowid}>
             <tr id='idInstanceRow' onClick={() => setShowImages(!showImages)}>
               <td id='idInstanceType'>{instance.type}</td>
               <td id='idInstanceProduct'>{instance.product}</td>
@@ -144,8 +144,8 @@ const ShowInstances = ( props ) => {
                 <Button id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Instance' onClick={() => handleInstanceDeletion(instance)}><i className="fa fa-trash" /></Button>
               </td>
             </tr>
-            {props.images.filter(image => image.instanceId === instance.id).map(image => (
-              <tr style={ { display: showImages === false ? 'None' : '' } } key={image.id}>
+            {props.images.filter(image => image.instanceId === instance.rowid).map(image => (
+              <tr style={ { display: showImages === false ? 'None' : '' } } key={image.rowid}>
                 <td>{image.path}</td>
                 <td>{image.key}</td>
                 <td>

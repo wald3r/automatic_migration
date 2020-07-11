@@ -19,7 +19,7 @@ const getAllImages = async () => {
 
 const deleteImage = async (obj) => {
 
-  const response = await axios.delete(`${baseUrl}/${obj.id}`)
+  const response = await axios.delete(`${baseUrl}/${obj.rowid}`)
   return response
 }
 

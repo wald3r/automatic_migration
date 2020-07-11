@@ -38,9 +38,9 @@ const imagesReducer = (state = [], action) => {
   case 'ALLIMAGES':
     return action.data
   case 'NEWIMAGE':
-    return action.data
+    return state.concat(action.data)
   case 'DELETEIMAGE':
-    return state.filter(i => i.id !== action.obj.id)
+    return state.filter(i => i.rowid !== action.obj.rowid)
   default:
     return state
   }
