@@ -70,10 +70,13 @@ const ShowInstances = ( props ) => {
     setShowCreateInstanceModal(true)
   }
 
-  const runImage = async (obj, event) => {
+  const runImage = async (files, event) => {
     event.preventDefault()
-    const finalObj = { instanceId: instanceToRunWithImage.rowid, path: obj.docker, key: obj.key }
-    const response = await imagesService.newImage(finalObj)
+    let data = new FormData()
+    for(let x = 0; x<files.length; x++) {
+      data.append('file', files[x], `${instanceToRunWithImage.rowid}_${files[x].name}`)
+    }
+    const response = await imagesService.newImage(data)
     if(response.status === 200){
       addToast(`New Image added to ${instanceToRunWithImage.type}`, {
         appearance: 'success',

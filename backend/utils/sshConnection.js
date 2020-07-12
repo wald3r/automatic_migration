@@ -6,7 +6,9 @@ ssh = new NodeSSH()
 
 const setUpServer = (ip, pathToKey, pathToDocker) => {
 
-
+  const failed = []
+  const successful = []   
+  
   ssh.connect({
     host: ip,
     username: parameters.ec2Username,
@@ -14,11 +16,20 @@ const setUpServer = (ip, pathToKey, pathToDocker) => {
   })
   .then(() => {
     // Local, Remote
-    ssh.putFile(pathToDocker, `/home/${parameters.ec2Username}/`).then(() => {
-      console.log(`Folder export ${pathToDocker} to ${ip} worked!`)
-    }, (error) => {
-      console.log(`Folder export ${pathToDocker} to ${ip} failed!`)
-      console.log(error)
+    ssh.putDirectory(pathToDocker, `/home/${parameters.ec2Username}/`, {
+      recursive: true,
+      concurrency: 10,
+      tick: (localPath, remotePath, error) => {
+        if (error) {
+          failed.push(localPath)
+        } else {
+          successful.push(localPath)
+        }
+      }
+    }).then((status) => {
+      console.log('the directory transfer was', status ? 'successful' : 'unsuccessful')
+      console.log('failed transfers', failed.join(', '))
+      console.log('successful transfers', successful.join(', '))
     })
   })
 }

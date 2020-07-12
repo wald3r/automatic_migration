@@ -47,28 +47,40 @@ const getEC2Object = async () => {
 }
 
 
-const describeSpotInstanceRequests = async (id, ec2) => {
+const getInstanceIds = async (id, ec2) => {
   
   var params = {
     SpotInstanceRequestIds: [id]
   }
-
   let instanceIds = []
 
-  return await new Promise((resolve) => {
-    ec2.describeSpotInstanceRequests(params, async (err, data) =>  {
-     if (err) {
-       console.log(err, err.stack)
-       resolve(undefined)
-     }else{
-        console.log(data.SpotInstanceRequests)
-        data.SpotInstanceRequests.map(instance => {
-          instanceIds = instanceIds.concat(instance.InstanceId)
-        })
-       resolve(instanceIds)
-     }
+  console.log(params)
+  while(true){
+    instanceIds = []
+
+    await new Promise((resolve) => {
+      ec2.describeSpotInstanceRequests(params, async (err, data) =>  {
+      if (err) {
+        console.log(err, err.stack)
+        resolve(undefined)
+      }else{
+          data.SpotInstanceRequests.map(instance => {
+            instanceIds = instanceIds.concat(instance.InstanceId)
+          })
+        resolve(instanceIds)
+      }
+      })
     })
-  })
+    await new Promise((resolve) => {
+      setTimeout(() => { 
+        console.log("Waiting for instance id")
+        resolve()
+      }, 3000)
+    })
+
+    if(instanceIds[0] !== undefined) break
+  }
+  return instanceIds
 
 }
 
@@ -126,32 +138,19 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
         const values = 'requestId = ?, zone = ?, updatedAt = ?'
         await databaseHelper.updateById(db, parameters.imageTableName, values, params)
         await databaseHelper.closeDatabase(db)
-        console.log(data)
         resolve()
       }
     })
   })
-  const ip = await getPublicIpFromRequest(ec2, requestId, id)
-  const instanceIds = await describeSpotInstanceRequests(requestId, ec2)
+  const instanceIds = await getInstanceIds(requestId, ec2)
+  const ip = await getPublicIpFromRequest(ec2, instanceIds, id)
   await waitForInstanceToBoot(ec2, instanceIds)
   sshConnection.setUpServer(ip, '/home/walder/workspace/automatic_migration/backend/automatic_migration.pem', '/home/walder/workspace/automatic_migration/backend/utils')
 }
 
 
-const getPublicIpFromRequest = async (ec2, requestId, id) => {
-  
-  let instanceIds = undefined
-  while(true){
-    instanceIds = await describeSpotInstanceRequests(requestId, ec2)    
-    await new Promise((resolve) => {
-      setTimeout(() => { 
-        console.log("Waiting for instance id")
-        resolve()
-      }, 3000)
-    })
-
-    if(instanceIds[0] !== undefined) break
-  }
+const getPublicIpFromRequest = async (ec2, instanceIds, id) => {
+ 
   return await new Promise((resolve) => {
     ec2.describeInstances({ InstanceIds: instanceIds }, async (err, data) => {
       if (err) console.log(err, err.stack) 
@@ -173,7 +172,7 @@ const cancelSpotInstance = async (id) => {
 
   const ec2 = await getEC2Object()
 
-  instanceIds = await describeSpotInstanceRequests(id, ec2)
+  instanceIds = await getInstanceIds(id, ec2)
   
   ec2.terminateInstances({ InstanceIds: instanceIds }, function(err, data) {
     if (err) console.log(err, err.stack)

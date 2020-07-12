@@ -2,9 +2,11 @@ const imagesRouter = require('express').Router()
 const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
-const imagesTableHelper = require('../utils/imagesTableHelper')
 const mlModel = require('../utils/mlModel')
 const spotInstances = require('../utils/spotInstances')
+const fs = require('fs')
+const uuidv4 = require('uuid/v4')
+const fileHelper = require('../utils/fileHelper')
 
 imagesRouter.get('/', async(request, response, next) => {
 
@@ -63,14 +65,43 @@ imagesRouter.put('/:rowid', async(request, response, next) => {
 
 imagesRouter.post('/', async(request, response, next) => {
 
-  const body = request.body
+  const path = `images/all/${uuidv4()}`
+ 
+  if (!request.files || Object.keys(request.files).length === 0) {
+    return response.status(400).send('No files were uploaded.')
+  }
+
+  if (!fs.existsSync(path)){
+    fs.mkdirSync(path, { recursive: true })
+  } 
+
+
+  let files = []
+  if(request.files.file.length === undefined){
+    files = files.concat(request.files.file)
+  }else{
+    files = request.files.file
+  }
+
+  const instanceId = files[0].name.split('_')[0]
+
+  await new Promise((resolve) => {
+    files.map(file => {
+      file.mv(`${path}/${file.name}`, err => {
+        if (err){
+          return response.status(500).send(err)
+        }
+        resolve()
+      })
+    })
+  })
   db = await databaseHelper.openDatabase()
-  const params = [body.instanceId, null, null, body.path, null, body.key, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+  const params = [instanceId, null, null, path, null, path+'/automatic_migration.pem', timeHelper.utc_timestamp, timeHelper.utc_timestamp]
   const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
-  const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, body.instanceId)
+  const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, instanceId)
   mlModel.predictModel(instanceRow.type, instanceRow.product, instanceRow.simulation, instanceRow.bidprice, imageId)
   const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, imageId)
   if(imageRow === null){
@@ -91,6 +122,7 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
   if(instanceRow.simulation === 0){
     spotInstances.cancelSpotInstance(imageRow.requestId)
   }
+  fileHelper.deleteFolderRecursively(imageRow.path)
   response.status(200).send('Successfully deleted')
   await databaseHelper.closeDatabase(db)
 
