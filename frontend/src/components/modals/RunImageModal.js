@@ -12,6 +12,7 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
     setUploading(true)
     event.preventDefault()
     if(files.length === 0){
+      console.log('no files')
       setNotification('No files!')
     }else{
       handleRun(files, event)
@@ -38,10 +39,18 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
         <Modal.Header closeButton>
           <Modal.Title>Run Image</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <div className='form-group files' >
-            <Form method='POST' encType='multipart/form-data' onSubmit={uploadHandler} >
+        <div className='form-group files' >
+          <Form method='POST' encType='multipart/form-data' onSubmit={uploadHandler} >
+            <Modal.Body>
+              {notification}
               <input type='file' autoComplete='off' name='files' multiple onChange={onChangeHandler}/>
+            </Modal.Body>
+            <Modal.Footer>
+              <br/>
+              <br/>
+              <Button id='buttonNo' variant="secondary" onClick={noChanges}>
+                No
+              </Button>
               <Button style={{ display: uploading === false ? '' : 'none' }} className='button' type="submit">Upload</Button>
               <Button style={{ display: uploading === true ? '' : 'none' }} className='button' type="submit"><Spinner
                 as="span"
@@ -51,19 +60,9 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
                 aria-hidden="true"
               /> Uploading...
               </Button>
-              {'  '}{notification}
-
-            </Form>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button id='buttonNo' variant="secondary" onClick={noChanges}>
-            No
-          </Button>
-          <Button id='buttonCreate' variant="primary" type='submit'>
-            Yes
-          </Button>
-        </Modal.Footer>
+            </Modal.Footer>
+          </Form>
+        </div>
       </Modal>
     </div>
   )
