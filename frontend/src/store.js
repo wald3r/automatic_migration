@@ -6,12 +6,15 @@ import instancesListReducer from './reducers/instancesListReducer'
 import zonesListReducer from './reducers/zonesListReducer'
 import instancesReducer from './reducers/instancesReducer'
 import imagesReducer from './reducers/imagesReducer'
+import userReducer from './reducers/userReducer'
+
 
 const reducer = combineReducers({
   instances: instancesReducer,
   zonesList: zonesListReducer,
   instancesList: instancesListReducer,
-  images: imagesReducer
+  images: imagesReducer,
+  user: userReducer
 })
 
 

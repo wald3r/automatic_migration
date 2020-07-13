@@ -11,9 +11,12 @@ const dbFileName = () => {
 
 const instanceTableName = 'instance'
 const imageTableName = 'image'
+const userTableName = 'user'
+
 
 const instanceTableValues = 'rowid, type, product, bidprice, region, simulation, status, createdAt, updatedAt'
 const imageTableValues = 'rowid, instanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
+const userTableValues = 'rowid, username, password, createdAt, updatedAt'
 
 const mlTrainFile = '/home/walder/workspace/automatic_migration/backend/ml_model/train_ml_model.py'
 const mlDeleteFile = '/home/walder/workspace/automatic_migration/backend/ml_model/delete_ml_model.py'
@@ -31,6 +34,8 @@ const keyFileName = 'automatic_migration'
 const ec2Username = 'ec2-user'
 
 module.exports = { 
+    userTableName,
+    userTableValues,
     keyFileName,
     ec2Username,
     mlPredictions, 

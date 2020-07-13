@@ -2,7 +2,6 @@ const instancesRouter = require('express').Router()
 const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
-const instancesTableHelper = require('../utils/instancesTableHelper')
 const mlModel = require('../utils/mlModel')
 
 instancesRouter.get('/', async(request, response, next) => {
@@ -40,7 +39,7 @@ instancesRouter.get('/:rowid', async(request,response, next) => {
 })
 
 
-instancesRouter.put('/:rowi', async(request, response, next) => {
+instancesRouter.put('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const body = request.body

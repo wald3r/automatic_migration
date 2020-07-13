@@ -87,6 +87,22 @@ const selectById = async(db, tableValues, tableName, id) => {
   })
 }
 
+const selectByUsername = async(db, tableValues, tableName, username) => {
+  return new Promise((resolve) => {
+    db.get(`SELECT ${tableValues} FROM ${tableName} WHERE username = '${username}'`, (err, row) => {
+      if(err){
+        console.error(`${tableName}: ${err.message}`)
+        resolve(null)
+      }else if (row === undefined) {
+        console.log(`No entry under username ${username}`)
+        resolve(null)
+      }else{
+        resolve(row)
+      }
+    })
+  })
+}
+
 const deleteRowById = async (db, tableName, id) => {
   return new Promise((resolve) => {
     db.run(`DELETE FROM ${tableName} WHERE rowid=?`, id, (err) => {
@@ -127,4 +143,4 @@ const closeDatabase = async (db) => {
 }
 
 
-module.exports = { insertRow, updateById, selectAllRows, openDatabase, closeDatabase, createTable, deleteRowById, selectById, deleteRowsByValue }
+module.exports = { selectByUsername, insertRow, updateById, selectAllRows, openDatabase, closeDatabase, createTable, deleteRowById, selectById, deleteRowsByValue }
