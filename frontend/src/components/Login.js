@@ -16,7 +16,6 @@ const Login = ( props ) => {
     event.preventDefault()
     try{
       const response = await loginService.login({ username, password })
-      console.log(response.data)
       if(response.status === 200){
         await props.setUser(response.data)
         addToast(`${response.data.username} logged in`, {

@@ -8,22 +8,23 @@ const parameters = require('../parameters')
  */
 const isLoggedIn = async (token) => {
   
-  var user = undefined
+  var userRow = undefined
   try{
     // eslint-disable-next-line no-undef
     const decodedToken = jwt.verify(token, process.env.SECRET)
-    if (!token || !decodedToken.id) {
+    if (!token || !decodedToken.rowid) {
       return null
     }
 
+    console.log(decodedToken)
     const db = await databaseHelper.openDatabase()
-    const userRow = await databaseHelper.selectById(db, parameters.userTableValues, parameters.userTableName, decodedToken.rowid)
+    userRow = await databaseHelper.selectById(db, parameters.userTableValues, parameters.userTableName, decodedToken.rowid)
     await databaseHelper.closeDatabase(db)
 
   }catch(exception){
     console.error(`Authentication Helper: ${exception.message}`)
   }
-  if(userRow === null){
+  if(userRow === null || userRow === undefined){
     return null
   }
 

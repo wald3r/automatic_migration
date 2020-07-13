@@ -7,10 +7,16 @@ const spotInstances = require('../utils/spotInstances')
 const fs = require('fs')
 const uuidv4 = require('uuid/v4')
 const fileHelper = require('../utils/fileHelper')
+const authenticationHelper = require('../utils/authenticationHelper')
 
 imagesRouter.get('/', async(request, response, next) => {
 
   try{
+
+    const user = await authenticationHelper.isLoggedIn(request.token)
+    if(user == undefined){
+      return response.status(401).send('Not Authenticated')
+    }
 
     const db = await databaseHelper.openDatabase()
     let responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
@@ -28,6 +34,12 @@ imagesRouter.get('/:rowid', async(request,response, next) => {
 
   const rowid = request.params.rowid
   try{
+
+    const user = await authenticationHelper.isLoggedIn(request.token)
+    if(user == undefined){
+      return response.status(401).send('Not Authenticated')
+    }
+
     const db = await databaseHelper.openDatabase()
     let outcome = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
     if(outcome === null){
@@ -66,7 +78,12 @@ imagesRouter.put('/:rowid', async(request, response, next) => {
 imagesRouter.post('/', async(request, response, next) => {
 
   const path = `images/all/${uuidv4()}`
- 
+  
+  const user = await authenticationHelper.isLoggedIn(request.token)
+  if(user == undefined){
+    return response.status(401).send('Not Authenticated')
+  }
+
   if (!request.files || Object.keys(request.files).length === 0) {
     return response.status(400).send('No files were uploaded.')
   }

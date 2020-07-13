@@ -45,6 +45,7 @@ const insertRow = async(db, tableName, tableValues, params) => {
       stmt.run(params, function(err){
         if(err){
           console.log(err)
+          stmt.finalize()
           resolve(-1)
         }else{ 
           stmt.finalize()

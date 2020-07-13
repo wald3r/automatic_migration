@@ -3,6 +3,12 @@ import axios from 'axios'
 
 const baseUrl = '/api/instances'
 
+let token = null
+
+// eslint-disable-next-line no-unused-vars
+const setToken = newToken => {
+  token = `bearer ${newToken}`
+}
 
 const getAllInstances = async () => {
 
@@ -13,13 +19,22 @@ const getAllInstances = async () => {
 
 const newInstance = async (obj) => {
 
-  const response = await axios.post(baseUrl, obj)
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const response = await axios.post(baseUrl, obj, config)
   return response
 }
 
 const deleteInstance = async (obj) => {
-  const response = await axios.delete(`${baseUrl}/${obj.rowid}`, { data: { obj } })
+
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const response = await axios.delete(`${baseUrl}/${obj.rowid}`, { data: { obj } }, config)
   return response
 }
 
-export default { getAllInstances, deleteInstance, newInstance }
+export default { setToken, getAllInstances, deleteInstance, newInstance }

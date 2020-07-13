@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { getInstances } from './reducers/instancesReducer'
 import { getImages } from './reducers/imagesReducer'
 import Login from './components/Login'
+import Registration from './components/Registration'
 import Footer from './components/Footer'
 import { csv } from 'd3-request'
 import instancesData from './data/instances.csv'
@@ -13,6 +14,7 @@ import { setInstancesList } from './reducers/instancesListReducer'
 import { setZonesList } from './reducers/zonesListReducer'
 import { ToastProvider } from 'react-toast-notifications'
 import { setUser } from './reducers/userReducer'
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 
 const App = ( props ) => {
 
@@ -21,9 +23,9 @@ const App = ( props ) => {
     if (loggedUserJSON) {
       const newUser = JSON.parse(loggedUserJSON)
       props.setUser(newUser)
+      props.getImages()
     }
     props.getInstances()
-    props.getImages()
     csv(instancesData, (err, data) => {
       props.setInstancesList(data)
     })
@@ -36,9 +38,15 @@ const App = ( props ) => {
     return(
       <div className='header'>
         <ToastProvider>
-          <h1>Elastic Migration Tool</h1>
-          <br/>
-          <Login />
+          <Router>
+            <h1>Elastic Migration Tool</h1>
+            <br/>
+            <Link className='link' to='/'>Login</Link>
+            <Link className='link' to='/app/registration'>Registration</Link>
+            <br/>
+            <Route exact path='/' render={() => <Login/> } />
+            <Route exact path='/app/registration' render={() => <Registration /> } />
+          </Router>
         </ToastProvider>
       </div>
     )

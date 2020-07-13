@@ -3,6 +3,7 @@ const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
 const mlModel = require('../utils/mlModel')
+const authenticationHelper = require('../utils/authenticationHelper')
 
 instancesRouter.get('/', async(request, response, next) => {
 
@@ -24,6 +25,12 @@ instancesRouter.get('/:rowid', async(request,response, next) => {
 
   const rowid = request.params.rowid
   try{
+
+    const user = await authenticationHelper.isLoggedIn(request.token)
+    if(user == undefined){
+      return response.status(401).send('Not Authenticated')
+    }
+
     const db = await databaseHelper.openDatabase()
     let row = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, rowid)
     if(row === null){
@@ -61,8 +68,13 @@ instancesRouter.put('/:rowid', async(request, response, next) => {
 instancesRouter.post('/', async(request, response, next) => {
 
   const body = request.body
-  console.log(body)
   try{
+
+    const user = await authenticationHelper.isLoggedIn(request.token)
+    if(user == undefined){
+      return response.status(401).send('Not Authenticated')
+    }
+
     let outcome = undefined
     let db = await databaseHelper.openDatabase()
     await new Promise((resolve, reject) => {
@@ -110,7 +122,13 @@ instancesRouter.post('/', async(request, response, next) => {
 
 })
 
+
 instancesRouter.delete('/:rowid', async(request, response, next) => {
+
+  const user = await authenticationHelper.isLoggedIn(request.token)
+  if(user == undefined){
+    return response.status(401).send('Not Authenticated')
+  }
 
   const rowid = request.params.rowid
   const db = await databaseHelper.openDatabase()
