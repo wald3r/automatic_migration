@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import { Table, Button, Badge } from 'react-bootstrap'
 import { deleteInstance, newInstance } from '../reducers/instancesReducer'
-import { deleteImage, newImage } from '../reducers/imagesReducer'
+import { newImage } from '../reducers/imagesReducer'
 import ConfirmationModal from './modals/ConfirmationModal'
 import CreateInstanceModal from './modals/CreateInstanceModal'
 import RunImageModal from './modals/RunImageModal'
@@ -17,30 +17,19 @@ const ShowInstances = ( props ) => {
   const [showCreateInstanceModal, setShowCreateInstanceModal] = useState(false)
   const [showRunImageModal, setShowRunImageModal] = useState(false)
   const [instanceToRunWithImage, setInstanceToRunWithimage] = useState(null)
-  const [showImages, setShowImages] = useState(false)
   const [instanceToDelete, setInstanceToDelete] = useState(null)
-  const [imageToDelete, setImageToDelete] = useState(null)
 
   const { addToast } = useToasts()
 
 
-  const deleteObject = async () => {
+  const deleteInstance = async () => {
 
-    if(instanceToDelete !== null){
-      await props.deleteInstance(instanceToDelete)
-      addToast(`${instanceToDelete.type} was deleted.`, {
-        appearance: 'success',
-        autoDismiss: true,
-      })
-      setInstanceToDelete(null)
-    }else{
-      await props.deleteImage(imageToDelete)
-      addToast(`${imageToDelete.path} was deleted.`, {
-        appearance: 'success',
-        autoDismiss: true,
-      })
-      setImageToDelete(null)
-    }
+    await props.deleteInstance(instanceToDelete)
+    addToast(`${instanceToDelete.type} was deleted.`, {
+      appearance: 'success',
+      autoDismiss: true,
+    })
+    setInstanceToDelete(null)
   }
 
   const createInstance = async (obj, event) => {
@@ -56,10 +45,6 @@ const ShowInstances = ( props ) => {
     window.location.reload()
   }
 
-  const handleImageDeletion = (image) => {
-    setImageToDelete(image)
-    setShowDeleteConfirmationModal(true)
-  }
 
   const handleInstanceDeletion = (instance) => {
     setInstanceToDelete(instance)
@@ -118,7 +103,7 @@ const ShowInstances = ( props ) => {
       <ConfirmationModal
         showConfirmationModal={showDeleteConfirmationModal}
         setConfirmation={setShowDeleteConfirmationModal}
-        handleConfirmation={deleteObject}
+        handleConfirmation={deleteInstance}
       />
       <Button onClick={(handleCreation)}>New</Button>
       <Table responsive className='table table-hover'>
@@ -135,7 +120,7 @@ const ShowInstances = ( props ) => {
         </thead>
         {props.instances.map(instance => (
           <tbody key={instance.rowid}>
-            <tr id='idInstanceRow' onClick={() => setShowImages(!showImages)}>
+            <tr id='idInstanceRow'>
               <td id='idInstanceType'>{instance.type}</td>
               <td id='idInstanceProduct'>{instance.product}</td>
               <td id='idInstanceBidPrice'>{instance.bidprice}</td>
@@ -147,15 +132,6 @@ const ShowInstances = ( props ) => {
                 <Button id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Instance' onClick={() => handleInstanceDeletion(instance)}><i className="fa fa-trash" /></Button>
               </td>
             </tr>
-            {props.images.filter(image => image.instanceId === instance.rowid).map(image => (
-              <tr style={ { display: showImages === false ? 'None' : '' } } key={image.rowid}>
-                <td>{image.path}</td>
-                <td>{image.key}</td>
-                <td>
-                  <Button id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Images' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
-                </td>
-              </tr>
-            ))}
           </tbody>
         ))}
       </Table>
@@ -173,7 +149,6 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = {
   deleteInstance,
   newInstance,
-  deleteImage,
   newImage,
 }
 

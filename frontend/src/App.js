@@ -7,6 +7,7 @@ import { getImages } from './reducers/imagesReducer'
 import Login from './components/Login'
 import Registration from './components/Registration'
 import Footer from './components/Footer'
+import ShowImages from './components/ShowImages'
 import { csv } from 'd3-request'
 import instancesData from './data/instances.csv'
 import zonesData from './data/zones.csv'
@@ -54,10 +55,19 @@ const App = ( props ) => {
     return(
       <div className='header'>
         <ToastProvider>
-          <h1>Elastic Migration Tool</h1>
-          <br/>
-          <ShowInstances />
-          <Footer />
+          <Router>
+            <h1>Elastic Migration Tool</h1>
+            <br/>
+            <Link className='link' to='/'>Instances</Link>
+            <Link className='link' to='/app/images'>Images</Link>
+            <Link className='link' to='/app/registration'>Billing</Link>
+            <Link className='link' to='/app/profile'>Profile</Link>
+            <br/>
+            <br/>
+            <Route exact path='/' render={() => <ShowInstances/> } />
+            <Route exact path='/app/images' render={() => <ShowImages /> } />
+            <Footer />
+          </Router>
         </ToastProvider>
       </div>
     )
