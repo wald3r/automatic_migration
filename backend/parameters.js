@@ -33,7 +33,10 @@ const windowsImage = 'ami-09d4ce9830b19973e'
 const keyFileName = 'automatic_migration'
 const ec2Username = 'ec2-user'
 
+const workDir = __dirname
+
 module.exports = { 
+    workDir,
     userTableName,
     userTableValues,
     keyFileName,

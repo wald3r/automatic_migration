@@ -90,7 +90,7 @@ imagesRouter.put('/:rowid', async(request, response, next) => {
 
 imagesRouter.post('/', async(request, response, next) => {
 
-  const path = `images/all/${uuidv4()}`
+  const path = `${parameters.workDir}/images/all/${uuidv4()}`
   
   const user = await authenticationHelper.isLoggedIn(request.token)
   if(user == undefined){
@@ -125,14 +125,15 @@ imagesRouter.post('/', async(request, response, next) => {
       })
     })
   })
+  const keyFile = `${path}/${instanceId}_automatic_migration.pem`
   db = await databaseHelper.openDatabase()
-  const params = ['booting', instanceId, null, null, null, path, null, path+'/automatic_migration.pem', timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+  const params = ['booting', instanceId, null, null, null, path, null, keyFile, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
   const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
   const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, instanceId)
-  mlModel.predictModel(instanceRow.type, instanceRow.product, instanceRow.simulation, instanceRow.bidprice, imageId)
+  mlModel.predictModel(instanceRow.type, instanceRow.product, instanceRow.simulation, instanceRow.bidprice, imageId, path, keyFile)
   const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, imageId)
   if(imageRow === null){
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)

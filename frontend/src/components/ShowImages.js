@@ -21,7 +21,7 @@ const ShowImages = (props) => {
   const deleteImage = async () => {
 
     await props.deleteImage(imageToDelete)
-    addToast(`${imageToDelete.path} was deleted.`, {
+    addToast(`${imageToDelete.ip} was deleted.`, {
       appearance: 'success',
       autoDismiss: true,
     })

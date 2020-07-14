@@ -75,13 +75,13 @@ const deleteModel = (instance, product) => {
 }
 
 
-const predictModel = (instance, product, simulation, bidprice, imageId) => {
+const predictModel = (instance, product, simulation, bidprice, imageId, dockerPath, key) => {
   const python = spawn('python3', [parameters.mlPredictFile, instance, product])
   console.log(`Started prediction of ml model ${instance} ${product}`)
 
   python.stdout.on('close', async () => {
     const path = `${__dirname}/${instance}_${replace_name(product)}.csv`
-    spotInstances.requestSpotInstance(instance, 'eu-west-3c', spotInstances.getImageId(product), bidprice, simulation, imageId)
+    spotInstances.requestSpotInstance(instance, 'eu-west-3c', spotInstances.getImageId(product), bidprice, simulation, imageId, dockerPath, key)
   })
 }
 

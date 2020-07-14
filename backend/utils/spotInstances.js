@@ -73,7 +73,7 @@ const getInstanceIds = async (id, ec2) => {
     })
     await new Promise((resolve) => {
       setTimeout(() => { 
-        console.log("Waiting for instance id")
+        console.log('SpotInstanceHelper: Waiting for instance id')
         resolve()
       }, 3000)
     })
@@ -115,7 +115,7 @@ const getInstanceStatus = async (ec2, ids) => {
   
 }
 
-const requestSpotInstance = async (instance, zone, image, bidprice, simulation, id) => {
+const requestSpotInstance = async (instance, zone, image, bidprice, simulation, id, path, key) => {
 
   const ec2 = await getEC2Object()
   
@@ -158,8 +158,9 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
   })
   const instanceIds = await getInstanceIds(requestId, ec2)
   const ip = await getPublicIpFromRequest(ec2, instanceIds, id)
+  console.log('SpotInstanceHelper: Waiting for instance to boot')
   await waitForInstanceToBoot(ec2, instanceIds)
-  sshConnection.setUpServer(ip, '/home/walder/workspace/automatic_migration/backend/automatic_migration.pem', '/home/walder/workspace/automatic_migration/backend/utils')
+  sshConnection.setUpServer(ip, key, path)
 
   const db = await databaseHelper.openDatabase()
   params = ['running', instanceIds[0], ip, timeHelper.utc_timestamp, id]
