@@ -16,7 +16,6 @@ const isLoggedIn = async (token) => {
       return null
     }
 
-    console.log(decodedToken)
     const db = await databaseHelper.openDatabase()
     userRow = await databaseHelper.selectById(db, parameters.userTableValues, parameters.userTableName, decodedToken.rowid)
     await databaseHelper.closeDatabase(db)

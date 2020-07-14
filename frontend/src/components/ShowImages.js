@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
-import { Table, Button } from 'react-bootstrap'
+import { Table, Button, Badge } from 'react-bootstrap'
 import { useToasts } from 'react-toast-notifications'
 import ConfirmationModal from './modals/ConfirmationModal'
 import { deleteImage } from '../reducers/imagesReducer'
@@ -27,6 +27,16 @@ const ShowImages = (props) => {
     setImageToDelete(null)
   }
 
+  const badgeStatus = (status) => {
+    if(status === 'booting'){
+      return   <Badge variant="warning">Booting</Badge>
+    }
+    if(status === 'running'){
+      return   <Badge variant="success">Running</Badge>
+    }
+
+  }
+
   return(
     <div>
       <ConfirmationModal
@@ -40,6 +50,7 @@ const ShowImages = (props) => {
             <th>Instance Id</th>
             <th>Request Id</th>
             <th>IP</th>
+            <th>Status</th>
             <th>Created At</th>
             <th>Updated At</th>
             <th></th>
@@ -51,6 +62,7 @@ const ShowImages = (props) => {
               <td id='idImageInstanceId'>{image.instanceId}</td>
               <td id='idImageRequestId'>{image.requestId}</td>
               <td id='idImageIp'>{image.ip}</td>
+              <td id='idImageStatus'>{badgeStatus(image.status)}</td>
               <td id='idImageCreatedAt'>{image.createdAt}</td>
               <td id='idImageUpdatedAt'>{image.updatedAt}</td>
               <td>

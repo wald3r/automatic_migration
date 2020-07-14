@@ -11,8 +11,8 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
   const uploadHandler = async(event) => {
     setUploading(true)
     event.preventDefault()
+    console.log(files)
     if(files.length === 0){
-      console.log('no files')
       setNotification('No files!')
     }else{
       handleRun(files, event)
@@ -43,7 +43,7 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
           <Form method='POST' encType='multipart/form-data' onSubmit={uploadHandler} >
             <Modal.Body>
               {notification}
-              <input type='file' autoComplete='off' name='files' multiple onChange={onChangeHandler}/>
+              <input type='file' autoComplete='off' name='files' directory="" webkitdirectory="" onChange={onChangeHandler}/>
             </Modal.Body>
             <Modal.Footer>
               <br/>

@@ -126,6 +126,7 @@ instancesRouter.post('/', async(request, response, next) => {
 instancesRouter.delete('/:rowid', async(request, response, next) => {
 
   const user = await authenticationHelper.isLoggedIn(request.token)
+  console.log(request.token)
   if(user == undefined){
     return response.status(401).send('Not Authenticated')
   }

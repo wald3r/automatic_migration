@@ -27,10 +27,14 @@ const selectAllRows = async(db, tableValues, tableName) => {
   return await new Promise((resolve) => {
     db.serialize(async () => {
       db.all(`SELECT ${tableValues} FROM ${tableName}`, (err, rows) => {
-        rows.map(row =>{
-          responseArray = responseArray.concat(row)
-        })
-        resolve(responseArray)
+        if(rows === undefined){
+          resolve(responseArray)
+        }else{
+          rows.map(row =>{
+            responseArray = responseArray.concat(row)
+          })
+          resolve(responseArray)
+        }
       })
     })
   })

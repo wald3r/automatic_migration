@@ -101,11 +101,25 @@ const waitForInstanceToBoot = async (ec2, ids) => {
   }
 }
 
+const getInstanceStatus = async (ec2, ids) => {
+
+  return await new Promise((resolve) => {
+    ec2.describeInstanceStatus({ InstanceIds: ids, IncludeAllInstances: true }, async (err, data) => {
+      if (err) console.log(err, err.stack) 
+      else {
+        status = data.InstanceStatuses[0].InstanceStatus.Status
+        resolve(status)
+      }       
+    })
+  })
+  
+}
+
 const requestSpotInstance = async (instance, zone, image, bidprice, simulation, id) => {
 
   const ec2 = await getEC2Object()
   
-  const params = {
+  let params = {
     InstanceCount: 1, 
     DryRun: isSimulation(simulation),
     LaunchSpecification: {
@@ -133,7 +147,7 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
       else{
 
         const db = await databaseHelper.openDatabase()
-        const params = [data.SpotInstanceRequests[0].SpotInstanceRequestId, zone, timeHelper.utc_timestamp, id]
+        params = [data.SpotInstanceRequests[0].SpotInstanceRequestId, zone, timeHelper.utc_timestamp, id]
         requestId = data.SpotInstanceRequests[0].SpotInstanceRequestId
         const values = 'requestId = ?, zone = ?, updatedAt = ?'
         await databaseHelper.updateById(db, parameters.imageTableName, values, params)
@@ -146,6 +160,12 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
   const ip = await getPublicIpFromRequest(ec2, instanceIds, id)
   await waitForInstanceToBoot(ec2, instanceIds)
   sshConnection.setUpServer(ip, '/home/walder/workspace/automatic_migration/backend/automatic_migration.pem', '/home/walder/workspace/automatic_migration/backend/utils')
+
+  const db = await databaseHelper.openDatabase()
+  params = ['running', instanceIds[0], ip, timeHelper.utc_timestamp, id]
+  const values = 'status = ?, spotInstanceId = ?, ip = ?, updatedAt = ?'
+  await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+  await databaseHelper.closeDatabase(db)
 }
 
 
@@ -155,12 +175,7 @@ const getPublicIpFromRequest = async (ec2, instanceIds, id) => {
     ec2.describeInstances({ InstanceIds: instanceIds }, async (err, data) => {
       if (err) console.log(err, err.stack) 
       else {
-        const db = await databaseHelper.openDatabase()
         const ip = data.Reservations[0].Instances[0].PublicIpAddress
-        const params = [ip, timeHelper.utc_timestamp, id]
-        const values = 'ip = ?, updatedAt = ?'
-        await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-        await databaseHelper.closeDatabase(db)
         resolve(ip)
       }       
     })
@@ -193,4 +208,4 @@ const cancelSpotInstance = async (id) => {
 
 
 
-module.exports = { getImageId, requestSpotInstance, cancelSpotInstance }
+module.exports = { getEC2Object, getInstanceIds, getInstanceStatus, getImageId, requestSpotInstance, cancelSpotInstance }

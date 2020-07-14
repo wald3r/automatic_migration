@@ -9,6 +9,8 @@ const uuidv4 = require('uuid/v4')
 const fileHelper = require('../utils/fileHelper')
 const authenticationHelper = require('../utils/authenticationHelper')
 
+
+
 imagesRouter.get('/', async(request, response, next) => {
 
   try{
@@ -20,6 +22,17 @@ imagesRouter.get('/', async(request, response, next) => {
 
     const db = await databaseHelper.openDatabase()
     let responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
+
+    /*
+    responseArray = responseArray.map(instance => {
+      const ec2 = await spotInstances.getEC2Object()
+      let instanceIds = await spotInstances.getInstanceIds(instance.requestId, ec2)
+      instanceIds.map(id => {
+        let status = await spotInstances.getInstanceStatus(ec2, id)
+
+      })
+    })
+    */
     await databaseHelper.closeDatabase(db)
     return response.status(200).json(responseArray)
 
@@ -113,8 +126,8 @@ imagesRouter.post('/', async(request, response, next) => {
     })
   })
   db = await databaseHelper.openDatabase()
-  const params = [instanceId, null, null, path, null, path+'/automatic_migration.pem', timeHelper.utc_timestamp, timeHelper.utc_timestamp]
-  const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+  const params = ['booting', instanceId, null, null, null, path, null, path+'/automatic_migration.pem', timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+  const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
