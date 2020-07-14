@@ -23,8 +23,6 @@ const Registration = ( props ) => {
         appearance: 'success',
         autoDismiss: true,
       })
-      setUsername('')
-      setPassword('')
       setRegistering(false)
     }catch(error){
       setRegistering(false)

@@ -37,37 +37,46 @@ const App = ( props ) => {
 
   if(props.user === null){
     return(
-      <div className='header'>
-        <ToastProvider>
-          <Router>
-            <h1>Elastic Migration Tool</h1>
-            <br/>
-            <Link className='link' to='/'>Login</Link>
-            <Link className='link' to='/app/registration'>Registration</Link>
-            <br/>
-            <Route exact path='/' render={() => <Login/> } />
-            <Route exact path='/app/registration' render={() => <Registration /> } />
-          </Router>
-        </ToastProvider>
+      <div className='bg'>
+        <div className='container1'>
+          <ToastProvider>
+            <Router>
+              <br/>
+              <div className='header'>Elastic Migration Tool</div>
+              <br/>
+              <Link className='link1' to='/'>Login</Link>
+              <Link className='link1' to='/app/registration'>Registration</Link>
+              <br/>
+              <Route exact path='/' render={() => <Login/> } />
+              <Route exact path='/app/registration' render={() => <Registration /> } />
+            </Router>
+          </ToastProvider>
+        </div>
       </div>
     )
   }else{
     return(
-      <div className='header'>
+      <div className='bg'>
         <ToastProvider>
-          <Router>
-            <h1>Elastic Migration Tool</h1>
-            <br/>
-            <Link className='link' to='/'>Instances</Link>
-            <Link className='link' to='/app/images'>Images</Link>
-            <Link className='link' to='/app/registration'>Billing</Link>
-            <Link className='link' to='/app/profile'>Profile</Link>
-            <br/>
-            <br/>
-            <Route exact path='/' render={() => <ShowInstances/> } />
-            <Route exact path='/app/images' render={() => <ShowImages /> } />
+          <div className='container3'>
+            <Router>
+              <br/>
+              <div className='header'>Elastic Migration Tool</div>
+              <br/>
+              <Link className='link2' to='/'>Instances</Link>
+              <Link className='link2' to='/app/images'>Images</Link>
+              <Link className='link2' to='/app/registration'>Billing</Link>
+              <Link className='link2' to='/app/profile'>Profile</Link>
+              <br/>
+              <br/>
+              <Route exact path='/' render={() => <ShowInstances/> } />
+              <Route exact path='/app/images' render={() => <ShowImages /> } />
+            </Router>
             <Footer />
-          </Router>
+          </div>
+          <div>
+            <Footer />
+          </div>
         </ToastProvider>
       </div>
     )

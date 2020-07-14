@@ -9,6 +9,7 @@ import RunImageModal from './modals/RunImageModal'
 import instancesService from '../services/instancesService'
 import imagesService from '../services/imagesService'
 import { useToasts } from 'react-toast-notifications'
+import '../stylesheets/general.css'
 
 
 const ShowInstances = ( props ) => {
@@ -76,7 +77,7 @@ const ShowInstances = ( props ) => {
     setInstanceToRunWithimage(instance)
   }
 
-  const simulationConverter = (simulation) => simulation === 0 ? 'false' : 'true'
+  const simulationConverter = (simulation) => simulation === 0 ? 'No' : 'Yes'
 
   const badgeStatus = (status) => {
     if(status === 'training'){
@@ -105,36 +106,45 @@ const ShowInstances = ( props ) => {
         setConfirmation={setShowDeleteConfirmationModal}
         handleConfirmation={deleteInstance}
       />
-      <Button onClick={(handleCreation)}>New</Button>
-      <Table responsive className='table table-hover'>
-        <thead className='thead-dark'>
-          <tr>
-            <th>InstanceType</th>
-            <th>Product</th>
-            <th>BidPrice</th>
-            <th>Region</th>
-            <th>Status</th>
-            <th>Simulation</th>
-            <th></th>
-          </tr>
-        </thead>
-        {props.instances.map(instance => (
-          <tbody key={instance.rowid}>
-            <tr id='idInstanceRow'>
-              <td id='idInstanceType'>{instance.type}</td>
-              <td id='idInstanceProduct'>{instance.product}</td>
-              <td id='idInstanceBidPrice'>{instance.bidprice}</td>
-              <td id='idInstanceRegion'>{instance.region}</td>
-              <td id='idInstanceStatus'>{badgeStatus(instance.status)}</td>
-              <td id='idInstanceSimulation'>{simulationConverter(instance.simulation)}</td>
-              <td>
-                <Button style={{ display: instance.status === 'trained' ? '' : 'none' }} id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Run Image' onClick={() => handleRunImage(instance)}><i className="fa fa-plus" /></Button>
-                <Button id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Instance' onClick={() => handleInstanceDeletion(instance)}><i className="fa fa-trash" /></Button>
-              </td>
+      <div className='tableContainer'>
+        <Table responsive className='table table-hover'>
+          <thead className='thead-dark'>
+            <tr>
+              <th>ID</th>
+              <th>InstanceType</th>
+              <th>Product</th>
+              <th>BidPrice</th>
+              <th>Region</th>
+              <th>Status</th>
+              <th>Simulation</th>
+              <th>Created</th>
+              <th>Updated</th>
+              <th id='idAdd'><Button onClick={handleCreation} className="fa fa-plus"></Button></th>
+
+              <th></th>
             </tr>
-          </tbody>
-        ))}
-      </Table>
+          </thead>
+          {props.instances.map(instance => (
+            <tbody key={instance.rowid}>
+              <tr id='idInstanceRow'>
+                <td id='idInstanceTyId'>{instance.rowid}</td>
+                <td id='idInstanceType'>{instance.type}</td>
+                <td id='idInstanceProduct'>{instance.product}</td>
+                <td id='idInstanceBidPrice'>{instance.bidprice}</td>
+                <td id='idInstanceRegion'>{instance.region}</td>
+                <td id='idInstanceStatus'>{badgeStatus(instance.status)}</td>
+                <td id='idInstanceSimulation'>{simulationConverter(instance.simulation)}</td>
+                <td id='idInstanceCreatedAt'>{instance.createdAt}</td>
+                <td id='idInstanceUpdatedAt'>{instance.updatedAt}</td>
+                <td>
+                  <Button variant='primary' style={{ display: instance.status === 'trained' ? '' : 'none' }} id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Run Image' onClick={() => handleRunImage(instance)}><i className="fa fa-plus" /></Button>
+                  <Button variant='primary' id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Instance' onClick={() => handleInstanceDeletion(instance)}><i className="fa fa-trash" /></Button>
+                </td>
+              </tr>
+            </tbody>
+          ))}
+        </Table>
+      </div>
     </div>
   )
 }

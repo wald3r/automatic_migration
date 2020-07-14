@@ -31,9 +31,10 @@ const deleteInstance = async (obj) => {
 
   const config = {
     headers: { Authorization: token },
+    data: { obj },
   }
 
-  const response = await axios.delete(`${baseUrl}/${obj.rowid}`, { config, data: { obj } })
+  const response = await axios.delete(`${baseUrl}/${obj.rowid}`, config)
   return response
 }
 

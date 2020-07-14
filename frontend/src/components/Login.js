@@ -3,6 +3,7 @@ import { Button, Form } from 'react-bootstrap'
 import loginService from '../services/loginService'
 import { connect } from 'react-redux'
 import { setUser } from '../reducers/userReducer'
+import { getImages } from '../reducers/imagesReducer'
 import { useToasts } from 'react-toast-notifications'
 
 const Login = ( props ) => {
@@ -17,7 +18,8 @@ const Login = ( props ) => {
     try{
       const response = await loginService.login({ username, password })
       if(response.status === 200){
-        await props.setUser(response.data)
+        props.setUser(response.data)
+        props.getImages()
         addToast(`${response.data.username} logged in`, {
           appearance: 'success',
           autoDismiss: true,
@@ -68,6 +70,7 @@ const Login = ( props ) => {
 
 const mapDispatchToProps = {
   setUser,
+  getImages,
 }
 
 export default connect(null, mapDispatchToProps)(Login)

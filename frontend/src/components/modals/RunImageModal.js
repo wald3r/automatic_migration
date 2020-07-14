@@ -35,7 +35,7 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
   }
   return(
     <div>
-      <Modal show={showRunImageModal} onHide={noChanges}>
+      <Modal  size="lg" show={showRunImageModal} onHide={noChanges}>
         <Modal.Header closeButton>
           <Modal.Title>Run Image</Modal.Title>
         </Modal.Header>

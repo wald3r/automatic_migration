@@ -4,6 +4,7 @@ import { Table, Button, Badge } from 'react-bootstrap'
 import { useToasts } from 'react-toast-notifications'
 import ConfirmationModal from './modals/ConfirmationModal'
 import { deleteImage } from '../reducers/imagesReducer'
+import '../stylesheets/general.css'
 
 const ShowImages = (props) => {
 
@@ -44,34 +45,36 @@ const ShowImages = (props) => {
         setConfirmation={setShowDeleteConfirmationModal}
         handleConfirmation={deleteImage}
       />
-      <Table responsive className='table table-hover'>
-        <thead className='thead-dark'>
-          <tr>
-            <th>Instance Id</th>
-            <th>Request Id</th>
-            <th>IP</th>
-            <th>Status</th>
-            <th>Created At</th>
-            <th>Updated At</th>
-            <th></th>
-          </tr>
-        </thead>
-        {props.images.map(image => (
-          <tbody key={image.rowid}>
-            <tr id='idImageRow'>
-              <td id='idImageInstanceId'>{image.instanceId}</td>
-              <td id='idImageRequestId'>{image.requestId}</td>
-              <td id='idImageIp'>{image.ip}</td>
-              <td id='idImageStatus'>{badgeStatus(image.status)}</td>
-              <td id='idImageCreatedAt'>{image.createdAt}</td>
-              <td id='idImageUpdatedAt'>{image.updatedAt}</td>
-              <td>
-                <Button id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
-              </td>
+      <div className='tableContainer'>
+        <Table responsive className='table table-hover'>
+          <thead className='thead-dark'>
+            <tr>
+              <th>Instance ID</th>
+              <th>Request ID</th>
+              <th>IP</th>
+              <th>Status</th>
+              <th>Created At</th>
+              <th>Updated At</th>
+              <th></th>
             </tr>
-          </tbody>
-        ))}
-      </Table>
+          </thead>
+          {props.images.map(image => (
+            <tbody key={image.rowid}>
+              <tr id='idImageRow'>
+                <td id='idImageInstanceId'>{image.instanceId}</td>
+                <td id='idImageRequestId'>{image.requestId}</td>
+                <td id='idImageIp'>{image.ip}</td>
+                <td id='idImageStatus'>{badgeStatus(image.status)}</td>
+                <td id='idImageCreatedAt'>{image.createdAt}</td>
+                <td id='idImageUpdatedAt'>{image.updatedAt}</td>
+                <td>
+                  <Button variant='primary' id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
+                </td>
+              </tr>
+            </tbody>
+          ))}
+        </Table>
+      </div>
     </div>
   )
 }
