@@ -19,8 +19,8 @@
   background-color: rgba(0,0,0, 0.1);
   margin: 0;
   position: absolute;
-  top: 40%;
-  left: 50%;
+  top: 35%;
+  left: 35%;
   transform: translate(-50%, -50%);
   color: white;
 }
@@ -33,6 +33,7 @@
   width: 80%;
   color: black;
   height: 100%;
+  opacity: 0.9;
 }
 
 
@@ -84,7 +85,7 @@ body, html {
  
   }
 .bg {
-  background-image: url('../background/sunset.jpg');
+  background-image: url('../background/server.jpg');
   height: 100vh;
   background-position: center;
   background-repeat: no-repeat;
@@ -92,7 +93,7 @@ body, html {
 }
 
 .bg1 {
-  background-image: url('../background/sunset.jpg');
+  background-image: url('../background/server.jpg');
   height: 30vh;
   background-position: center;
   background-repeat: no-repeat;

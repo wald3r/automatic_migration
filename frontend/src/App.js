@@ -8,6 +8,7 @@ import Login from './components/Login'
 import Registration from './components/Registration'
 import Footer from './components/Footer'
 import ShowImages from './components/ShowImages'
+import Billing from './components/Billing'
 import { csv } from 'd3-request'
 import instancesData from './data/instances.csv'
 import zonesData from './data/zones.csv'
@@ -65,12 +66,14 @@ const App = ( props ) => {
               <br/>
               <Link className='link2' to='/'>Instances</Link>
               <Link className='link2' to='/app/images'>Images</Link>
-              <Link className='link2' to='/app/registration'>Billing</Link>
+              <Link className='link2' to='/app/billing'>Billing</Link>
               <Link className='link2' to='/app/profile'>Profile</Link>
               <br/>
               <br/>
               <Route exact path='/' render={() => <ShowInstances/> } />
               <Route exact path='/app/images' render={() => <ShowImages /> } />
+              <Route exact path='/app/billing' render={() => <Billing /> } />
+
             </Router>
             <Footer />
           </div>

@@ -1,11 +1,13 @@
 import imagesService from '../services/imagesService'
 import instancesService from '../services/instancesService'
+import billingService from '../services/billingService'
 
 export const setUser = (user) => {
   return async dispatch => {
     window.localStorage.setItem('loggedappUser', JSON.stringify(user))
     imagesService.setToken(user.token)
     instancesService.setToken(user.token)
+    billingService.setToken(user.token)
     dispatch({
       type:'SETUSER',
       user
