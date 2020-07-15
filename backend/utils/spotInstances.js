@@ -1,7 +1,6 @@
 const AWS = require('aws-sdk')
 const parameters = require('../parameters')
 const databaseHelper = require('./databaseHelper')
-const sshConnection = require('./sshConnection')
 const timeHelper = require('./timeHelper')
 
 const getImageId = (product) => {
@@ -46,8 +45,10 @@ const getEC2Object = async () => {
 }
 
 
-const getInstanceIds = async (id, ec2) => {
+const getInstanceIds = async (id) => {
   
+  const ec2 = await getEC2Object()
+
   var params = {
     SpotInstanceRequestIds: [id]
   }
@@ -83,7 +84,9 @@ const getInstanceIds = async (id, ec2) => {
 
 }
 
-const waitForInstanceToBoot = async (ec2, ids) => {
+const waitForInstanceToBoot = async (ids) => {
+
+  const ec2 = await getEC2Object()
 
   let status = undefined
 
@@ -114,7 +117,8 @@ const getInstanceStatus = async (ec2, ids) => {
   
 }
 
-const requestSpotInstance = async (instance, zone, image, bidprice, simulation, id, path, key) => {
+const requestSpotInstance = async (instance, zone, image, bidprice, simulation, id) => {
+
 
   const ec2 = await getEC2Object()
   
@@ -122,7 +126,7 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
     InstanceCount: 1, 
     DryRun: isSimulation(simulation),
     LaunchSpecification: {
-     ImageId: image, 
+     ImageId: getImageId(image), 
      InstanceType: instance,
      KeyName: parameters.keyFileName, 
      Placement: {
@@ -137,11 +141,11 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
   }
 
   let requestId = null
-  await new Promise((resolve) => {
+  return await new Promise((resolve) => {
     ec2.requestSpotInstances(params, async (err, data) => {
       if (err) {
         console.log(err.message)
-        resolve()
+        resolve(null)
       }
       else{
 
@@ -151,26 +155,17 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
         const values = 'requestId = ?, zone = ?, updatedAt = ?'
         await databaseHelper.updateById(db, parameters.imageTableName, values, params)
         await databaseHelper.closeDatabase(db)
-        resolve()
+        resolve(requestId)
       }
     })
   })
-  const instanceIds = await getInstanceIds(requestId, ec2)
-  const ip = await getPublicIpFromRequest(ec2, instanceIds, id)
-  console.log('SpotInstanceHelper: Waiting for instance to boot')
-  await waitForInstanceToBoot(ec2, instanceIds)
-  sshConnection.setUpServer(ip, key, path)
-
-  const db = await databaseHelper.openDatabase()
-  params = ['running', instanceIds[0], ip, timeHelper.utc_timestamp, id]
-  const values = 'status = ?, spotInstanceId = ?, ip = ?, updatedAt = ?'
-  await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-  await databaseHelper.closeDatabase(db)
 }
 
 
-const getPublicIpFromRequest = async (ec2, instanceIds, id) => {
- 
+const getPublicIpFromRequest = async (instanceIds) => {
+  
+  const ec2 = await getEC2Object()
+
   return await new Promise((resolve) => {
     ec2.describeInstances({ InstanceIds: instanceIds }, async (err, data) => {
       if (err) console.log(err, err.stack) 
@@ -186,10 +181,10 @@ const getPublicIpFromRequest = async (ec2, instanceIds, id) => {
 const cancelSpotInstance = async (id) => {
 
   const ec2 = await getEC2Object()
-
-  instanceIds = await getInstanceIds(id, ec2)
+  console.log(id)
+  instanceIds = await getInstanceIds(id)
   
-  ec2.terminateInstances({ InstanceIds: instanceIds }, function(err, data) {
+  ec2.terminateInstances({ InstanceIds: instanceIds }, (err, data) => {
     if (err) console.log(err, err.stack)
     else     console.log(data)
   })
@@ -198,7 +193,7 @@ const cancelSpotInstance = async (id) => {
     SpotInstanceRequestIds: [id]
   }
 
-  ec2.cancelSpotInstanceRequests(params, function(err, data) {
+  ec2.cancelSpotInstanceRequests(params, (err, data) => {
     if (err) console.log(err, err.stack)
     else     console.log(data)         
       
@@ -208,4 +203,4 @@ const cancelSpotInstance = async (id) => {
 
 
 
-module.exports = { getEC2Object, getInstanceIds, getInstanceStatus, getImageId, requestSpotInstance, cancelSpotInstance }
+module.exports = { getEC2Object, getInstanceIds, getInstanceStatus, getImageId, requestSpotInstance, cancelSpotInstance, getPublicIpFromRequest, waitForInstanceToBoot }

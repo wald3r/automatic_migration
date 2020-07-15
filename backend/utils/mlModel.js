@@ -75,13 +75,15 @@ const deleteModel = (instance, product) => {
 }
 
 
-const predictModel = (instance, product, simulation, bidprice, imageId, dockerPath, key) => {
+const predictModel = async (instance, product) => {
   const python = spawn('python3', [parameters.mlPredictFile, instance, product])
   console.log(`Started prediction of ml model ${instance} ${product}`)
 
-  python.stdout.on('close', async () => {
-    const path = `${__dirname}/${instance}_${replace_name(product)}.csv`
-    spotInstances.requestSpotInstance(instance, 'eu-west-3c', spotInstances.getImageId(product), bidprice, simulation, imageId, dockerPath, key)
+  return await new Promise((resolve) => {
+    python.stdout.on('close', async () => {
+      const path = `${__dirname}/${instance}_${replace_name(product)}.csv`
+      resolve('eu-west-3c')
+    })
   })
 }
 

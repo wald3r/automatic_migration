@@ -33,7 +33,7 @@ const setUpServer = (ip, pathToKey, pathToDocker) => {
     })
   })
 }
-
+/*
 const startDocker = (ip, pathToKey, pathToDocker) => {
   ssh.connect({
     host: ip,
@@ -45,6 +45,6 @@ const startDocker = (ip, pathToKey, pathToDocker) => {
 
     })
   })
-}
+}*/
 
 module.exports = { setUpServer }

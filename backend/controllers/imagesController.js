@@ -2,8 +2,8 @@ const imagesRouter = require('express').Router()
 const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
-const mlModel = require('../utils/mlModel')
 const spotInstances = require('../utils/spotInstances')
+const migrationHelper = require('../utils/migrationHelper')
 const fs = require('fs')
 const uuidv4 = require('uuid/v4')
 const fileHelper = require('../utils/fileHelper')
@@ -27,7 +27,6 @@ imagesRouter.get('/', async(request, response, next) => {
       responseArray = await responseArray.map(async image => {
         if(image.spotInstanceId !== null){
           const ec2 = await spotInstances.getEC2Object()
-          console.log(image.spotInstanceId)
           let status = await spotInstances.getInstanceStatus(ec2, [image.spotInstanceId])
           let newStatus = null
           if(status === 'ok' && image.status !== 'running'){
@@ -158,11 +157,14 @@ imagesRouter.post('/', async(request, response, next) => {
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
   const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, instanceId)
-  mlModel.predictModel(instanceRow.type, instanceRow.product, instanceRow.simulation, instanceRow.bidprice, imageId, path, keyFile)
   const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, imageId)
+
   if(imageRow === null){
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)
   }
+
+  migrationHelper.startInstance(instanceRow, imageRow)
+
   response.status(200).json(imageRow)
   await databaseHelper.closeDatabase(db)
 })
@@ -181,7 +183,7 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
   const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, imageRow.instanceId)
   await databaseHelper.deleteRowById(db, parameters.imageTableName, rowid)     
   if(instanceRow.simulation === 0){
-    spotInstances.cancelSpotInstance(imageRow.requestId)
+    migrationHelper.terminateInstance(imageRow)
   }
   await fileHelper.deleteFolderRecursively(imageRow.path)
   response.status(200).send('Successfully deleted')
