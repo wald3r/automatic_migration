@@ -13,6 +13,8 @@ const databaseHelper = require('./utils/databaseHelper')
 const parameters = require('./parameters')
 const scheduler = require('./utils/scheduler')
 const auth = require('./middleware/authentication')
+const fs = require('fs')
+
 
 const checkDatabase = async () => {
     db = await databaseHelper.openDatabase()
@@ -26,9 +28,19 @@ const checkDatabase = async () => {
     await databaseHelper.closeDatabase(db)
 }
 
+const credentialsChecker = async () => {
+  
+  const path = '/home/walder/.aws/credentials'
+  if (fs.existsSync(path)){
+    console.log(true)
+  } else{
+    console.log(false)
+  }
+}
+
 scheduler.scheduleCollectSpotPrices
 checkDatabase()
-
+credentialsChecker()
 app.use(express.static('build'))
 app.use(cors())
 app.use(bodyparser.json())

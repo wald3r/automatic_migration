@@ -123,7 +123,7 @@ imagesRouter.post('/', async(request, response, next) => {
       }
     })
   })
-  /*
+  
   const keyFile = `${path}/${instanceId}_automatic_migration.pem`
   db = await databaseHelper.openDatabase()
   const params = ['booting', instanceId, null, null, null, path, null, keyFile, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
@@ -137,7 +137,7 @@ imagesRouter.post('/', async(request, response, next) => {
   if(imageRow === null){
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)
   }
-  response.status(200).json(imageRow)*/
+  response.status(200).json(imageRow)
   await databaseHelper.closeDatabase(db)
 })
 

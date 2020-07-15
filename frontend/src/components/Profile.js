@@ -42,7 +42,7 @@ const Profile = (props) => {
 
       setUpdating(false)
     }catch(exception){
-      addToast(`User ${props.user.username} update did not work`, {
+      addToast('Update did not work', {
         appearance: 'error',
         autoDismiss: true,
       })
