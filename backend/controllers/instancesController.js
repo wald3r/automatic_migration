@@ -55,7 +55,7 @@ instancesRouter.put('/:rowid', async(request, response, next) => {
   const values = 'bidprice = ?, type = ?, product = ?, region = ?, simulation = ?, updatedAt = ?, status = ?'
   const status = await databaseHelper.updateById(db, parameters.instanceTableName, values, params)
   if(status === 500){
-    response.status(500).send(err.message)
+    response.status(500).send('Update did not work')
   }else{
     response.status(200).send('Successfully updated')
   }

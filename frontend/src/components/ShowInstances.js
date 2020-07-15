@@ -61,10 +61,8 @@ const ShowInstances = ( props ) => {
   const runImage = async (files, event) => {
     event.preventDefault()
     let data = new FormData()
-    console.log(files)
     for(let x = 0; x<files.length; x++) {
       data.append('file', files[x], `${instanceToRunWithImage.rowid}___${createPathName(files[x].webkitRelativePath)}___${files[x].name}`)
-      console.log(`${instanceToRunWithImage.rowid}_${createPathName(files[x].webkitRelativePath)}_${files[x].name}`)
     }
     const response = await imagesService.newImage(data)
     if(response.status === 200){

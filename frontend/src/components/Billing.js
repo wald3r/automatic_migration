@@ -10,7 +10,7 @@ const Billing = () => {
 
   return(
     <div>
-      <Button onClick={handleBilling()}>test</Button>
+      <Button onClick={() => handleBilling()}>test</Button>
     </div>
   )
 }

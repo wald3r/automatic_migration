@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { getInstances } from './reducers/instancesReducer'
 import { getImages } from './reducers/imagesReducer'
 import Login from './components/Login'
+import Profile from './components/Profile'
 import Registration from './components/Registration'
 import Footer from './components/Footer'
 import ShowImages from './components/ShowImages'
@@ -73,7 +74,7 @@ const App = ( props ) => {
               <Route exact path='/' render={() => <ShowInstances/> } />
               <Route exact path='/app/images' render={() => <ShowImages /> } />
               <Route exact path='/app/billing' render={() => <Billing /> } />
-
+              <Route exact path='/app/profile' render={() => <Profile /> } />
             </Router>
             <Footer />
           </div>
