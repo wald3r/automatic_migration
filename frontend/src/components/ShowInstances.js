@@ -58,19 +58,47 @@ const ShowInstances = ( props ) => {
 
   const createPathName = (path) => path.replaceAll('/', '__')
 
+
+  const checkFiles = (files) => {
+
+    let key = false
+    let docker = false
+    for(var x = 0; x<files.length; x++) {
+      let parts = files[x].name.split('.')
+      if(parts.length > 1){
+        if('pem' === parts[1]){
+          key = true
+        }
+        if('yml' === parts[1]){
+          docker = true
+        }
+      }
+    }
+
+    if(key && docker) return true
+    else return false
+  }
+
   const runImage = async (files, event) => {
     event.preventDefault()
     let data = new FormData()
-    for(let x = 0; x<files.length; x++) {
-      data.append('file', files[x], `${instanceToRunWithImage.rowid}___${createPathName(files[x].webkitRelativePath)}___${files[x].name}`)
-    }
-    const response = await imagesService.newImage(data)
-    if(response.status === 200){
-      addToast(`New Image added to ${instanceToRunWithImage.type}`, {
-        appearance: 'success',
+    if(checkFiles(files)){
+      for(let x = 0; x<files.length; x++) {
+        data.append('file', files[x], `${instanceToRunWithImage.rowid}___${createPathName(files[x].webkitRelativePath)}___${files[x].name}`)
+      }
+      const response = await imagesService.newImage(data)
+      if(response.status === 200){
+        addToast(`New Image added to ${instanceToRunWithImage.type}`, {
+          appearance: 'success',
+          autoDismiss: true,
+        })
+        props.newImage(response.data)
+      }
+    }else{
+      addToast('An important file is missing', {
+        appearance: 'error',
         autoDismiss: true,
       })
-      props.newImage(response.data)
     }
   }
 

@@ -34,4 +34,17 @@ const setUpServer = (ip, pathToKey, pathToDocker) => {
   })
 }
 
+const startDocker = (ip, pathToKey, pathToDocker) => {
+  ssh.connect({
+    host: ip,
+    username: parameters.ec2Username,
+    privateKey: pathToKey
+  })
+  .then(() => {
+    ssh.execCommand().then((result) => {
+
+    })
+  })
+}
+
 module.exports = { setUpServer }

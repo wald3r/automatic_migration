@@ -12,7 +12,7 @@ loginRouter.post('/', async(request, response) => {
   const db = await databaseHelper.openDatabase()
   const userRow = await databaseHelper.selectByUsername(db, parameters.userTableValues, parameters.userTableName, body.username)
   await databaseHelper.closeDatabase(db)
-
+  
   if(userRow === null){
     return response.status(401).send('invalid username')
   }
@@ -20,7 +20,6 @@ loginRouter.post('/', async(request, response) => {
   if(!passwordCorrect){
     return response.status(401).send('wrong password')
   }
-  
   const userForToken = {
     rowid: userRow.rowid,
     username: userRow.username

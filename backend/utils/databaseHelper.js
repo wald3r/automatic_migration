@@ -5,7 +5,7 @@ const parameters = require('../parameters');
 const checkDatabase = async () => {
   db = await openDatabase()
   const valuesInstances = 'rowid INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, product TEXT NOT NULL, bidprice FLOAT NOT NULL, region TEXT, simulation INT NOT NULL, status TEXT, createdAt TEXT, updatedAt Text'
-  const valuesImages= `rowid INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT, instanceId INTEGER NOT NULL, spotInstanceId TEXT, requestId TEXT, zone TEXT, path TEXT, ip TEXT, key TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameters.instanceTableName} (rowid) ON DELETE CASCADE`
+  const valuesImages= `rowid INTEGER PRIMARY KEY AUTOINCREMENT, userid INTEGER NOT NULL, status TEXT, instanceId INTEGER NOT NULL, spotInstanceId TEXT, requestId TEXT, zone TEXT, path TEXT, ip TEXT, key TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameters.instanceTableName} (rowid) ON DELETE CASCADE, FOREIGN KEY (userid) REFERENCES ${parameters.userTableName} (rowid) ON DELETE CASCADE`
   const valuesUsers= `rowid INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, createdAt TEXT, updatedAt TEXT`
   db.run('PRAGMA foreign_keys = ON')
   createTable(db, parameters.userTableName, valuesUsers)
@@ -105,6 +105,27 @@ const selectById = async(db, tableValues, tableName, id) => {
   })
 }
 
+const selectByUserId = async(db, tableValues, tableName, id) => {
+  let responseArray = []
+
+  return await new Promise((resolve) => {
+    db.serialize(async () => {
+      db.all(`SELECT ${tableValues} FROM ${tableName} WHERE userid = ${id}`, (err, rows) => {
+        if(rows === undefined){
+          resolve(responseArray)
+        }else{
+          rows.map(row =>{
+            responseArray = responseArray.concat(row)
+          })
+          resolve(responseArray)
+        }
+      })
+    })
+  })
+
+}
+
+
 const selectByUsername = async(db, tableValues, tableName, username) => {
   return new Promise((resolve) => {
     db.get(`SELECT ${tableValues} FROM ${tableName} WHERE username = '${username}'`, (err, row) => {
@@ -161,4 +182,4 @@ const closeDatabase = async (db) => {
 }
 
 
-module.exports = { checkDatabase, selectByUsername, insertRow, updateById, selectAllRows, openDatabase, closeDatabase, createTable, deleteRowById, selectById, deleteRowsByValue }
+module.exports = { selectByUserId, checkDatabase, selectByUsername, insertRow, updateById, selectAllRows, openDatabase, closeDatabase, createTable, deleteRowById, selectById, deleteRowsByValue }

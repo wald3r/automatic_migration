@@ -11,7 +11,7 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
   const uploadHandler = async(event) => {
     setUploading(true)
     event.preventDefault()
-    console.log(files)
+
     if(files.length === 0){
       setNotification('No files!')
     }else{

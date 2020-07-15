@@ -15,7 +15,7 @@ const userTableName = 'user'
 
 
 const instanceTableValues = 'rowid, type, product, bidprice, region, simulation, status, createdAt, updatedAt'
-const imageTableValues = 'rowid, status, instanceId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
+const imageTableValues = 'rowid, userid, status, instanceId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
 const userTableValues = 'rowid, username, password, createdAt, updatedAt'
 
 const mlTrainFile = '/home/walder/workspace/automatic_migration/backend/ml_model/train_ml_model.py'

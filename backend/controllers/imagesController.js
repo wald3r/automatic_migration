@@ -21,7 +21,7 @@ imagesRouter.get('/', async(request, response, next) => {
     }
 
     const db = await databaseHelper.openDatabase()
-    let responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
+    let responseArray = await databaseHelper.selectByUserId(db, parameters.imageTableValues, parameters.imageTableName, user.rowid)
 
     await new Promise(async (resolve) => {
       responseArray = await responseArray.map(async image => {
@@ -48,7 +48,7 @@ imagesRouter.get('/', async(request, response, next) => {
       })
     })
     
-    responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
+    responseArray = await databaseHelper.selectByUserId(db, parameters.imageTableValues, parameters.imageTableName, user.rowid)
     await databaseHelper.closeDatabase(db)
     return response.status(200).json(responseArray)
 
@@ -138,7 +138,6 @@ imagesRouter.post('/', async(request, response, next) => {
         response.status(500).send(`Could not store ${file.name}`)
       }else{
         const list = file.name.split('___')
-        console.log(list[2])
         if(list[2].includes('.pem')){
           keyFile = `${path}/${list[2]}`
         }
@@ -153,8 +152,8 @@ imagesRouter.post('/', async(request, response, next) => {
   }
 
   db = await databaseHelper.openDatabase()
-  const params = ['booting', instanceId, null, null, null, path, null, keyFile, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
-  const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+  const params = [user.rowid, 'booting', instanceId, null, null, null, path, null, keyFile, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+  const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
@@ -170,6 +169,11 @@ imagesRouter.post('/', async(request, response, next) => {
 
 
 imagesRouter.delete('/:rowid', async(request, response, next) => {
+
+  const user = await authenticationHelper.isLoggedIn(request.token)
+  if(user == undefined){
+    return response.status(401).send('Not Authenticated')
+  }
 
   const rowid = request.params.rowid
   const db = await databaseHelper.openDatabase()

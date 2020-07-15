@@ -30,6 +30,7 @@ const Profile = (props) => {
       username: usernameFlag === true ? username : props.user.username,
       password: passwordFlag === true ? password : props.user.password
     }
+    console.log(userDetail)
     try{
       const response = await userService.updateUser(userDetail)
       if(response.status === 200){

@@ -3,7 +3,7 @@ const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const timeHelper = require('../utils/timeHelper')
 const authenticationHelper = require('../utils/authenticationHelper')
-
+const bcrypt = require('bcrypt')
 
 userRouter.post('/:rowid', async(request, response, next) => {
 
@@ -22,8 +22,11 @@ userRouter.post('/:rowid', async(request, response, next) => {
       await databaseHelper.closeDatabase(db)
       return response.status(500).send('User does not exist')
     }
+    const salt = 10
+    const passwordHash = await bcrypt.hash(body.password, salt)
+
     const values = 'username = ?, password = ?, updatedAt = ?'
-    const params = [body.username, body.password, timeHelper.utc_timestamp, rowid]
+    const params = [body.username, passwordHash, timeHelper.utc_timestamp, rowid]
     const status = await databaseHelper.updateById(db, parameters.userTableName, values, params)
     await databaseHelper.closeDatabase(db)
     if(status === 500){
