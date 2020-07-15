@@ -23,16 +23,32 @@ imagesRouter.get('/', async(request, response, next) => {
     const db = await databaseHelper.openDatabase()
     let responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
 
-    /*
-    responseArray = responseArray.map(instance => {
-      const ec2 = await spotInstances.getEC2Object()
-      let instanceIds = await spotInstances.getInstanceIds(instance.requestId, ec2)
-      instanceIds.map(id => {
-        let status = await spotInstances.getInstanceStatus(ec2, id)
-
+    await new Promise(async (resolve) => {
+      responseArray = await responseArray.map(async image => {
+        if(image.spotInstanceId !== null){
+          const ec2 = await spotInstances.getEC2Object()
+          console.log(image.spotInstanceId)
+          let status = await spotInstances.getInstanceStatus(ec2, [image.spotInstanceId])
+          let newStatus = null
+          if(status === 'ok' && image.status !== 'running'){
+            newStatus = 'running'
+          }else if(status === 'insufficient-data' && image.status !== 'failed'){
+            newStatus = 'failed'
+          }else if(status === 'initializing' && image.status !== 'booting'){
+            newStatus = 'booting'
+          }
+          if(newStatus !== null){
+            const values = 'status = ?, updatedAt = ?'
+            const params = [newStatus, timeHelper.utc_timestamp, image.rowid]
+            await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+          }
+        }
+        
+        resolve()
       })
     })
-    */
+    
+    responseArray = await databaseHelper.selectAllRows(db, parameters.imageTableValues, parameters.imageTableName)
     await databaseHelper.closeDatabase(db)
     return response.status(200).json(responseArray)
 
@@ -90,8 +106,6 @@ imagesRouter.put('/:rowid', async(request, response, next) => {
 
 imagesRouter.post('/', async(request, response, next) => {
 
-  const path = `${parameters.workDir}/images/all/${uuidv4()}`
-  
   const user = await authenticationHelper.isLoggedIn(request.token)
   if(user == undefined){
     return response.status(401).send('Not Authenticated')
@@ -101,30 +115,43 @@ imagesRouter.post('/', async(request, response, next) => {
     return response.status(400).send('No files were uploaded.')
   }
 
-  if (!fs.existsSync(path)){
-    fs.mkdirSync(path, { recursive: true })
-  } 
-
-
   let files = []
   if(request.files.file.length === undefined){
     files = files.concat(request.files.file)
   }else{
     files = request.files.file
   }
-  console.log(files)
+
+  const path = `${parameters.workDir}/images/all/${uuidv4()}`
+
+  if (!fs.existsSync(path)){
+    fs.mkdirSync(path, { recursive: true })
+  } 
+
   const instanceId = files[0].name.split('_')[0]
-  
+  let keyFile = null
+
   await new Promise((resolve) => {
     files.map(async file => {
       let answer = await fileHelper.createDirectory(path, file)
       if(!answer){
         response.status(500).send(`Could not store ${file.name}`)
+      }else{
+        const list = file.name.split('___')
+        console.log(list[2])
+        if(list[2].includes('.pem')){
+          keyFile = `${path}/${list[2]}`
+        }
+      }
+      if(file === files[files.length -1]){
+        resolve()
       }
     })
   })
-  
-  const keyFile = `${path}/${instanceId}_automatic_migration.pem`
+  if(keyFile === null){
+    return response.status(500).send(`No keyfile found!`)
+  }
+
   db = await databaseHelper.openDatabase()
   const params = ['booting', instanceId, null, null, null, path, null, keyFile, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
   const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
@@ -152,7 +179,7 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
   if(instanceRow.simulation === 0){
     spotInstances.cancelSpotInstance(imageRow.requestId)
   }
-  fileHelper.deleteFolderRecursively(imageRow.path)
+  await fileHelper.deleteFolderRecursively(imageRow.path)
   response.status(200).send('Successfully deleted')
   await databaseHelper.closeDatabase(db)
 

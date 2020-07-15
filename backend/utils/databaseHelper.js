@@ -1,6 +1,19 @@
 const sqlite3 = require('sqlite3').verbose();
 const parameters = require('../parameters');
 
+
+const checkDatabase = async () => {
+  db = await openDatabase()
+  const valuesInstances = 'rowid INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, product TEXT NOT NULL, bidprice FLOAT NOT NULL, region TEXT, simulation INT NOT NULL, status TEXT, createdAt TEXT, updatedAt Text'
+  const valuesImages= `rowid INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT, instanceId INTEGER NOT NULL, spotInstanceId TEXT, requestId TEXT, zone TEXT, path TEXT, ip TEXT, key TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameters.instanceTableName} (rowid) ON DELETE CASCADE`
+  const valuesUsers= `rowid INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, createdAt TEXT, updatedAt TEXT`
+  db.run('PRAGMA foreign_keys = ON')
+  createTable(db, parameters.userTableName, valuesUsers)
+  createTable(db, parameters.instanceTableName, valuesInstances)
+  createTable(db, parameters.imageTableName, valuesImages)
+  await closeDatabase(db)
+}
+
 const createTable = (db, name, values) => {
   db.run(`CREATE TABLE if not exists ${name} (${values})`)
 }
@@ -148,4 +161,4 @@ const closeDatabase = async (db) => {
 }
 
 
-module.exports = { selectByUsername, insertRow, updateById, selectAllRows, openDatabase, closeDatabase, createTable, deleteRowById, selectById, deleteRowsByValue }
+module.exports = { checkDatabase, selectByUsername, insertRow, updateById, selectAllRows, openDatabase, closeDatabase, createTable, deleteRowById, selectById, deleteRowsByValue }

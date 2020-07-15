@@ -10,37 +10,24 @@ const registrationRouter = require('./controllers/registrationController')
 const imagesRouter = require('./controllers/imagesController')
 const cors = require('cors')
 const databaseHelper = require('./utils/databaseHelper')
-const parameters = require('./parameters')
 const scheduler = require('./utils/scheduler')
 const auth = require('./middleware/authentication')
 const fs = require('fs')
 
 
-const checkDatabase = async () => {
-    db = await databaseHelper.openDatabase()
-    const valuesInstances = 'rowid INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, product TEXT NOT NULL, bidprice FLOAT NOT NULL, region TEXT, simulation INT NOT NULL, status TEXT, createdAt TEXT, updatedAt Text'
-    const valuesImages= `rowid INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT, instanceId INTEGER NOT NULL, spotInstanceId TEXT, requestId TEXT, zone TEXT, path TEXT, ip TEXT, key TEXT, createdAt TEXT, updatedAt TEXT, FOREIGN KEY (instanceId) REFERENCES ${parameters.instanceTableName} (rowid) ON DELETE CASCADE`
-    const valuesUsers= `rowid INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, createdAt TEXT, updatedAt TEXT`
-    db.run('PRAGMA foreign_keys = ON')
-    databaseHelper.createTable(db, parameters.userTableName, valuesUsers)
-    databaseHelper.createTable(db, parameters.instanceTableName, valuesInstances)
-    databaseHelper.createTable(db, parameters.imageTableName, valuesImages)
-    await databaseHelper.closeDatabase(db)
-}
-
 const credentialsChecker = async () => {
   
-  const path = '/home/walder/.aws/credentials'
+  const path = `${process.env['HOME']}/.aws/credentials`
   if (fs.existsSync(path)){
-    console.log(true)
+    console.log('CredentialsHelper: Credentials found!')
   } else{
-    console.log(false)
+    console.log('CredentialsHelper: Credentials can not be found. Add credentials to ~/.aws/credentials and try again.')
+    process.exit(1)
   }
 }
-
-scheduler.scheduleCollectSpotPrices
-checkDatabase()
 credentialsChecker()
+databaseHelper.checkDatabase()
+scheduler.scheduleCollectSpotPrices
 app.use(express.static('build'))
 app.use(cors())
 app.use(bodyparser.json())

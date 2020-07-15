@@ -32,8 +32,11 @@ const ShowImages = (props) => {
     if(status === 'booting'){
       return   <Badge variant="warning">Booting</Badge>
     }
-    if(status === 'running'){
+    else if(status === 'running'){
       return   <Badge variant="success">Running</Badge>
+    }
+    else {
+      return   <Badge variant="error">Failed</Badge>
     }
 
   }

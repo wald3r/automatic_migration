@@ -34,7 +34,6 @@ const getEC2Object = async () => {
         console.log(err.stack)
         resolve()
       }else {
-        console.log('Authenticated with AWS')
         resolve()
       }
     })
