@@ -112,19 +112,18 @@ imagesRouter.post('/', async(request, response, next) => {
   }else{
     files = request.files.file
   }
-
+  console.log(files)
   const instanceId = files[0].name.split('_')[0]
-
+  
   await new Promise((resolve) => {
-    files.map(file => {
-      file.mv(`${path}/${file.name}`, err => {
-        if (err){
-          return response.status(500).send(err)
-        }
-        resolve()
-      })
+    files.map(async file => {
+      let answer = await fileHelper.createDirectory(path, file)
+      if(!answer){
+        response.status(500).send(`Could not store ${file.name}`)
+      }
     })
   })
+  /*
   const keyFile = `${path}/${instanceId}_automatic_migration.pem`
   db = await databaseHelper.openDatabase()
   const params = ['booting', instanceId, null, null, null, path, null, keyFile, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
@@ -138,7 +137,7 @@ imagesRouter.post('/', async(request, response, next) => {
   if(imageRow === null){
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)
   }
-  response.status(200).json(imageRow)
+  response.status(200).json(imageRow)*/
   await databaseHelper.closeDatabase(db)
 })
 

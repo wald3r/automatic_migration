@@ -11,7 +11,7 @@ billingRouter.get('/', async(request, response, next) => {
     if(user == undefined){
       return response.status(401).send('Not Authenticated')
     }
-
+    /*
     var params = {
       TimePeriod: { 
         End: 'STRING_VALUE', 
@@ -22,7 +22,7 @@ billingRouter.get('/', async(request, response, next) => {
       if (err) console.log(err, err.stack)
       else     console.log(data)
     })
-
+    */
 
   }catch(exception){
     next(exception)
