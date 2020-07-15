@@ -181,7 +181,7 @@ const getPublicIpFromRequest = async (instanceIds) => {
 const cancelSpotInstance = async (id) => {
 
   const ec2 = await getEC2Object()
-  console.log(id)
+  
   instanceIds = await getInstanceIds(id)
   
   ec2.terminateInstances({ InstanceIds: instanceIds }, (err, data) => {

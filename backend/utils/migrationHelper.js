@@ -3,6 +3,7 @@ const sshConnection = require('./sshConnection')
 const databaseHelper = require('./databaseHelper')
 const mlModel = require('../utils/mlModel')
 const timeHelper = require('./timeHelper')
+const parameters = require('../parameters')
 
 
 const getPrediction = async (instance) => await mlModel.predictModel(instance.type, instance.product)
@@ -22,7 +23,7 @@ const startInstance = async (instance, image) => {
   await spotInstances.waitForInstanceToBoot(instanceIds)
 
   const db = await databaseHelper.openDatabase()
-  params = ['running', instanceIds[0], ip, timeHelper.utc_timestamp, image.rowid]
+  const params = ['running', instanceIds[0], ip, timeHelper.utc_timestamp, image.rowid]
   const values = 'status = ?, spotInstanceId = ?, ip = ?, updatedAt = ?'
   await databaseHelper.updateById(db, parameters.imageTableName, values, params)
   await databaseHelper.closeDatabase(db)
