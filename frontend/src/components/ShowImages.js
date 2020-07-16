@@ -52,7 +52,7 @@ const ShowImages = (props) => {
         <Table responsive className='table table-hover'>
           <thead className='thead-dark'>
             <tr>
-              <th>Instance ID</th>
+              <th>ID</th>
               <th>Request ID</th>
               <th>Zone</th>
               <th>IP</th>

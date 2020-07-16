@@ -30,12 +30,21 @@ const redHatImage = 'ami-09e973def6bd1ad96'
 const suseImage = 'ami-02752a8e80a726bf0'
 const windowsImage = 'ami-09d4ce9830b19973e'
 
-const keyFileName = 'automatic_migration'
+const keyFileName = 'automatic_migration.pem'
 const ec2Username = 'ec2-user'
+const securityGroupName = 'elmit-group'
+const securityGroupDescription = 'elmit'
+const linuxInstallFile = './linux_install.sh'
 
 const workDir = __dirname
 
+const waitForInstanceId = 10
+
 module.exports = { 
+    waitForInstanceId,
+    securityGroupDescription,
+    securityGroupName,
+    linuxInstallFile,
     workDir,
     userTableName,
     userTableValues,

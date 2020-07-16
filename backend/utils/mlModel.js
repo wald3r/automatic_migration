@@ -108,12 +108,13 @@ const predictModel = async (instance, product, image) => {
           console.log(results)
           results = results.sort(sortFunction)
           const db = await databaseHelper.openDatabase()
-          const params = [path, timeHelper.utc_timestamp, image.rowid]
-          const values = 'predictionFile = ?, updatedAt = ?'
+          let zone = results[0][1]
+          const params = [path, zone, timeHelper.utc_timestamp, image.rowid]
+          const values = 'predictionFile = ?, zone = ?, updatedAt = ?'
           await databaseHelper.updateById(db, parameters.imageTableName, values, params)
           await databaseHelper.closeDatabase(db)
 
-          resolve(results[0])
+          resolve(zone)
         })
       })
   })

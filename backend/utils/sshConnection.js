@@ -16,7 +16,14 @@ const setUpServer = (ip, pathToKey, pathToDocker) => {
   })
   .then(() => {
     // Local, Remote
-    ssh.putDirectory(pathToDocker, `/home/${parameters.ec2Username}/`, {
+    ssh.execCommand(`mkdir image`, { cwd: `/home/${parameters.ec2Username}`})
+    .then(()=>{
+      console.log(`SSHConnectionHelper: Directory Created at ${ip}`)
+    })
+    ssh.putFile(`${parameters.linuxInstallFile}`, `home/${parameters.ec2Username}/image`).then(() => {
+      console.log(`SSHConnectionHelper: Copied installion script to ${ip}`)
+    })
+    ssh.putDirectory(pathToDocker, `/home/${parameters.ec2Username}/image`, {
       recursive: true,
       concurrency: 10,
       tick: (localPath, remotePath, error) => {
@@ -27,9 +34,9 @@ const setUpServer = (ip, pathToKey, pathToDocker) => {
         }
       }
     }).then((status) => {
-      console.log('the directory transfer was', status ? 'successful' : 'unsuccessful')
-      console.log('failed transfers', failed.join(', '))
-      console.log('successful transfers', successful.join(', '))
+      console.log(`SSHConnectionHelper: The directory transfer to ${ip} was ${status ? 'successful' : 'unsuccessful'}`)
+      console.log(`SSHConnectionHelper: failed transfers to ${ip}: ${failed.join(', ')}`)
+      console.log(`SSHConnectionHelper: successful transfers to ${ip}: ${successful.join(', ')}`)
     })
   })
 }

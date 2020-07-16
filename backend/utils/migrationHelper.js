@@ -11,17 +11,20 @@ const getPrediction = async (instance, image) => await mlModel.predictModel(inst
 const deletePredictions = (image) => mlModel.deletePredictions(image)
 
 const terminateInstance = async (image) => {
+  await spotInstances.deleteKeyPair(image.zone, image.key)
   await spotInstances.cancelSpotInstance(image)
 }
 
 
 const startInstance = async (instance, image) => {
-  const prediction = await getPrediction(instance, image)
-  const newZone = prediction[0]
-  console.log(newZone)
-  /*const requestId = await spotInstances.requestSpotInstance(instance.type, newZone, instance.product, instance.bidprice, instance.simulation, image.rowid)
+  const zone = await getPrediction(instance, image)
 
+  const requestId = await spotInstances.requestSpotInstance(instance.type, zone, instance.product, instance.bidprice, instance.simulation, image.rowid, image.path)
   const instanceIds = await spotInstances.getInstanceIds(requestId)
+
+  if(instanceIds.length === 0){
+    return false
+  }
   const ip = await spotInstances.getPublicIpFromRequest(instanceIds)
   console.log('MigrationHelper: Waiting for instance to boot')
   await spotInstances.waitForInstanceToBoot(instanceIds)
@@ -32,11 +35,12 @@ const startInstance = async (instance, image) => {
   await databaseHelper.updateById(db, parameters.imageTableName, values, params)
   await databaseHelper.closeDatabase(db)
 
-  setupServer(ip, image)*/
+  setupServer(ip, image)
+
+  return true
 }
 
 const setupServer = (ip, image) => {
-  console.log(image)
   sshConnection.setUpServer(ip, image.key, image.path)
 }
 

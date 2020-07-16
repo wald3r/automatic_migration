@@ -128,34 +128,27 @@ imagesRouter.post('/', async(request, response, next) => {
   } 
 
   const instanceId = files[0].name.split('_')[0]
-  let keyFile = null
+  let keyFile = path+'/'+parameters.keyFileName
 
   await new Promise((resolve) => {
     files.map(async file => {
       let answer = await fileHelper.createDirectory(path, file)
       if(!answer){
         response.status(500).send(`Could not store ${file.name}`)
-      }else{
-        const list = file.name.split('___')
-        if(list[2].includes('.pem')){
-          keyFile = `${path}/${list[2]}`
-        }
       }
       if(file === files[files.length -1]){
         resolve()
       }
     })
   })
-  if(keyFile === null){
-    return response.status(500).send(`No keyfile found!`)
-  }
-
+  
   db = await databaseHelper.openDatabase()
   const params = [null, user.rowid, 'booting', instanceId, null, null, null, path, null, keyFile, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
   const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
+
   const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, instanceId)
   const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, imageId)
 

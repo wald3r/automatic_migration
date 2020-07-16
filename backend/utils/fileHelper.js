@@ -1,5 +1,6 @@
 const fs = require('fs')
 const Path = require('path')
+const parameters = require('../parameters')
 
 const deleteFolderRecursively = (path) => {
   if (fs.existsSync(path)) {
@@ -23,21 +24,26 @@ const createDirectory = async (path, file) => {
   let list = file.name.split('___')
   let totalPath = path
 
-  dirParts.map(folder => {
-    let length = dirParts.length
-    if(folder === dirParts[length-1]){
-      console.log(`DirectoryCreaterHelper: ${folder} is not a folder`)
-    }else{
-      totalPath = `${totalPath}/${folder}`
-      if (!fs.existsSync(totalPath)){
-        fs.mkdirSync(totalPath, { recursive: true })
-        console.log(`DirectoryCreaterHelper: ${folder} folder created`)
-      } else{
-        console.log(`DirectoryCreaterHelper: ${folder} folder already exists`)
-
+  await new Promise((resolve) => {
+    dirParts.map(folder => {
+      let length = dirParts.length
+      if(folder === dirParts[length-1]){
+        console.log(`DirectoryCreaterHelper: ${folder} is not a folder`)
+      }else{
+        totalPath = `${totalPath}/${folder}`
+        if (!fs.existsSync(totalPath)){
+          fs.mkdirSync(totalPath, { recursive: true })
+          console.log(`DirectoryCreaterHelper: ${folder} folder created`)
+        } else{
+          console.log(`DirectoryCreaterHelper: ${folder} folder already exists`)
+        }
       }
-    }
+      if(dirParts[dirParts.length -1] === folder){
+        resolve()
+      }
+    })
   })
+  
   let answer = true
   await new Promise((resolve) => {
     file.mv(`${totalPath}/${list[list.length-1]}`, err => {
@@ -56,4 +62,22 @@ const createDirectory = async (path, file) => {
 
 }
 
-module.exports = { createDirectory, deleteFolderRecursively }
+const deleteFile = (path) => {
+
+  fs.unlink(path, (err) => {
+    if (err) console.log(`FileDeleteHelper: ${err.message}`)
+  })
+  
+}
+
+const createKeyFile = (key, path) => {
+  const fileName = `${path}/${parameters.keyFileName}`
+
+  fs.writeFile(fileName, key.KeyMaterial, (err) => {
+    if (err) console.log(`KeyCreatorHelper: ${err.message}`)
+    
+  })
+  
+}
+
+module.exports = { deleteFile, createKeyFile, createDirectory, deleteFolderRecursively }

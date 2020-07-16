@@ -61,21 +61,17 @@ const ShowInstances = ( props ) => {
 
   const checkFiles = (files) => {
 
-    let key = false
     let docker = false
     for(var x = 0; x<files.length; x++) {
       let parts = files[x].name.split('.')
       if(parts.length > 1){
-        if('pem' === parts[1]){
-          key = true
-        }
         if('yml' === parts[1]){
           docker = true
         }
       }
     }
 
-    if(key && docker) return true
+    if(docker) return true
     else return false
   }
 
