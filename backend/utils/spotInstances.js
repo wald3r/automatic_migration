@@ -30,7 +30,7 @@ const getEC2Object = async () => {
   await new Promise((resolve) => {
     AWS.config.getCredentials((err) => {
       if (err) {
-        console.log(err.stack)
+        console.log(`SpotInstanceHelper: ${err.message}`)
         resolve()
       }else {
         resolve()
@@ -61,7 +61,7 @@ const getInstanceIds = async (id) => {
     await new Promise((resolve) => {
       ec2.describeSpotInstanceRequests(params, async (err, data) =>  {
       if (err) {
-        console.log(err, err.stack)
+        console.log(`SpotInstanceHelper: ${err.message}`)
         resolve(undefined)
       }else{
           data.SpotInstanceRequests.map(instance => {
@@ -93,7 +93,7 @@ const waitForInstanceToBoot = async (ids) => {
   while(status !== 'ok'){
     await new Promise((resolve) => {
       ec2.describeInstanceStatus({ InstanceIds: ids, IncludeAllInstances: true }, async (err, data) => {
-        if (err) console.log(err, err.stack) 
+        if (err) console.log(`SpotInstanceHelper: ${err.message}`) 
         else {
           status = data.InstanceStatuses[0].InstanceStatus.Status
           resolve(status)
@@ -107,7 +107,7 @@ const getInstanceStatus = async (ec2, ids) => {
 
   return await new Promise((resolve) => {
     ec2.describeInstanceStatus({ InstanceIds: ids, IncludeAllInstances: true }, async (err, data) => {
-      if (err) console.log(err, err.stack) 
+      if (err) console.log(`SpotInstanceHelper: ${err.message}`) 
       else {
         status = data.InstanceStatuses[0].InstanceStatus.Status
         resolve(status)
@@ -144,7 +144,7 @@ const requestSpotInstance = async (instance, zone, image, bidprice, simulation, 
   return await new Promise((resolve) => {
     ec2.requestSpotInstances(params, async (err, data) => {
       if (err) {
-        console.log(err.message)
+        console.log(`SpotInstanceHelper: ${err.message}`)
         resolve(null)
       }
       else{
@@ -168,7 +168,7 @@ const getPublicIpFromRequest = async (instanceIds) => {
 
   return await new Promise((resolve) => {
     ec2.describeInstances({ InstanceIds: instanceIds }, async (err, data) => {
-      if (err) console.log(err, err.stack) 
+      if (err) console.log(`SpotInstanceHelper: ${err.message}`) 
       else {
         const ip = data.Reservations[0].Instances[0].PublicIpAddress
         resolve(ip)
@@ -178,27 +178,21 @@ const getPublicIpFromRequest = async (instanceIds) => {
 }
 
 
-const cancelSpotInstance = async (id) => {
+const cancelSpotInstance = async (image) => {
 
   const ec2 = await getEC2Object()
   
-  instanceIds = await getInstanceIds(id)
-  
-  ec2.terminateInstances({ InstanceIds: instanceIds }, (err, data) => {
-    if (err) console.log(err, err.stack)
+  ec2.terminateInstances({ InstanceIds: [image.spotInstanceId] }, (err, data) => {
+    if (err) console.log(`SpotInstanceHelper: ${err.message}`)
     else     console.log(data)
   })
 
-  var params = {
-    SpotInstanceRequestIds: [id]
-  }
-
-  ec2.cancelSpotInstanceRequests(params, (err, data) => {
-    if (err) console.log(err, err.stack)
+  ec2.cancelSpotInstanceRequests({ SpotInstanceRequestIds: [image.requestId] }, (err, data) => {
+    if (err) console.log(`SpotInstanceHelper: ${err.message}`)
     else     console.log(data)         
-      
+        
   })
-
+  
 }
 
 

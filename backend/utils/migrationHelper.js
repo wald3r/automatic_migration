@@ -6,16 +6,20 @@ const timeHelper = require('./timeHelper')
 const parameters = require('../parameters')
 
 
-const getPrediction = async (instance) => await mlModel.predictModel(instance.type, instance.product)
+const getPrediction = async (instance, image) => await mlModel.predictModel(instance.type, instance.product, image)
+
+const deletePredictions = (image) => mlModel.deletePredictions(image)
 
 const terminateInstance = async (image) => {
-  await spotInstances.cancelSpotInstance(image.requestId)
+  await spotInstances.cancelSpotInstance(image)
 }
 
 
 const startInstance = async (instance, image) => {
-  const newZone = await getPrediction(instance)
-  const requestId = await spotInstances.requestSpotInstance(instance.type, newZone, instance.product, instance.bidprice, instance.simulation, image.rowid)
+  const prediction = await getPrediction(instance, image)
+  const newZone = prediction[0]
+  console.log(newZone)
+  /*const requestId = await spotInstances.requestSpotInstance(instance.type, newZone, instance.product, instance.bidprice, instance.simulation, image.rowid)
 
   const instanceIds = await spotInstances.getInstanceIds(requestId)
   const ip = await spotInstances.getPublicIpFromRequest(instanceIds)
@@ -28,7 +32,7 @@ const startInstance = async (instance, image) => {
   await databaseHelper.updateById(db, parameters.imageTableName, values, params)
   await databaseHelper.closeDatabase(db)
 
-  setupServer(ip, image)
+  setupServer(ip, image)*/
 }
 
 const setupServer = (ip, image) => {
@@ -42,4 +46,4 @@ const setupServer = (ip, image) => {
 
 
 
-module.exports = { startInstance, setupServer, getPrediction, terminateInstance }
+module.exports = { deletePredictions, startInstance, setupServer, getPrediction, terminateInstance }

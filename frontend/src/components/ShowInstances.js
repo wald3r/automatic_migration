@@ -114,7 +114,7 @@ const ShowInstances = ( props ) => {
       return   <Badge variant="warning">Training</Badge>
     }
     if(status === 'trained'){
-      return   <Badge variant="info">Trained</Badge>
+      return   <Badge variant="success">Trained</Badge>
     }
 
   }

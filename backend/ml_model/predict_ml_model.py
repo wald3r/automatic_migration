@@ -3,6 +3,7 @@ from ml_model import MLModel
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
+import os
 from generate_training_data import GenerateTrainingData
 
 
@@ -32,12 +33,13 @@ def replace_name(name):
 
 def main():
 
-    if(len(sys.argv) != 3):
-        print("Two Arguments needed! How to: python3 predict_ml_model.py <instanceType> <productDescription>")
+    if(len(sys.argv) != 4):
+        print("Three Arguments needed! How to: python3 predict_ml_model.py <instanceType> <productDescription> <id>")
         exit(0)
 
     instance_type = str(sys.argv[1])
     product_description = str(sys.argv[2])
+    image_id = str(sys.argv[3])
 
     epochs = 1
     ticks = 15
@@ -52,11 +54,18 @@ def main():
 
     zones = df['AvailabilityZone'].drop_duplicates().values
 
+    rep_product_description = replace_name(product_description)
+    
+    file_name = 'predictions/'+instance_type+'_'+rep_product_description+'_'+image_id+'.csv'
+    try:
+    	os.remove(file_name)
+    except:
+    	pass
+    	
     #for x in zones:
     for x in ['ap-northeast-1a', 'ap-northeast-1c']:
 
         try:
-            rep_product_description = replace_name(product_description)
             architecture_name = instance_type + '_' + rep_product_description + '_' + str(x) + '_architecture.json'
             weights_name = instance_type + '_' + rep_product_description + '_' + str(x) + '_weights.h5'
             mlobj = MLModel(weights_name, architecture_name, shape, ticks, epochs, batch_size, test_size, ticks, instance_type, rep_product_description)
@@ -74,8 +83,8 @@ def main():
             sum_test = sum(predictions[:,column])
             sum_prediction = sum(test_data[:,column])
 
-            with open('predictions/'+instance_type+'_'+rep_product_description+'.csv', 'a') as f:
-                f.write("%s\n" % (round(sum_prediction, 4)))
+            with open(file_name, 'a+') as f:
+                f.write("%s,%s\n" % (round(sum_prediction, 4), x))
 
             #print(round(mape_outcome, 4), round(sum_test, 4), round(sum_prediction - sum_test, 4))
             #with open('predictions.csv', 'a') as f:

@@ -10,6 +10,9 @@ const CreateInstanceModal = ( { showCreateInstanceModal, setCreateInstanceModal,
   const [bidprice, setBidprice] = useState(null)
   const [product, setProduct] = useState(productList[0])
   const [region, setRegion] = useState(null)
+  const [filter, setFilter] = useState('')
+
+  const filteredList = filter === '' ? props.instancesList : props.instancesList.filter(i => i.instances.includes(filter))
 
   if(props.instancesList.length === 0){
     return null
@@ -24,6 +27,7 @@ const CreateInstanceModal = ( { showCreateInstanceModal, setCreateInstanceModal,
   const noChanges = () => {
     setCreateInstanceModal(false)
   }
+
   return(
     <div>
       <Modal show={showCreateInstanceModal} onHide={noChanges}>
@@ -41,7 +45,7 @@ const CreateInstanceModal = ( { showCreateInstanceModal, setCreateInstanceModal,
 
                   <td>
                     <select value={type} onChange={({ target }) => setType(target.value)} name='instances' id='instances'>
-                      {props.instancesList.map(i =>
+                      {filteredList.map(i =>
                         <option value={i.instances} key={i.instances}>{i.instances}</option>
                       )}
                     </select>

@@ -54,6 +54,7 @@ const ShowImages = (props) => {
             <tr>
               <th>Instance ID</th>
               <th>Request ID</th>
+              <th>Zone</th>
               <th>IP</th>
               <th>Status</th>
               <th>Created At</th>
@@ -66,6 +67,7 @@ const ShowImages = (props) => {
               <tr id='idImageRow'>
                 <td id='idImageInstanceId'>{image.instanceId}</td>
                 <td id='idImageRequestId'>{image.requestId}</td>
+                <td id='idImageZone'>{image.zone}</td>
                 <td id='idImageIp'>{image.ip}</td>
                 <td id='idImageStatus'>{badgeStatus(image.status)}</td>
                 <td id='idImageCreatedAt'>{image.createdAt}</td>

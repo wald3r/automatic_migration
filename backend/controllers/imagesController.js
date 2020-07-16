@@ -151,8 +151,8 @@ imagesRouter.post('/', async(request, response, next) => {
   }
 
   db = await databaseHelper.openDatabase()
-  const params = [user.rowid, 'booting', instanceId, null, null, null, path, null, keyFile, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
-  const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+  const params = [null, user.rowid, 'booting', instanceId, null, null, null, path, null, keyFile, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+  const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
@@ -182,6 +182,7 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
   const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
   const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, imageRow.instanceId)
   await databaseHelper.deleteRowById(db, parameters.imageTableName, rowid)     
+  migrationHelper.deletePredictions(imageRow)
   if(instanceRow.simulation === 0){
     migrationHelper.terminateInstance(imageRow)
   }

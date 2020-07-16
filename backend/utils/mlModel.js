@@ -3,7 +3,7 @@ const parameters = require('../parameters')
 const databaseHelper = require('../utils/databaseHelper')
 const timeHelper = require('../utils/timeHelper')
 const fs = require('fs')
-const spotInstances = require('./spotInstances')
+const csv = require('csv-parse')
 
 const replace_name = (name) => {
 
@@ -58,6 +58,13 @@ const trainModel = async (instance, product, simulation) => {
   })
 }
 
+const deletePredictions = (image) => {
+
+  if (fs.existsSync(image.predictionFile)) {
+    fs.unlinkSync(image.predictionFile)
+  }
+  
+}
 
 const deleteModel = (instance, product) => {
 
@@ -74,18 +81,43 @@ const deleteModel = (instance, product) => {
   })
 }
 
+function sortFunction(a, b) {
+  if (a[0] === b[0]) {
+      return 0;
+  }
+  else {
+      return (a[0] < b[0]) ? -1 : 1;
+  }
+}
 
-const predictModel = async (instance, product) => {
-  const python = spawn('python3', [parameters.mlPredictFile, instance, product])
+
+const predictModel = async (instance, product, image) => {
+  const python = spawn('python3', [parameters.mlPredictFile, instance, product, image.rowid])
   console.log(`Started prediction of ml model ${instance} ${product}`)
 
   return await new Promise((resolve) => {
     python.stdout.on('close', async () => {
-      const path = `${__dirname}/${instance}_${replace_name(product)}.csv`
-      resolve('eu-west-3c')
-    })
+
+      const path = `${parameters.workDir}/predictions/${instance}_${replace_name(product)}_${image.rowid}.csv`
+      let results = []
+
+      fs.createReadStream(path)
+        .pipe(csv())
+        .on('data', (data) => results.push(data))
+        .on('end', async () => {
+          console.log(results)
+          results = results.sort(sortFunction)
+          const db = await databaseHelper.openDatabase()
+          const params = [path, timeHelper.utc_timestamp, image.rowid]
+          const values = 'predictionFile = ?, updatedAt = ?'
+          await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+          await databaseHelper.closeDatabase(db)
+
+          resolve(results[0])
+        })
+      })
   })
 }
 
 
-module.exports = { trainModel, deleteModel, predictModel }
+module.exports = { deletePredictions, trainModel, deleteModel, predictModel }
