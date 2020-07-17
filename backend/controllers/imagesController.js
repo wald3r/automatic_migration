@@ -26,20 +26,12 @@ imagesRouter.get('/', async(request, response, next) => {
     await new Promise(async (resolve) => {
       responseArray = await responseArray.map(async image => {
         if(image.spotInstanceId !== null){
-          let status = await spotInstances.getInstanceStatus(image.zone, [image.spotInstanceId])
-          let newStatus = null
-          if(status === 'ok' && image.status !== 'running'){
-            newStatus = 'running'
-          }else if(status === 'insufficient-data' && image.status !== 'failed'){
-            newStatus = 'failed'
-          }else if(status === 'initializing' && image.status !== 'booting'){
-            newStatus = 'booting'
-          }
-          if(newStatus !== null){
-            const values = 'status = ?, updatedAt = ?'
-            const params = [newStatus, timeHelper.utc_timestamp, image.rowid]
-            await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-          }
+          let status = await spotInstances.getInstanceState(image.zone, [image.spotInstanceId])
+          console.log(status)
+          const values = 'status = ?, updatedAt = ?'
+          const params = [status, timeHelper.utc_timestamp, image.rowid]
+          await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+         
         }
         
         resolve()
@@ -105,6 +97,55 @@ imagesRouter.get('/reboot/:rowid', async(request, response, next) => {
   }
 })
 
+imagesRouter.get('/stop/:rowid', async(request, response, next) => {
+  const rowid = request.params.rowid
+  try{
+    const user = await authenticationHelper.isLoggedIn(request.token)
+    if(user == undefined){
+      return response.status(401).send('Not Authenticated')
+    }
+    
+    const db = await databaseHelper.openDatabase()
+    const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    await databaseHelper.closeDatabase(db)
+
+    if(imageRow === null){
+      return response.status(500).send('Image does not exist')
+    }
+    await migrationHelper.stopInstance(imageRow)
+
+    return response.status(200).send('Stopping')
+
+
+  }catch(exception){
+    next(exception)
+  }
+})
+
+imagesRouter.get('/start/:rowid', async(request, response, next) => {
+  const rowid = request.params.rowid
+  try{
+    const user = await authenticationHelper.isLoggedIn(request.token)
+    if(user == undefined){
+      return response.status(401).send('Not Authenticated')
+    }
+    
+    const db = await databaseHelper.openDatabase()
+    const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    await databaseHelper.closeDatabase(db)
+
+    if(imageRow === null){
+      return response.status(500).send('Image does not exist')
+    }
+    await migrationHelper.startInstance(imageRow)
+
+    return response.status(200).send('Stopping')
+
+
+  }catch(exception){
+    next(exception)
+  }
+})
 
 imagesRouter.put('/:rowid', async(request, response, next) => {
 
@@ -179,7 +220,7 @@ imagesRouter.post('/', async(request, response, next) => {
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)
   }
 
-  migrationHelper.startInstance(instanceRow, imageRow)
+  migrationHelper.newInstance(instanceRow, imageRow)
 
   response.status(200).json(imageRow)
   await databaseHelper.closeDatabase(db)

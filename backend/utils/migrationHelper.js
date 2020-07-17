@@ -10,6 +10,9 @@ const getPrediction = async (instance, image) => await mlModel.predictModel(inst
 
 const deletePredictions = (image) => mlModel.deletePredictions(image)
 
+const stopInstance = async (image) => await spotInstances.stopInstance(image.spotInstanceId, image.zone)
+const startInstance = async (image) => await spotInstances.startInstance(image.spotInstanceId, image.zone)
+
 const rebootInstance = async (image) => await spotInstances.rebootInstance(image.zone, image.spotInstanceId)
 
 const terminateInstance = async (image) => {
@@ -18,7 +21,7 @@ const terminateInstance = async (image) => {
   await spotInstances.deleteSecurityGroup(image.zone)
 }
 
-const startInstance = async (instance, image) => {
+const newInstance = async (instance, image) => {
   const zone = await getPrediction(instance, image)
 
   const requestId = await spotInstances.requestSpotInstance(instance.type, zone, instance.product, instance.bidprice, instance.simulation, image.rowid, image.path)
@@ -53,6 +56,8 @@ const setupServer = (ip, image) => {
 
 
 module.exports = { 
+  stopInstance,
+  newInstance,
   rebootInstance, 
   deletePredictions, 
   startInstance, 

@@ -11,21 +11,7 @@ let AWSRegion = 'eu-west-3'
 const setRegion = (zone) => {
   AWSRegion = zone.slice(0, -1)
 }
-const getImageId = async (product, zone) => {
 
-  if(product === 'Linux/UNIX'){
-    return await copyImage(zone, parameters.linuxImage)
-  }
-
-  else if(product === 'Red Hat Enterprise Linux')
-    return await copyImage(zone, parameters.redHatImage)
-
-  else if(product === 'SUSE Linux')
-    return await copyImage(zone, parameters.suseImage)
-
-  else
-    return await copyImage(zone, parameters.windowsImage)
-}
 
 const isSimulation = (number) => {
   if(number === 0)
@@ -96,9 +82,31 @@ const describeImages = async (product) => {
 
    return await new Promise((resolve) => {
     ec2.describeImages(params, (err, data) => {
-      if (err) console.log(`SpotInstanceHelper: ${err.message}`)
+      if (err) console.log(`DescribeImagesHelper: ${err.message}`)
       else resolve(data)
     })
+   })
+}
+
+const stopInstance = async (id, zone) => {
+
+  setRegion(zone)
+  const ec2 = await getEC2Object()
+
+   ec2.stopInstances({InstanceIds: [id]}, (err, data) => {
+     if (err) console.log(`StopInstanceHelper: ${err.message}`)
+     else     console.log(`StopInstanceHelper: ${id} is stopping`)
+   })
+}
+
+const startInstance = async (id, zone) => {
+
+  setRegion(zone)
+  const ec2 = await getEC2Object()
+
+   ec2.startInstances({InstanceIds: [id]}, (err, data) => {
+     if (err) console.log(`StartInstanceHelper: ${err.message}`)
+     else     console.log(`StartInstanceHelper: ${id} is starting`)
    })
 }
 
@@ -177,13 +185,13 @@ const createSecurityGroup = async (zone) => {
             GroupName: parameters.securityGroupName,
             VpcId: vpc
           }
-          ec2.createSecurityGroup(paramsSecurityGroup, (err, data) => {
+          ec2.createSecurityGroup(paramsSecurityGroup, async (err, data) => {
             if (err) {
               console.log(`SecurityGroupHelper: ${err.message}`)
             } else {
                 const SecurityGroupId = data.GroupId
-                authorizeSecurityGroupIngress(SecurityGroupId)
-                resolve()
+                await authorizeSecurityGroupIngress(SecurityGroupId)
+                resolve(SecurityGroupId)
             }
           })
         }
@@ -192,6 +200,7 @@ const createSecurityGroup = async (zone) => {
   }
   else{
     console.log(`SecurityGroupHelper: Security group for ${zone} already exists`)
+    return securityGroup.SecurityGroups[0].GroupId
   }
 }
 
@@ -208,7 +217,7 @@ const deleteSecurityGroup = async (zone) => {
 
   ec2.deleteSecurityGroup(params, (err, data) => {
     if (err) console.log(`DeleteSecurityGroupHelper: ${err.message}`)
-    else     console.log(data)
+    else     console.log(`DeleteSecurityGroupHelper: Security group in ${zone} deleted`)
   })
 }
 
@@ -352,6 +361,23 @@ const getInstanceStatus = async (zone, ids) => {
   
 }
 
+const getInstanceState = async (zone, ids) => {
+
+  setRegion(zone)
+  const ec2 = await getEC2Object()
+
+  return await new Promise((resolve) => {
+    ec2.describeInstanceStatus({ InstanceIds: ids, IncludeAllInstances: true }, async (err, data) => {
+      if (err) console.log(`SpotInstanceHelper: ${err.message}`) 
+      else {
+        status = data.InstanceStatuses[0].InstanceState.Name
+        resolve(status)
+      }       
+    })
+  })
+  
+}
+
 const requestSpotInstance = async (instance, zone, serverImage, bidprice, simulation, id, path) => {
 
   setRegion(zone)
@@ -359,9 +385,7 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
   const imageId = await describeImages(serverImage)
   const securityGroupId = await createSecurityGroup(zone)
   await createKeyPair(path)
-  
-  console.log(`ImageDescribeHelper: For ${zone} the following image was chosen: 
-  ${imageId.Images[0]}`)
+  console.log(`ImageDescribeHelper: For ${zone} the following image was chosen: ${imageId.Images[0].Name}`) 
   
   let params = {
     InstanceCount: 1, 
@@ -378,7 +402,7 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
      ]
     }, 
     SpotPrice: `${bidprice}`, 
-    Type: "one-time"
+    Type: 'persistent'
   }
 
   let requestId = null
@@ -439,13 +463,15 @@ const cancelSpotInstance = async (image) => {
 
 
 module.exports = { 
+  startInstance,
+  stopInstance,
   rebootInstance, 
   deleteSecurityGroup, 
   deleteKeyPair, 
   getEC2Object, 
   getInstanceIds, 
   getInstanceStatus, 
-  getImageId, 
+  getInstanceState,
   requestSpotInstance, 
   cancelSpotInstance, 
   getPublicIpFromRequest, 

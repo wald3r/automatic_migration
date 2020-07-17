@@ -20,6 +20,26 @@ const rebootImage = async (image) => {
   return response
 }
 
+const startImage = async (image) => {
+
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const response = await axios.get(`${baseUrl}/start/${image.rowid}`, config)
+  return response
+}
+
+const stopImage = async (image) => {
+
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const response = await axios.get(`${baseUrl}/stop/${image.rowid}`, config)
+  return response
+}
+
 const newImage = async (obj) => {
 
   const config = {
@@ -52,4 +72,4 @@ const deleteImage = async (obj) => {
   return response
 }
 
-export default { rebootImage, newImage, getAllImages, deleteImage, setToken }
+export default { startImage, stopImage, rebootImage, newImage, getAllImages, deleteImage, setToken }

@@ -12,6 +12,10 @@ const ShowImages = (props) => {
   const [imageToDelete, setImageToDelete] = useState(null)
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false)
   const [imageToReboot, setImageToReboot] = useState(null)
+  const [imageToStart, setImageToStart] = useState(null)
+  const [imageToStop, setImageToStop] = useState(null)
+  const [showStartConfirmationModal, setShowStartConfirmationModal] = useState(false)
+  const [showStopConfirmationModal, setShowStopConfirmationModal] = useState(false)
   const [showRebootConfirmationModal, setShowRebootConfirmationModal] = useState(false)
 
   const { addToast } = useToasts()
@@ -24,6 +28,52 @@ const ShowImages = (props) => {
   const handleReboot = (image) => {
     setImageToReboot(image)
     setShowRebootConfirmationModal(true)
+  }
+
+  const handleStart = (image) => {
+    setImageToStart(image)
+    setShowStartConfirmationModal(true)
+  }
+
+  const handleStop = (image) => {
+    setImageToStop(image)
+    setShowStopConfirmationModal(true)
+  }
+
+  const startImage = async () => {
+    try{
+      await imagesService.startImage(imageToStart)
+      addToast(`${imageToStart.ip} is starting`, {
+        appearance: 'success',
+        autoDismiss: true,
+      })
+      setImageToStart(null)
+    }
+    catch(exception){
+      addToast(`${imageToStart.ip} is not starting`, {
+        appearance: 'error',
+        autoDismiss: true,
+      })
+      setImageToStart(null)
+    }
+  }
+
+  const stopImage = async () => {
+    try{
+      await imagesService.stopImage(imageToStop)
+      addToast(`${imageToStop.ip} is stopping`, {
+        appearance: 'success',
+        autoDismiss: true,
+      })
+      setImageToStart(null)
+    }
+    catch(exception){
+      addToast(`${imageToStop.ip} is not stopping`, {
+        appearance: 'error',
+        autoDismiss: true,
+      })
+      setImageToStart(null)
+    }
   }
 
   const deleteImage = async () => {
@@ -47,14 +97,17 @@ const ShowImages = (props) => {
   }
 
   const badgeStatus = (status) => {
-    if(status === 'booting'){
-      return   <Badge variant="warning">Booting</Badge>
+    if(status === 'pending'){
+      return   <Badge variant="info">Pending</Badge>
     }
     else if(status === 'running'){
       return   <Badge variant="success">Running</Badge>
     }
+    else if(status === 'stopping'){
+      return   <Badge variant="warning">Stopping</Badge>
+    }
     else {
-      return   <Badge variant="error">Failed</Badge>
+      return   <Badge variant="danger">Stopped</Badge>
     }
 
   }
@@ -65,6 +118,16 @@ const ShowImages = (props) => {
         showConfirmationModal={showDeleteConfirmationModal}
         setConfirmation={setShowDeleteConfirmationModal}
         handleConfirmation={deleteImage}
+      />
+      <ConfirmationModal
+        showConfirmationModal={showStopConfirmationModal}
+        setConfirmation={setShowStopConfirmationModal}
+        handleConfirmation={stopImage}
+      />
+      <ConfirmationModal
+        showConfirmationModal={showStartConfirmationModal}
+        setConfirmation={setShowStartConfirmationModal}
+        handleConfirmation={startImage}
       />
       <ConfirmationModal
         showConfirmationModal={showRebootConfirmationModal}
@@ -79,7 +142,7 @@ const ShowImages = (props) => {
               <th>Request ID</th>
               <th>Zone</th>
               <th>IP</th>
-              <th>Status</th>
+              <th>State</th>
               <th>Created At</th>
               <th>Updated At</th>
               <th></th>
@@ -98,6 +161,8 @@ const ShowImages = (props) => {
                 <td>
                   <Button variant='primary' id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
                   <Button variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Reboot Image' onClick={() => handleReboot(image)}><i className="fa fa-sort" /></Button>
+                  <Button style={{ display: image.status === 'stopped' ? '' : 'none' }} variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Start Image' onClick={() => handleStart(image)}><i className="fa fa-plus" /></Button>
+                  <Button style={{ display: image.status === 'stopped' ? 'none' : '' }} variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Stop Image' onClick={() => handleStop(image)}><i className="fa fa-remove" /></Button>
                 </td>
               </tr>
             </tbody>
