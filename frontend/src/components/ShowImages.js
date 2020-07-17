@@ -5,11 +5,14 @@ import { useToasts } from 'react-toast-notifications'
 import ConfirmationModal from './modals/ConfirmationModal'
 import { deleteImage } from '../reducers/imagesReducer'
 import '../stylesheets/general.css'
+import imagesService from '../services/imagesService'
 
 const ShowImages = (props) => {
 
   const [imageToDelete, setImageToDelete] = useState(null)
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false)
+  const [imageToReboot, setImageToReboot] = useState(null)
+  const [showRebootConfirmationModal, setShowRebootConfirmationModal] = useState(false)
 
   const { addToast } = useToasts()
 
@@ -18,14 +21,29 @@ const ShowImages = (props) => {
     setShowDeleteConfirmationModal(true)
   }
 
+  const handleReboot = (image) => {
+    setImageToReboot(image)
+    setShowRebootConfirmationModal(true)
+  }
+
   const deleteImage = async () => {
 
     await props.deleteImage(imageToDelete)
-    addToast(`${imageToDelete.ip} was deleted.`, {
+    addToast(`${imageToDelete.ip} was deleted`, {
       appearance: 'success',
       autoDismiss: true,
     })
     setImageToDelete(null)
+  }
+
+  const rebootImage = async () => {
+
+    await imagesService.rebootImage(imageToReboot)
+    addToast(`${imageToReboot.ip} is rebooting`, {
+      appearance: 'success',
+      autoDismiss: true,
+    })
+    setImageToReboot(null)
   }
 
   const badgeStatus = (status) => {
@@ -47,6 +65,11 @@ const ShowImages = (props) => {
         showConfirmationModal={showDeleteConfirmationModal}
         setConfirmation={setShowDeleteConfirmationModal}
         handleConfirmation={deleteImage}
+      />
+      <ConfirmationModal
+        showConfirmationModal={showRebootConfirmationModal}
+        setConfirmation={setShowRebootConfirmationModal}
+        handleConfirmation={rebootImage}
       />
       <div className='tableContainer'>
         <Table responsive className='table table-hover'>
@@ -74,6 +97,7 @@ const ShowImages = (props) => {
                 <td id='idImageUpdatedAt'>{image.updatedAt}</td>
                 <td>
                   <Button variant='primary' id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
+                  <Button variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Reboot Image' onClick={() => handleReboot(image)}><i className="fa fa-sort" /></Button>
                 </td>
               </tr>
             </tbody>

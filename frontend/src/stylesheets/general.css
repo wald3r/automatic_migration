@@ -15,7 +15,7 @@
 
 .container1{
   padding: 30px;
-  font-size: 16px;
+  font-size: 14px;
   background-color: rgba(0,0,0, 0.1);
   margin: 0;
   position: absolute;
@@ -28,7 +28,7 @@
 .container3{
   background-color: white;
   padding: 30px;
-  font-size: 16px;
+  font-size: 14px;
   margin: auto;
   width: 80%;
   color: black;

@@ -23,7 +23,6 @@ export const deleteImage = (obj) => {
 }
 
 
-
 export const newImage = (data) => {
   return async dispatch => {
     dispatch({

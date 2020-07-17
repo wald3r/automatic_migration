@@ -78,9 +78,6 @@ const App = ( props ) => {
             </Router>
             <Footer />
           </div>
-          <div>
-            <Footer />
-          </div>
         </ToastProvider>
       </div>
     )

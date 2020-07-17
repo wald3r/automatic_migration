@@ -26,8 +26,7 @@ imagesRouter.get('/', async(request, response, next) => {
     await new Promise(async (resolve) => {
       responseArray = await responseArray.map(async image => {
         if(image.spotInstanceId !== null){
-          const ec2 = await spotInstances.getEC2Object()
-          let status = await spotInstances.getInstanceStatus(ec2, [image.spotInstanceId])
+          let status = await spotInstances.getInstanceStatus(image.zone, [image.spotInstanceId])
           let newStatus = null
           if(status === 'ok' && image.status !== 'running'){
             newStatus = 'running'
@@ -46,7 +45,6 @@ imagesRouter.get('/', async(request, response, next) => {
         resolve()
       })
     })
-    
     responseArray = await databaseHelper.selectByUserId(db, parameters.imageTableValues, parameters.imageTableName, user.rowid)
     await databaseHelper.closeDatabase(db)
     return response.status(200).json(responseArray)
@@ -76,6 +74,31 @@ imagesRouter.get('/:rowid', async(request,response, next) => {
       response.status(200).json(outcome)
     }
     await databaseHelper.closeDatabase(db)
+
+  }catch(exception){
+    next(exception)
+  }
+})
+
+imagesRouter.get('/reboot/:rowid', async(request, response, next) => {
+  const rowid = request.params.rowid
+  try{
+    const user = await authenticationHelper.isLoggedIn(request.token)
+    if(user == undefined){
+      return response.status(401).send('Not Authenticated')
+    }
+    
+    const db = await databaseHelper.openDatabase()
+    const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    await databaseHelper.closeDatabase(db)
+
+    if(imageRow === null){
+      return response.status(500).send('Image does not exist')
+    }
+    await migrationHelper.rebootInstance(imageRow)
+
+    return response.status(200).send('Rebooting')
+
 
   }catch(exception){
     next(exception)

@@ -30,7 +30,8 @@ const redHatImage = 'ami-09e973def6bd1ad96'
 const suseImage = 'ami-02752a8e80a726bf0'
 const windowsImage = 'ami-09d4ce9830b19973e'
 
-const keyFileName = 'automatic_migration.pem'
+const keyFileName = 'elmit.pem'
+const keyName = 'elmit'
 const ec2Username = 'ec2-user'
 const securityGroupName = 'elmit-group'
 const securityGroupDescription = 'elmit'
@@ -41,6 +42,7 @@ const workDir = __dirname
 const waitForInstanceId = 10
 
 module.exports = { 
+    keyName,
     waitForInstanceId,
     securityGroupDescription,
     securityGroupName,

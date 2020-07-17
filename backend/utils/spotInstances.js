@@ -195,12 +195,40 @@ const createSecurityGroup = async (zone) => {
   }
 }
 
+
+const deleteSecurityGroup = async (zone) => {
+
+  setRegion(zone)
+  const ec2 = await getEC2Object()
+
+  const params = {
+    DryRun: false,
+    GroupName: parameters.securityGroupName
+  }
+
+  ec2.deleteSecurityGroup(params, (err, data) => {
+    if (err) console.log(`DeleteSecurityGroupHelper: ${err.message}`)
+    else     console.log(data)
+  })
+}
+
+const describeKeyPair = async() => {
+ 
+  const ec2 = await getEC2Object()
+  ec2.describeKeyPairs({ KeyNames: [parameters.keyName]}, (err, data) => {
+    if (err) console.log(`DescribeKeyPairHelper: ${err.message}`)
+    else     console.log(data)
+  })
+}
+
 const createKeyPair = async (path) => {
   
   const ec2 = await getEC2Object()
 
+  await describeKeyPair
+
   const params = {
-    KeyName: "elmit"
+    KeyName: parameters.keyName
   }
 
   ec2.createKeyPair(params, (err, data) => {
@@ -218,7 +246,7 @@ const deleteKeyPair = async (zone, path) => {
   const ec2 = await getEC2Object()
 
   const params = {
-    KeyName: "elmit"
+    KeyName: parameters.keyName
   }
   ec2.deleteKeyPair(params, function(err, data) {
     if (err) console.log(`DeleteKeyPairHelper: ${err.message}`)
@@ -291,7 +319,26 @@ const waitForInstanceToBoot = async (ids) => {
   }
 }
 
-const getInstanceStatus = async (ec2, ids) => {
+const rebootInstance = async (zone, id) => {
+
+  setRegion(zone)
+  const ec2 = await getEC2Object()
+
+  const params = {
+    InstanceIds: [
+       id
+    ]
+   }
+   ec2.rebootInstances(params, (err, data) => {
+     if (err) console.log(`RebootInstanceHelper: ${err.message}`)
+     else     console.log(`RebootInstanceHelper: ${id} is rebooting`)
+   })
+}
+
+const getInstanceStatus = async (zone, ids) => {
+
+  setRegion(zone)
+  const ec2 = await getEC2Object()
 
   return await new Promise((resolve) => {
     ec2.describeInstanceStatus({ InstanceIds: ids, IncludeAllInstances: true }, async (err, data) => {
@@ -312,7 +359,10 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
   const imageId = await describeImages(serverImage)
   const securityGroupId = await createSecurityGroup(zone)
   await createKeyPair(path)
-
+  
+  console.log(`ImageDescribeHelper: For ${zone} the following image was chosen: 
+  ${imageId.Images[0]}`)
+  
   let params = {
     InstanceCount: 1, 
     DryRun: isSimulation(simulation),
@@ -388,4 +438,16 @@ const cancelSpotInstance = async (image) => {
 
 
 
-module.exports = { deleteKeyPair, getEC2Object, getInstanceIds, getInstanceStatus, getImageId, requestSpotInstance, cancelSpotInstance, getPublicIpFromRequest, waitForInstanceToBoot }
+module.exports = { 
+  rebootInstance, 
+  deleteSecurityGroup, 
+  deleteKeyPair, 
+  getEC2Object, 
+  getInstanceIds, 
+  getInstanceStatus, 
+  getImageId, 
+  requestSpotInstance, 
+  cancelSpotInstance, 
+  getPublicIpFromRequest, 
+  waitForInstanceToBoot 
+}

@@ -10,6 +10,16 @@ const setToken = newToken => {
   token = `bearer ${newToken}`
 }
 
+const rebootImage = async (image) => {
+
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const response = await axios.get(`${baseUrl}/reboot/${image.rowid}`, config)
+  return response
+}
+
 const newImage = async (obj) => {
 
   const config = {
@@ -42,4 +52,4 @@ const deleteImage = async (obj) => {
   return response
 }
 
-export default { newImage, getAllImages, deleteImage, setToken }
+export default { rebootImage, newImage, getAllImages, deleteImage, setToken }
