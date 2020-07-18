@@ -2,9 +2,8 @@ const AWS = require('aws-sdk')
 const parameters = require('../parameters')
 const databaseHelper = require('./databaseHelper')
 const timeHelper = require('./timeHelper')
-const { request } = require('express')
 const fileHelper = require('./fileHelper')
-
+const exceptions = require('./exceptions')
 
 let AWSRegion = 'eu-west-3'
 
@@ -93,21 +92,41 @@ const stopInstance = async (id, zone) => {
   setRegion(zone)
   const ec2 = await getEC2Object()
 
-   ec2.stopInstances({InstanceIds: [id]}, (err, data) => {
-     if (err) console.log(`StopInstanceHelper: ${err.message}`)
-     else     console.log(`StopInstanceHelper: ${id} is stopping`)
-   })
+  let promise = await new Promise((resolve) => {
+    ec2.stopInstances({InstanceIds: [id]}, (err, data) => {
+      if (err) {
+        console.log(`StopInstanceHelper: ${err.message}`)
+        resolve(-1)
+      }else {
+        console.log(`StopInstanceHelper: ${id} is stopping`)
+        resolve(1)
+      }
+    })
+  })
+  if(promise === -1){
+    throw new Error('Can not stop instance')
+  }
 }
-
 const startInstance = async (id, zone) => {
 
   setRegion(zone)
   const ec2 = await getEC2Object()
-
-   ec2.startInstances({InstanceIds: [id]}, (err, data) => {
-     if (err) console.log(`StartInstanceHelper: ${err.message}`)
-     else     console.log(`StartInstanceHelper: ${id} is starting`)
-   })
+  
+  let promise = await new Promise((resolve) => {
+    ec2.startInstances({InstanceIds: [id]}, (err, data) => {
+      if (err) {
+        console.log(`StartInstanceHelper: ${err.message}`)
+        resolve(-1)
+      }else {
+        console.log(`StartInstanceHelper: ${id} is starting`)
+        resolve(1)
+      }
+    })
+  })
+  if(promise === -1){
+    throw new Error('Can not start instance')
+  }
+    
 }
 
 
@@ -267,7 +286,7 @@ const deleteKeyPair = async (zone, path) => {
 }
 
 
-const getInstanceIds = async (id) => {
+const getInstanceIds = async (id, rowid) => {
   
   const ec2 = await getEC2Object()
 
@@ -304,6 +323,14 @@ const getInstanceIds = async (id) => {
 
     if(instanceIds[0] !== undefined) break
     if(counter === 0) break
+  }
+
+  if(instanceIds.length === 1){
+    const db = await databaseHelper.openDatabase()
+    const params = [instanceIds[0], timeHelper.utc_timestamp, rowid]
+    const values = 'spotInstanceId = ?, updatedAt = ?'
+    await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+    await databaseHelper.closeDatabase(db)
   }
   return instanceIds
 
@@ -427,7 +454,7 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
 }
 
 
-const getPublicIpFromRequest = async (instanceIds) => {
+const getPublicIpFromRequest = async (instanceIds, rowid) => {
   
   const ec2 = await getEC2Object()
 
@@ -436,6 +463,11 @@ const getPublicIpFromRequest = async (instanceIds) => {
       if (err) console.log(`SpotInstanceHelper: ${err.message}`) 
       else {
         const ip = data.Reservations[0].Instances[0].PublicIpAddress
+        const db = await databaseHelper.openDatabase()
+        const params = [ip, timeHelper.utc_timestamp, rowid]
+        const values = 'ip = ?, updatedAt = ?'
+        await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+        await databaseHelper.closeDatabase(db)
         resolve(ip)
       }       
     })

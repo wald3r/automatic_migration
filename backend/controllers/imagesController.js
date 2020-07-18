@@ -22,22 +22,18 @@ imagesRouter.get('/', async(request, response, next) => {
 
     const db = await databaseHelper.openDatabase()
     let responseArray = await databaseHelper.selectByUserId(db, parameters.imageTableValues, parameters.imageTableName, user.rowid)
-
+    
     await new Promise(async (resolve) => {
-      responseArray = await responseArray.map(async image => {
-        if(image.spotInstanceId !== null){
-          let status = await spotInstances.getInstanceState(image.zone, [image.spotInstanceId])
-          console.log(status)
-          const values = 'status = ?, updatedAt = ?'
-          const params = [status, timeHelper.utc_timestamp, image.rowid]
-          await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-         
+      for(let a = 0; a < responseArray.length; a++){
+        if(responseArray[0].spotInstanceId !== null){
+          responseArray[a].state = await spotInstances.getInstanceState(responseArray[a].zone, [responseArray[a].spotInstanceId])
         }
-        
-        resolve()
-      })
+        if(a + 1 === responseArray.length){
+          resolve()
+        }
+      }
     })
-    responseArray = await databaseHelper.selectByUserId(db, parameters.imageTableValues, parameters.imageTableName, user.rowid)
+    
     await databaseHelper.closeDatabase(db)
     return response.status(200).json(responseArray)
 
@@ -81,7 +77,7 @@ imagesRouter.get('/reboot/:rowid', async(request, response, next) => {
     }
     
     const db = await databaseHelper.openDatabase()
-    const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
     await databaseHelper.closeDatabase(db)
 
     if(imageRow === null){
@@ -89,7 +85,7 @@ imagesRouter.get('/reboot/:rowid', async(request, response, next) => {
     }
     await migrationHelper.rebootInstance(imageRow)
 
-    return response.status(200).send('Rebooting')
+    return response.status(200).json(imageRow)
 
 
   }catch(exception){
@@ -106,19 +102,21 @@ imagesRouter.get('/stop/:rowid', async(request, response, next) => {
     }
     
     const db = await databaseHelper.openDatabase()
-    const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
     await databaseHelper.closeDatabase(db)
 
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
     }
-    await migrationHelper.stopInstance(imageRow)
-
-    return response.status(200).send('Stopping')
+    
+    await spotInstances.stopInstance(imageRow.spotInstanceId, imageRow.zone)
+      
+    imageRow.state = 'stopping'
+    return response.status(200).json(imageRow)
 
 
   }catch(exception){
-    next(exception)
+    return response.status(500).send('Can not stop instance')
   }
 })
 
@@ -131,19 +129,23 @@ imagesRouter.get('/start/:rowid', async(request, response, next) => {
     }
     
     const db = await databaseHelper.openDatabase()
-    const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
     await databaseHelper.closeDatabase(db)
 
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
     }
-    await migrationHelper.startInstance(imageRow)
 
-    return response.status(200).send('Stopping')
+    
+    await spotInstances.startInstance(imageRow.spotInstanceId, imageRow.zone)
+     
+    imageRow.state = 'pending'
+    return response.status(200).send(imageRow)
 
 
   }catch(exception){
-    next(exception)
+    return response.status(500).send('Can not start instance')
+
   }
 })
 
@@ -236,13 +238,18 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const db = await databaseHelper.openDatabase()
+  console.log(rowid)
   const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
-  const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, imageRow.instanceId)
+  console.log(imageRow)
+  let instanceRow
+  if(imageRow.instanceId !== null){
+    instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, imageRow.instanceId)
+    if(instanceRow.simulation === 0){
+      migrationHelper.terminateInstance(imageRow)
+    }
+  }
   await databaseHelper.deleteRowById(db, parameters.imageTableName, rowid)     
   migrationHelper.deletePredictions(imageRow)
-  if(instanceRow.simulation === 0){
-    migrationHelper.terminateInstance(imageRow)
-  }
   await fileHelper.deleteFolderRecursively(imageRow.path)
   response.status(200).send('Successfully deleted')
   await databaseHelper.closeDatabase(db)

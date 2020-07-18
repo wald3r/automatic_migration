@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Table, Button, Badge } from 'react-bootstrap'
 import { useToasts } from 'react-toast-notifications'
 import ConfirmationModal from './modals/ConfirmationModal'
-import { deleteImage } from '../reducers/imagesReducer'
+import { deleteImage, exchangeImage } from '../reducers/imagesReducer'
 import '../stylesheets/general.css'
 import imagesService from '../services/imagesService'
 
@@ -42,7 +42,8 @@ const ShowImages = (props) => {
 
   const startImage = async () => {
     try{
-      await imagesService.startImage(imageToStart)
+      const response = await imagesService.startImage(imageToStart)
+      props.exchangeImage(response.data)
       addToast(`${imageToStart.ip} is starting`, {
         appearance: 'success',
         autoDismiss: true,
@@ -60,7 +61,8 @@ const ShowImages = (props) => {
 
   const stopImage = async () => {
     try{
-      await imagesService.stopImage(imageToStop)
+      const response = await imagesService.stopImage(imageToStop)
+      props.exchangeImage(response.data)
       addToast(`${imageToStop.ip} is stopping`, {
         appearance: 'success',
         autoDismiss: true,
@@ -77,7 +79,6 @@ const ShowImages = (props) => {
   }
 
   const deleteImage = async () => {
-
     await props.deleteImage(imageToDelete)
     addToast(`${imageToDelete.ip} was deleted`, {
       appearance: 'success',
@@ -106,12 +107,17 @@ const ShowImages = (props) => {
     else if(status === 'stopping'){
       return   <Badge variant="warning">Stopping</Badge>
     }
+    else if(status === 'installed'){
+      return   <Badge variant="success">Software installed</Badge>
+    }
+    else if(status === 'booting'){
+      return   <Badge variant="info">Software not installed</Badge>
+    }
     else {
       return   <Badge variant="danger">Stopped</Badge>
     }
 
   }
-
   return(
     <div>
       <ConfirmationModal
@@ -142,6 +148,7 @@ const ShowImages = (props) => {
               <th>Request ID</th>
               <th>Zone</th>
               <th>IP</th>
+              <th>Status</th>
               <th>State</th>
               <th>Created At</th>
               <th>Updated At</th>
@@ -156,13 +163,14 @@ const ShowImages = (props) => {
                 <td id='idImageZone'>{image.zone}</td>
                 <td id='idImageIp'>{image.ip}</td>
                 <td id='idImageStatus'>{badgeStatus(image.status)}</td>
+                <td id='idImageStatus'>{badgeStatus(image.state)}</td>
                 <td id='idImageCreatedAt'>{image.createdAt}</td>
                 <td id='idImageUpdatedAt'>{image.updatedAt}</td>
                 <td>
                   <Button variant='primary' id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
                   <Button variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Reboot Image' onClick={() => handleReboot(image)}><i className="fa fa-sort" /></Button>
-                  <Button style={{ display: image.status === 'stopped' ? '' : 'none' }} variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Start Image' onClick={() => handleStart(image)}><i className="fa fa-plus" /></Button>
-                  <Button style={{ display: image.status === 'stopped' ? 'none' : '' }} variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Stop Image' onClick={() => handleStop(image)}><i className="fa fa-remove" /></Button>
+                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? '' : 'none' }} variant='primary' id='idImagesStart'  data-toggle='tooltip' data-placement='top' title='Start Image' onClick={() => handleStart(image)}><i className="fa fa-plus" /></Button>
+                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? 'none' : '' }} variant='primary' id='idImagesStop'  data-toggle='tooltip' data-placement='top' title='Stop Image' onClick={() => handleStop(image)}><i className="fa fa-remove" /></Button>
                 </td>
               </tr>
             </tbody>
@@ -181,6 +189,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = {
   deleteImage,
+  exchangeImage,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ShowImages)

@@ -25,23 +25,20 @@ const newInstance = async (instance, image) => {
   const zone = await getPrediction(instance, image)
 
   const requestId = await spotInstances.requestSpotInstance(instance.type, zone, instance.product, instance.bidprice, instance.simulation, image.rowid, image.path)
-  const instanceIds = await spotInstances.getInstanceIds(requestId)
-
+  const instanceIds = await spotInstances.getInstanceIds(requestId, image.rowid)
   if(instanceIds.length === 0){
     return false
   }
-  const ip = await spotInstances.getPublicIpFromRequest(instanceIds)
+  const ip = await spotInstances.getPublicIpFromRequest(instanceIds, image.rowid)
   console.log('MigrationHelper: Waiting for instance to boot')
   await spotInstances.waitForInstanceToBoot(instanceIds)
 
+  setupServer(ip, image)
   const db = await databaseHelper.openDatabase()
-  const params = ['running', instanceIds[0], ip, timeHelper.utc_timestamp, image.rowid]
-  const values = 'status = ?, spotInstanceId = ?, ip = ?, updatedAt = ?'
+  const params = ['installed', timeHelper.utc_timestamp, image.rowid]
+  const values = 'status = ?, updatedAt = ?'
   await databaseHelper.updateById(db, parameters.imageTableName, values, params)
   await databaseHelper.closeDatabase(db)
-
-  setupServer(ip, image)
-
   return true
 }
 

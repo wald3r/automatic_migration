@@ -65,7 +65,7 @@ const App = ( props ) => {
               <br/>
               <div className='header'>Elastic Migration Tool</div>
               <br/>
-              <Link className='link2' to='/'>Instances</Link>
+              <Link className='link2' to='/'>Models</Link>
               <Link className='link2' to='/app/images'>Images</Link>
               <Link className='link2' to='/app/billing'>Billing</Link>
               <Link className='link2' to='/app/profile'>Profile</Link>

@@ -22,6 +22,15 @@ export const deleteImage = (obj) => {
   }
 }
 
+export const exchangeImage = (obj) => {
+  return async dispatch => {
+    dispatch({
+      type:'EXCHANGEIMAGE',
+      obj
+    })
+  }
+}
+
 
 export const newImage = (data) => {
   return async dispatch => {
@@ -40,6 +49,8 @@ const imagesReducer = (state = [], action) => {
     return state.concat(action.data)
   case 'DELETEIMAGE':
     return state.filter(i => i.rowid !== action.obj.rowid)
+  case 'EXCHANGEIMAGE':
+    return state.filter(i => i.rowid !== action.obj.rowid).concat(action.obj)
   default:
     return state
   }
