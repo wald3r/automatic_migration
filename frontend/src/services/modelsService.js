@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 
-const baseUrl = '/api/instances'
+const baseUrl = '/api/models'
 
 let token = null
 
@@ -10,14 +10,14 @@ const setToken = newToken => {
   token = `bearer ${newToken}`
 }
 
-const getAllInstances = async () => {
+const getAllModels = async () => {
 
   const response = await axios.get(baseUrl)
   return response
 
 }
 
-const newInstance = async (obj) => {
+const newModel = async (obj) => {
 
   const config = {
     headers: { Authorization: token },
@@ -27,7 +27,7 @@ const newInstance = async (obj) => {
   return response
 }
 
-const deleteInstance = async (obj) => {
+const deleteModel = async (obj) => {
 
   const config = {
     headers: { Authorization: token },
@@ -38,4 +38,4 @@ const deleteInstance = async (obj) => {
   return response
 }
 
-export default { setToken, getAllInstances, deleteInstance, newInstance }
+export default { setToken, getAllModels, deleteModel, newModel }

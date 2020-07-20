@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
 import './stylesheets/general.css'
-import ShowInstances from './components/ShowInstances'
+import ShowModels from './components/ShowModels'
 import { connect } from 'react-redux'
-import { getInstances } from './reducers/instancesReducer'
+import { getModels } from './reducers/modelsReducer'
 import { getImages } from './reducers/imagesReducer'
 import Login from './components/Login'
 import Profile from './components/Profile'
@@ -28,7 +28,7 @@ const App = ( props ) => {
       props.setUser(newUser)
       props.getImages()
     }
-    props.getInstances()
+    props.getModels()
     csv(instancesData, (err, data) => {
       props.setInstancesList(data)
     })
@@ -71,7 +71,7 @@ const App = ( props ) => {
               <Link className='link2' to='/app/profile'>Profile</Link>
               <br/>
               <br/>
-              <Route exact path='/' render={() => <ShowInstances/> } />
+              <Route exact path='/' render={() => <ShowModels/> } />
               <Route exact path='/app/images' render={() => <ShowImages /> } />
               <Route exact path='/app/billing' render={() => <Billing /> } />
               <Route exact path='/app/profile' render={() => <Profile /> } />
@@ -87,13 +87,13 @@ const App = ( props ) => {
 
 const mapStateToProps = (state) => {
   return {
-    instances: state.instances,
+    models: state.models,
     user: state.user
   }
 }
 
 const mapDispatchToProps = {
-  getInstances,
+  getModels,
   setZonesList,
   setInstancesList,
   getImages,

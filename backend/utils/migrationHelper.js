@@ -6,7 +6,7 @@ const timeHelper = require('./timeHelper')
 const parameters = require('../parameters')
 
 
-const getPrediction = async (instance, image) => await mlModel.predictModel(instance.type, instance.product, image)
+const getPrediction = async (model, image) => await mlModel.predictModel(model.type, model.product, image)
 
 const deletePredictions = (image) => mlModel.deletePredictions(image)
 
@@ -16,15 +16,15 @@ const startInstance = async (image) => await spotInstances.startInstance(image.s
 const rebootInstance = async (image) => await spotInstances.rebootInstance(image.zone, image.spotInstanceId)
 
 const terminateInstance = async (image) => {
-  await spotInstances.deleteKeyPair(image.zone, image.key)
+  await spotInstances.deleteKeyPair(image.zone, image.key, image.rowid)
   await spotInstances.cancelSpotInstance(image)
   await spotInstances.deleteSecurityGroup(image.zone)
 }
 
-const newInstance = async (instance, image) => {
-  const zone = await getPrediction(instance, image)
+const newInstance = async (model, image) => {
+  const zone = await getPrediction(model, image)
 
-  const requestId = await spotInstances.requestSpotInstance(instance.type, zone, instance.product, instance.bidprice, instance.simulation, image.rowid, image.path)
+  const requestId = await spotInstances.requestSpotInstance(model.type, zone, model.product, model.bidprice, model.simulation, image.rowid, image.path, image.key)
   const instanceIds = await spotInstances.getInstanceIds(requestId, image.rowid)
   if(instanceIds.length === 0){
     return false

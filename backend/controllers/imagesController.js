@@ -200,7 +200,6 @@ imagesRouter.get('/stop/docker/:rowid', async(request, response, next) => {
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
     }
-
     await sshConnection.endDocker(imageRow.ip, imageRow.key)
     const params = ['stopped', timeHelper.utc_timestamp, imageRow.rowid]
     const values = 'status = ?, updatedAt = ?'
@@ -222,8 +221,8 @@ imagesRouter.put('/:rowid', async(request, response, next) => {
   const rowid = request.params.rowid
   const body = request.body
   db = await databaseHelper.openDatabase()
-  const params = [body.instanceId, body.zone, body.path, body.ip, body.key, timeHelper.utc_timestamp, rowid]
-  const values = 'instanceId = ?, zone = ?, path = ?, ip = ?, key = ?, updatedAt = ?'
+  const params = [body.modelId, body.zone, body.path, body.ip, body.key, timeHelper.utc_timestamp, rowid]
+  const values = 'modelId = ?, zone = ?, path = ?, ip = ?, key = ?, updatedAt = ?'
   const status = await databaseHelper.updateById(db, parameters.imageTableName, values, params)
   if(status === 500){
     response.status(500).send(err.message)
@@ -261,8 +260,8 @@ imagesRouter.post('/', async(request, response, next) => {
     fs.mkdirSync(path, { recursive: true })
   } 
 
-  const instanceId = files[0].name.split('_')[0]
-  let keyFile = path+'/'+parameters.keyFileName
+  const modelId = files[0].name.split('_')[0]
+  
 
   await new Promise((resolve) => {
     files.map(async file => {
@@ -277,22 +276,21 @@ imagesRouter.post('/', async(request, response, next) => {
   })
   
   db = await databaseHelper.openDatabase()
-  const params = [null, user.rowid, 'booting', instanceId, null, null, null, path, null, keyFile, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
-  const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+  const params = [null, user.rowid, 'booting', modelId, null, null, null, path, null, null, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+  const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
-  const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, instanceId)
+  let keyFile = `${path}/${parameters.keyName}_${imageId}.pem`
+  await databaseHelper.updateById(db, parameters.imageTableName, 'key = ?', [keyFile, imageId])
+
+  const modelRow = await databaseHelper.selectById(db, parameters.modelTableValues, parameters.modelTableName, modelId)
   const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, imageId)
 
-  if(instanceRow.product === 'Linux/UNIX'){
+  if(modelRow.product === 'Linux/UNIX'){
     fs.copyFile(parameters.linuxInstallFile, path+'/install.sh', (err) => {
       if(err) console.log(`InstallScriptHelper: Could not copy file to ${path+'/install.sh'}`)
       else console.log(`InstallScriptHelper: Copied file to ${path+'/install.sh'}`)
-    })
-    fs.copyFile(parameters.linuxStartFile, path+'/start.sh', (err) => {
-      if(err) console.log(`StartScriptHelper: Could not copy file to ${path+'/start.sh'}`)
-      else console.log(`StartScriptHelper: Copied file to ${path+'/start.sh'}`)
     })
   }
 
@@ -301,7 +299,7 @@ imagesRouter.post('/', async(request, response, next) => {
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)
   }
 
-  migrationHelper.newInstance(instanceRow, imageRow)
+  migrationHelper.newInstance(modelRow, imageRow)
 
   response.status(200).json(imageRow)
   await databaseHelper.closeDatabase(db)
@@ -317,13 +315,10 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const db = await databaseHelper.openDatabase()
-  const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
-  let instanceRow
-  if(imageRow.instanceId !== null){
-    instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, imageRow.instanceId)
-    if(instanceRow.simulation === 0){
-      migrationHelper.terminateInstance(imageRow)
-    }
+  const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)  
+  const modelRow = await databaseHelper.selectById(db, parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
+  if(modelRow.simulation === 0){
+    migrationHelper.terminateInstance(imageRow)
   }
   await databaseHelper.deleteRowById(db, parameters.imageTableName, rowid)     
   migrationHelper.deletePredictions(imageRow)

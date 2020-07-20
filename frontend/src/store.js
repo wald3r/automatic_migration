@@ -4,13 +4,13 @@ import thunk from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import instancesListReducer from './reducers/instancesListReducer'
 import zonesListReducer from './reducers/zonesListReducer'
-import instancesReducer from './reducers/instancesReducer'
+import modelsReducer from './reducers/modelsReducer'
 import imagesReducer from './reducers/imagesReducer'
 import userReducer from './reducers/userReducer'
 
 
 const reducer = combineReducers({
-  instances: instancesReducer,
+  models: modelsReducer,
   zonesList: zonesListReducer,
   instancesList: instancesListReducer,
   images: imagesReducer,

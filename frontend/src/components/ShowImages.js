@@ -98,7 +98,7 @@ const ShowImages = (props) => {
 
   const stopDocker = async () => {
     try{
-      addToast(`Trying to stop ${imageToStartDocker.ip} docker`, {
+      addToast(`Trying to stop ${imageToStopDocker.ip} docker`, {
         appearance: 'success',
         autoDismiss: true,
       })
@@ -226,7 +226,7 @@ const ShowImages = (props) => {
           {props.images.map(image => (
             <tbody key={image.rowid}>
               <tr id='idImageRow'>
-                <td id='idImageInstanceId'>{image.instanceId}</td>
+                <td id='idImageModelId'>{image.modelId}</td>
                 <td id='idImageRequestId'>{image.requestId}</td>
                 <td id='idImageZone'>{image.zone}</td>
                 <td id='idImageIp'>{image.ip}</td>

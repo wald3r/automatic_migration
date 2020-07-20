@@ -14,13 +14,14 @@ registrationRouter.post('/', async(request, response) => {
 
   const db = await databaseHelper.openDatabase()
   const params = [body.username, passwordHash, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
-  const userId = await databaseHelper.insertRow(db, parameters.userTableName, '(NULL, ?, ?, ?, ?)', params)
+  const userId = await databaseHelper.insertRow(db, parameters.userTableName, '(null, ?, ?, ?, ?)', params)
   const userRow = await databaseHelper.selectById(db, parameters.userTableValues, parameters.userTableName, userId)
   await databaseHelper.closeDatabase(db)
 
   if(userId === -1 || userRow === null){
     return response.status(401).send('registration failed')
   }
+  console.log(`RegistrationHelper: New user registered with username ${body.username}`)
   return response.status(200).json(userRow)
 })
 

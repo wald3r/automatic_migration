@@ -19,7 +19,6 @@ const isLoggedIn = async (token) => {
     const db = await databaseHelper.openDatabase()
     userRow = await databaseHelper.selectById(db, parameters.userTableValues, parameters.userTableName, decodedToken.rowid)
     await databaseHelper.closeDatabase(db)
-
   }catch(exception){
     console.error(`Authentication Helper: ${exception.message}`)
   }

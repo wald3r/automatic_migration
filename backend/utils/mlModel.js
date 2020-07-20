@@ -38,12 +38,12 @@ const trainModel = async (instance, product, simulation) => {
     let db = await databaseHelper.openDatabase()
     let outcome = null
     await new Promise((resolve, reject) => {
-      db.get(`SELECT ${parameters.instanceTableValues} FROM ${parameters.instanceTableName} WHERE 
+      db.get(`SELECT ${parameters.modelTableValues} FROM ${parameters.modelTableName} WHERE 
         type = '${instance}' AND
         product = '${product}' AND
         simulation = '${simulation}'`, (err ,row) => {
         if(err){
-          console.error(`${parameters.instanceTableName}: ${err.message}`)
+          console.error(`${parameters.modelTableName}: ${err.message}`)
           reject()
         }else{
           outcome = row
@@ -53,7 +53,7 @@ const trainModel = async (instance, product, simulation) => {
     })
     const params = ['trained', timeHelper.utc_timestamp, outcome.rowid]
     const values = 'status = ?, updatedAt = ?'
-    await databaseHelper.updateById(db, parameters.instanceTableName, values, params)
+    await databaseHelper.updateById(db, parameters.modelTableName, values, params)
     await databaseHelper.closeDatabase(db)
   })
 }

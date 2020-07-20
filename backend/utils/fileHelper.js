@@ -71,9 +71,8 @@ const deleteFile = (path) => {
 }
 
 const createKeyFile = (key, path) => {
-  const fileName = `${path}/${parameters.keyFileName}`
 
-  fs.writeFile(fileName, key.KeyMaterial, (err) => {
+  fs.writeFile(path, key.KeyMaterial, (err) => {
     if (err) console.log(`KeyCreatorHelper: ${err.message}`)
     
   })

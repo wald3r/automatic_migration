@@ -30,7 +30,7 @@ const setUpServer = async (ip, pathToKey, pathToDocker) => {
         console.log(`SSHConnectionHelper: The directory transfer to ${ip} was ${status ? 'successful' : 'unsuccessful'}`)
         console.log(`SSHConnectionHelper: failed transfers to ${ip}: ${failed.join(', ')}`)
         console.log(`SSHConnectionHelper: successful transfers to ${ip}: ${successful.join(', ')}`)
-        ssh.execCommand(`chmod +xr /home/${parameters.ec2Username}/image/install.sh && cd /home/${parameters.ec2Username}/image/ && ./install.sh`).then((result) => {
+        ssh.execCommand(`chmod +xr /home/${parameters.ec2Username}/image/install.sh && cd /home/${parameters.ec2Username}/image/ && ./install.sh && exit`).then((result) => {
           console.log(`STDOUT of ${ip}: ${result.stdout}`)
           console.log(`STDERR of ${ip}: ${result.stderr}`)
           resolve()
@@ -51,7 +51,7 @@ const startDocker = async (ip, pathToKey) => {
       privateKey: pathToKey
     })
     .then(() => {
-      ssh.execCommand(`cd /home/${parameters.ec2Username}/image/ && sudo docker-compose up -d`).then((result) => {
+      ssh.execCommand(`cd /home/${parameters.ec2Username}/image/ && sudo docker-compose up -d && exit`).then((result) => {
         console.log(`STDOUT of ${ip}: ${result.stdout}`)
         console.log(`STDERR of ${ip}: ${result.stderr}`)
         resolve(1)

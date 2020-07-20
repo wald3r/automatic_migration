@@ -248,14 +248,14 @@ const describeKeyPair = async() => {
   })
 }
 
-const createKeyPair = async (path) => {
+const createKeyPair = async (path, rowid) => {
   
   const ec2 = await getEC2Object()
 
-  await describeKeyPair
+  //await describeKeyPair
 
   const params = {
-    KeyName: parameters.keyName
+    KeyName: `${parameters.keyName}_${rowid}`
   }
 
   ec2.createKeyPair(params, (err, data) => {
@@ -267,13 +267,13 @@ const createKeyPair = async (path) => {
 
 }
 
-const deleteKeyPair = async (zone, path) => {
+const deleteKeyPair = async (zone, path, rowid) => {
 
   setRegion(zone)
   const ec2 = await getEC2Object()
 
   const params = {
-    KeyName: parameters.keyName
+    KeyName: `${parameters.keyName}_${rowid}`
   }
   ec2.deleteKeyPair(params, function(err, data) {
     if (err) console.log(`DeleteKeyPairHelper: ${err.message}`)
@@ -404,13 +404,13 @@ const getInstanceState = async (zone, ids) => {
   
 }
 
-const requestSpotInstance = async (instance, zone, serverImage, bidprice, simulation, id, path) => {
+const requestSpotInstance = async (instance, zone, serverImage, bidprice, simulation, id, path, keyPath) => {
 
   setRegion(zone)
   const ec2 = await getEC2Object()
   const imageId = await describeImages(serverImage)
   const securityGroupId = await createSecurityGroup(zone)
-  await createKeyPair(path)
+  await createKeyPair(keyPath, id)
   console.log(`ImageDescribeHelper: For ${zone} the following image was chosen: ${imageId.Images[0].Name}`) 
   
   let params = {
@@ -419,7 +419,7 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
     LaunchSpecification: {
      ImageId: imageId.Images[0].ImageId, 
      InstanceType: instance,
-     KeyName: 'elmit', 
+     KeyName: `elmit_${id}`, 
      Placement: {
       AvailabilityZone: zone
      }, 

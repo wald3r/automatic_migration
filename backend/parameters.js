@@ -9,13 +9,14 @@ const dbFileName = () => {
     }
 }
 
-const instanceTableName = 'instance'
+const modelTableName = 'model'
 const imageTableName = 'image'
 const userTableName = 'user'
+const migrationTableName = 'migration'
+const billingTableName = 'billing'
 
-
-const instanceTableValues = 'rowid, type, product, bidprice, region, simulation, status, createdAt, updatedAt'
-const imageTableValues = 'rowid, predictionFile, userId, status, instanceId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
+const modelTableValues = 'rowid, type, product, bidprice, region, simulation, status, createdAt, updatedAt'
+const imageTableValues = 'rowid, predictionFile, userId, status, modelId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
 const userTableValues = 'rowid, username, password, createdAt, updatedAt'
 
 const mlTrainFile = '/home/walder/workspace/automatic_migration/backend/ml_model/train_ml_model.py'
@@ -25,18 +26,12 @@ const mlPredictions = '/home/walder/workspace/automatic_migration/backend/predic
 
 const collectSpotPricesFile = '/home/walder/workspace/automatic_migration/backend/spot_pricing/collect_spot_prices.py'
 
-const linuxImage = 'ami-0d7d2b94a26cf241f'
-const redHatImage = 'ami-09e973def6bd1ad96'
-const suseImage = 'ami-02752a8e80a726bf0'
-const windowsImage = 'ami-09d4ce9830b19973e'
-
 const keyFileName = 'elmit.pem'
 const keyName = 'elmit'
 const ec2Username = 'ec2-user'
 const securityGroupName = 'elmit-group'
 const securityGroupDescription = 'elmit'
 const linuxInstallFile = './linux_install.sh'
-const linuxStartFile = './start.sh'
 
 const workDir = __dirname
 
@@ -44,7 +39,6 @@ const waitForInstanceId = 10
 
 module.exports = { 
     keyName,
-    linuxStartFile,
     waitForInstanceId,
     securityGroupDescription,
     securityGroupName,
@@ -56,16 +50,14 @@ module.exports = {
     ec2Username,
     mlPredictions, 
     dbFileName, 
-    instanceTableName, 
-    instanceTableValues, 
+    modelTableName, 
+    modelTableValues, 
     imageTableName, 
     imageTableValues, 
     mlTrainFile, 
     mlDeleteFile, 
     mlPredictFile, 
     collectSpotPricesFile,
-    linuxImage,
-    redHatImage,
-    suseImage,
-    windowsImage
+    migrationTableName,
+    billingTableName
 }

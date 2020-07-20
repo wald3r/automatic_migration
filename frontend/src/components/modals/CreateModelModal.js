@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Modal, Button, Form } from 'react-bootstrap'
 import { connect } from 'react-redux'
 
-const CreateInstanceModal = ( { showCreateInstanceModal, setCreateInstanceModal, handleCreation, ...props } ) => {
+const CreateModelModal = ( { showCreateModelModal, setCreateModelModal, handleCreation, ...props } ) => {
 
   const productList = ['Linux/UNIX', 'Windows', 'Red Hat Enterprise Linux', 'SUSE Linux']
   const [simulation, setSimulation] = useState(false)
@@ -18,23 +18,23 @@ const CreateInstanceModal = ( { showCreateInstanceModal, setCreateInstanceModal,
     return null
   }
 
-  const createInstance = (event) => {
-    setCreateInstanceModal(false)
+  const createModel = (event) => {
+    setCreateModelModal(false)
     let tmpSim = simulation === false ? 0 : 1
     handleCreation({ simulation: tmpSim, type, bidprice, product, region }, event)
   }
 
   const noChanges = () => {
-    setCreateInstanceModal(false)
+    setCreateModelModal(false)
   }
 
   return(
     <div>
-      <Modal show={showCreateInstanceModal} onHide={noChanges}>
+      <Modal show={showCreateModelModal} onHide={noChanges}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Instance</Modal.Title>
+          <Modal.Title>Create Model</Modal.Title>
         </Modal.Header>
-        <Form onSubmit={createInstance}>
+        <Form onSubmit={createModel}>
           <Modal.Body>
             <table className='table .table-striped' width="10">
               <tbody width="10">
@@ -69,7 +69,7 @@ const CreateInstanceModal = ( { showCreateInstanceModal, setCreateInstanceModal,
                   </td>
 
                   <td>
-                    <input id='instanceBidPrice' autoComplete='off' type='number' step='0.1' required onChange={({ target }) => setBidprice(target.value)}/>
+                    <input id='modelBidPrice' autoComplete='off' type='number' step='0.1' required onChange={({ target }) => setBidprice(target.value)}/>
                   </td>
                 </tr>
                 <tr>
@@ -77,7 +77,7 @@ const CreateInstanceModal = ( { showCreateInstanceModal, setCreateInstanceModal,
                     Region:
                   </td>
                   <td>
-                    <input id='instanceRegion' autoComplete='off' type='text' />
+                    <input id='modelRegion' autoComplete='off' type='text' />
                   </td>
                 </tr>
                 <tr>
@@ -85,7 +85,7 @@ const CreateInstanceModal = ( { showCreateInstanceModal, setCreateInstanceModal,
                     Simulation
                   </td>
                   <td>
-                    <input id='instanceSimulation' autoComplete='off' type='checkbox' onChange={() => setSimulation(true)} />
+                    <input id='modelSimulation' autoComplete='off' type='checkbox' onChange={() => setSimulation(true)} />
                   </td>
                 </tr>
               </tbody>
@@ -113,4 +113,4 @@ const mapStateToProps = (state) => {
 }
 
 
-export default connect(mapStateToProps)(CreateInstanceModal)
+export default connect(mapStateToProps)(CreateModelModal)

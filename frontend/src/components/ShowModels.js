@@ -1,43 +1,43 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import { Table, Button, Badge } from 'react-bootstrap'
-import { deleteInstance, newInstance } from '../reducers/instancesReducer'
+import { deleteModel, newModel } from '../reducers/modelsReducer'
 import { newImage } from '../reducers/imagesReducer'
 import ConfirmationModal from './modals/ConfirmationModal'
-import CreateInstanceModal from './modals/CreateInstanceModal'
+import CreateModelModal from './modals/CreateModelModal'
 import RunImageModal from './modals/RunImageModal'
-import instancesService from '../services/instancesService'
+import modelsService from '../services/modelsService'
 import imagesService from '../services/imagesService'
 import { useToasts } from 'react-toast-notifications'
 import '../stylesheets/general.css'
 
 
-const ShowInstances = ( props ) => {
+const ShowModels = ( props ) => {
 
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false)
-  const [showCreateInstanceModal, setShowCreateInstanceModal] = useState(false)
+  const [showCreateModelModal, setShowCreateModelModal] = useState(false)
   const [showRunImageModal, setShowRunImageModal] = useState(false)
-  const [instanceToRunWithImage, setInstanceToRunWithimage] = useState(null)
-  const [instanceToDelete, setInstanceToDelete] = useState(null)
+  const [modelToRunWithImage, setModelToRunWithimage] = useState(null)
+  const [modelToDelete, setModelToDelete] = useState(null)
 
   const { addToast } = useToasts()
 
 
-  const deleteInstance = async () => {
+  const deleteModel = async () => {
 
-    await props.deleteInstance(instanceToDelete)
-    addToast(`${instanceToDelete.type} was deleted.`, {
+    await props.deleteModel(modelToDelete)
+    addToast(`${modelToDelete.type} was deleted.`, {
       appearance: 'success',
       autoDismiss: true,
     })
-    setInstanceToDelete(null)
+    setModelToDelete(null)
   }
 
-  const createInstance = async (obj, event) => {
+  const createModel = async (obj, event) => {
     event.preventDefault()
-    const response = await instancesService.newInstance(obj)
+    const response = await modelsService.newModel(obj)
     if(response.status === 200){
-      await props.newInstance(response.data)
+      await props.newModel(response.data)
       addToast('test', {
         appearance: 'success',
         autoDismiss: true,
@@ -47,13 +47,13 @@ const ShowInstances = ( props ) => {
   }
 
 
-  const handleInstanceDeletion = (instance) => {
-    setInstanceToDelete(instance)
+  const handleModelDeletion = (model) => {
+    setModelToDelete(model)
     setShowDeleteConfirmationModal(true)
   }
 
   const handleCreation = () => {
-    setShowCreateInstanceModal(true)
+    setShowCreateModelModal(true)
   }
 
   const createPathName = (path) => path.replaceAll('/', '__')
@@ -80,11 +80,11 @@ const ShowInstances = ( props ) => {
     let data = new FormData()
     if(checkFiles(files)){
       for(let x = 0; x<files.length; x++) {
-        data.append('file', files[x], `${instanceToRunWithImage.rowid}___${createPathName(files[x].webkitRelativePath)}___${files[x].name}`)
+        data.append('file', files[x], `${modelToRunWithImage.rowid}___${createPathName(files[x].webkitRelativePath)}___${files[x].name}`)
       }
       const response = await imagesService.newImage(data)
       if(response.status === 200){
-        addToast(`New Image added to ${instanceToRunWithImage.type}`, {
+        addToast(`New Image added to ${modelToRunWithImage.type}`, {
           appearance: 'success',
           autoDismiss: true,
         })
@@ -98,9 +98,9 @@ const ShowInstances = ( props ) => {
     }
   }
 
-  const handleRunImage = (instance) => {
+  const handleRunImage = (model) => {
     setShowRunImageModal(true)
-    setInstanceToRunWithimage(instance)
+    setModelToRunWithimage(model)
   }
 
   const simulationConverter = (simulation) => simulation === 0 ? 'No' : 'Yes'
@@ -122,22 +122,22 @@ const ShowInstances = ( props ) => {
         setShowRunImageModal={setShowRunImageModal}
         handleRun={runImage}
       />
-      <CreateInstanceModal
-        showCreateInstanceModal={showCreateInstanceModal}
-        setCreateInstanceModal={setShowCreateInstanceModal}
-        handleCreation={createInstance}
+      <CreateModelModal
+        showCreateModelModal={showCreateModelModal}
+        setCreateModelModal={setShowCreateModelModal}
+        handleCreation={createModel}
       />
       <ConfirmationModal
         showConfirmationModal={showDeleteConfirmationModal}
         setConfirmation={setShowDeleteConfirmationModal}
-        handleConfirmation={deleteInstance}
+        handleConfirmation={deleteModel}
       />
       <div className='tableContainer'>
         <Table responsive className='table table-hover'>
           <thead className='thead-dark'>
             <tr>
               <th>ID</th>
-              <th>InstanceType</th>
+              <th>Type</th>
               <th>Product</th>
               <th>BidPrice</th>
               <th>Region</th>
@@ -150,21 +150,21 @@ const ShowInstances = ( props ) => {
               <th></th>
             </tr>
           </thead>
-          {props.instances.map(instance => (
-            <tbody key={instance.rowid}>
-              <tr id='idInstanceRow'>
-                <td id='idInstanceTyId'>{instance.rowid}</td>
-                <td id='idInstanceType'>{instance.type}</td>
-                <td id='idInstanceProduct'>{instance.product}</td>
-                <td id='idInstanceBidPrice'>{instance.bidprice}</td>
-                <td id='idInstanceRegion'>{instance.region}</td>
-                <td id='idInstanceStatus'>{badgeStatus(instance.status)}</td>
-                <td id='idInstanceSimulation'>{simulationConverter(instance.simulation)}</td>
-                <td id='idInstanceCreatedAt'>{instance.createdAt}</td>
-                <td id='idInstanceUpdatedAt'>{instance.updatedAt}</td>
+          {props.models.map(model => (
+            <tbody key={model.rowid}>
+              <tr id='idModelRow'>
+                <td id='idModelId'>{model.rowid}</td>
+                <td id='idModelType'>{model.type}</td>
+                <td id='idModelProduct'>{model.product}</td>
+                <td id='idModelBidPrice'>{model.bidprice}</td>
+                <td id='idModelRegion'>{model.region}</td>
+                <td id='idModelStatus'>{badgeStatus(model.status)}</td>
+                <td id='idModelSimulation'>{simulationConverter(model.simulation)}</td>
+                <td id='idModelCreatedAt'>{model.createdAt}</td>
+                <td id='idModelUpdatedAt'>{model.updatedAt}</td>
                 <td>
-                  <Button variant='primary' style={{ display: instance.status === 'trained' ? '' : 'none' }} id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Run Image' onClick={() => handleRunImage(instance)}><i className="fa fa-plus" /></Button>
-                  <Button variant='primary' id='idInstancesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Instance' onClick={() => handleInstanceDeletion(instance)}><i className="fa fa-trash" /></Button>
+                  <Button variant='primary' style={{ display: model.status === 'trained' ? '' : 'none' }} id='idModelsDelete'  data-toggle='tooltip' data-placement='top' title='Run Image' onClick={() => handleRunImage(model)}><i className="fa fa-plus" /></Button>
+                  <Button variant='primary' id='idModelsDelete'  data-toggle='tooltip' data-placement='top' title='Remove Model' onClick={() => handleModelDeletion(model)}><i className="fa fa-trash" /></Button>
                 </td>
               </tr>
             </tbody>
@@ -177,15 +177,15 @@ const ShowInstances = ( props ) => {
 
 const mapStateToProps = (state) => {
   return {
-    instances: state.instances,
+    models: state.models,
     images: state.images,
   }
 }
 
 const mapDispatchToProps = {
-  deleteInstance,
-  newInstance,
+  deleteModel,
+  newModel,
   newImage,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ShowInstances)
+export default connect(mapStateToProps, mapDispatchToProps)(ShowModels)
