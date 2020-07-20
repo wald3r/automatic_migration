@@ -3,7 +3,6 @@ const parameters = require('../parameters')
 const databaseHelper = require('./databaseHelper')
 const timeHelper = require('./timeHelper')
 const fileHelper = require('./fileHelper')
-const exceptions = require('./exceptions')
 
 let AWSRegion = 'eu-west-3'
 

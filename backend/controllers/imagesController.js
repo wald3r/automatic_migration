@@ -8,7 +8,7 @@ const fs = require('fs')
 const uuidv4 = require('uuid/v4')
 const fileHelper = require('../utils/fileHelper')
 const authenticationHelper = require('../utils/authenticationHelper')
-
+const sshConnection = require('../utils/sshConnection')
 
 
 imagesRouter.get('/', async(request, response, next) => {
@@ -93,7 +93,7 @@ imagesRouter.get('/reboot/:rowid', async(request, response, next) => {
   }
 })
 
-imagesRouter.get('/stop/:rowid', async(request, response, next) => {
+imagesRouter.get('/stop/instance/:rowid', async(request, response, next) => {
   const rowid = request.params.rowid
   try{
     const user = await authenticationHelper.isLoggedIn(request.token)
@@ -103,13 +103,16 @@ imagesRouter.get('/stop/:rowid', async(request, response, next) => {
     
     const db = await databaseHelper.openDatabase()
     let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
-    await databaseHelper.closeDatabase(db)
 
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
     }
     
     await spotInstances.stopInstance(imageRow.spotInstanceId, imageRow.zone)
+    const params = ['stopped', timeHelper.utc_timestamp, imageRow.rowid]
+    const values = 'status = ?, updatedAt = ?'
+    await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+    await databaseHelper.closeDatabase(db)
       
     imageRow.state = 'stopping'
     return response.status(200).json(imageRow)
@@ -120,7 +123,7 @@ imagesRouter.get('/stop/:rowid', async(request, response, next) => {
   }
 })
 
-imagesRouter.get('/start/:rowid', async(request, response, next) => {
+imagesRouter.get('/start/instance/:rowid', async(request, response, next) => {
   const rowid = request.params.rowid
   try{
     const user = await authenticationHelper.isLoggedIn(request.token)
@@ -130,7 +133,6 @@ imagesRouter.get('/start/:rowid', async(request, response, next) => {
     
     const db = await databaseHelper.openDatabase()
     let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
-    await databaseHelper.closeDatabase(db)
 
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
@@ -138,14 +140,80 @@ imagesRouter.get('/start/:rowid', async(request, response, next) => {
 
     
     await spotInstances.startInstance(imageRow.spotInstanceId, imageRow.zone)
-     
     imageRow.state = 'pending'
+    return response.status(200).send(imageRow)
+
+   /* console.log(`InstanceBootHelper: Waiting for instance ${imageRow.spotInstanceId} to boot`)
+    await spotInstances.waitForInstanceToBoot([imageRow.spotInstanceId])
+    await sshConnection.startDocker(imageRow.ip, imageRow.key)
+*/
+  }catch(exception){
+    return response.status(500).send('Can not start instance')
+
+  }
+})
+
+imagesRouter.get('/start/docker/:rowid', async(request, response, next) => {
+  const rowid = request.params.rowid
+  try{
+    const user = await authenticationHelper.isLoggedIn(request.token)
+    if(user == undefined){
+      return response.status(401).send('Not Authenticated')
+    }
+    
+    const db = await databaseHelper.openDatabase()
+    let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+
+    if(imageRow === null){
+      return response.status(500).send('Image does not exist')
+    }
+    
+    await sshConnection.startDocker(imageRow.ip, imageRow.key)
+    
+    const params = ['running', timeHelper.utc_timestamp, imageRow.rowid]
+    const values = 'status = ?, updatedAt = ?'
+    await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+    imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    await databaseHelper.closeDatabase(db)
+    
+    imageRow.state = await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId])
     return response.status(200).send(imageRow)
 
 
   }catch(exception){
-    return response.status(500).send('Can not start instance')
+    return response.status(500).send('Can not start docker')
 
+  }
+})
+
+imagesRouter.get('/stop/docker/:rowid', async(request, response, next) => {
+  const rowid = request.params.rowid
+  try{
+    const user = await authenticationHelper.isLoggedIn(request.token)
+    if(user == undefined){
+      return response.status(401).send('Not Authenticated')
+    }
+    
+    const db = await databaseHelper.openDatabase()
+    let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+
+    if(imageRow === null){
+      return response.status(500).send('Image does not exist')
+    }
+
+    await sshConnection.endDocker(imageRow.ip, imageRow.key)
+    const params = ['stopped', timeHelper.utc_timestamp, imageRow.rowid]
+    const values = 'status = ?, updatedAt = ?'
+    await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+    imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    await databaseHelper.closeDatabase(db)
+    imageRow.state = await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId])
+
+    return response.status(200).json(imageRow)
+
+
+  }catch(exception){
+    return response.status(500).send('Can not stop docker')
   }
 })
 
@@ -214,9 +282,20 @@ imagesRouter.post('/', async(request, response, next) => {
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
-
   const instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, instanceId)
   const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, imageId)
+
+  if(instanceRow.product === 'Linux/UNIX'){
+    fs.copyFile(parameters.linuxInstallFile, path+'/install.sh', (err) => {
+      if(err) console.log(`InstallScriptHelper: Could not copy file to ${path+'/install.sh'}`)
+      else console.log(`InstallScriptHelper: Copied file to ${path+'/install.sh'}`)
+    })
+    fs.copyFile(parameters.linuxStartFile, path+'/start.sh', (err) => {
+      if(err) console.log(`StartScriptHelper: Could not copy file to ${path+'/start.sh'}`)
+      else console.log(`StartScriptHelper: Copied file to ${path+'/start.sh'}`)
+    })
+  }
+
 
   if(imageRow === null){
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)
@@ -238,9 +317,7 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const db = await databaseHelper.openDatabase()
-  console.log(rowid)
   const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
-  console.log(imageRow)
   let instanceRow
   if(imageRow.instanceId !== null){
     instanceRow = await databaseHelper.selectById(db, parameters.instanceTableValues, parameters.instanceTableName, imageRow.instanceId)

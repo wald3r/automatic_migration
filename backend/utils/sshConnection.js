@@ -4,54 +4,89 @@ const parameters = require('../parameters')
 ssh = new NodeSSH()
 
 
-const setUpServer = (ip, pathToKey, pathToDocker) => {
+const setUpServer = async (ip, pathToKey, pathToDocker) => {
 
   const failed = []
   const successful = []   
   
-  ssh.connect({
-    host: ip,
-    username: parameters.ec2Username,
-    privateKey: pathToKey
-  })
-  .then(() => {
-    // Local, Remote
-    /*ssh.execCommand(`mkdir image`, { cwd: `/home/${parameters.ec2Username}`})
-    .then(()=>{
-      console.log(`SSHConnectionHelper: Directory Created at ${ip}`)
-    })*/
-    ssh.putDirectory(pathToDocker, `/home/${parameters.ec2Username}/image`, {
-      recursive: true,
-      concurrency: 10,
-      tick: (localPath, remotePath, error) => {
-        if (error) {
-          failed.push(localPath)
-        } else {
-          successful.push(localPath)
+  return await new Promise((resolve) => {
+    ssh.connect({
+      host: ip,
+      username: parameters.ec2Username,
+      privateKey: pathToKey
+    })
+    .then(() => {
+      ssh.putDirectory(pathToDocker, `/home/${parameters.ec2Username}/image`, {
+        recursive: true,
+        concurrency: 10,
+        tick: (localPath, remotePath, error) => {
+          if (error) {
+            failed.push(localPath)
+          } else {
+            successful.push(localPath)
+          }
         }
-      }
-    }).then((status) => {
-      console.log(`SSHConnectionHelper: The directory transfer to ${ip} was ${status ? 'successful' : 'unsuccessful'}`)
-      console.log(`SSHConnectionHelper: failed transfers to ${ip}: ${failed.join(', ')}`)
-      console.log(`SSHConnectionHelper: successful transfers to ${ip}: ${successful.join(', ')}`)
-    })
-    ssh.putFile(`${parameters.linuxInstallFile}`, `/home/${parameters.ec2Username}/image/`).then(() => {
-      console.log(`SSHConnectionHelper: Copied installion script to ${ip}`)
+      }).then((status) => {
+        console.log(`SSHConnectionHelper: The directory transfer to ${ip} was ${status ? 'successful' : 'unsuccessful'}`)
+        console.log(`SSHConnectionHelper: failed transfers to ${ip}: ${failed.join(', ')}`)
+        console.log(`SSHConnectionHelper: successful transfers to ${ip}: ${successful.join(', ')}`)
+        ssh.execCommand(`chmod +xr /home/${parameters.ec2Username}/image/install.sh && cd /home/${parameters.ec2Username}/image/ && ./install.sh`).then((result) => {
+          console.log(`STDOUT of ${ip}: ${result.stdout}`)
+          console.log(`STDERR of ${ip}: ${result.stderr}`)
+          resolve()
+        })
+      })
+      
+      
     })
   })
+  
 }
-/*
-const startDocker = (ip, pathToKey, pathToDocker) => {
-  ssh.connect({
-    host: ip,
-    username: parameters.ec2Username,
-    privateKey: pathToKey
-  })
-  .then(() => {
-    ssh.execCommand().then((result) => {
 
+const startDocker = async (ip, pathToKey) => {
+  let promise = await new Promise((resolve) => {
+    ssh.connect({
+      host: ip,
+      username: parameters.ec2Username,
+      privateKey: pathToKey
+    })
+    .then(() => {
+      ssh.execCommand(`cd /home/${parameters.ec2Username}/image/ && sudo docker-compose up -d`).then((result) => {
+        console.log(`STDOUT of ${ip}: ${result.stdout}`)
+        console.log(`STDERR of ${ip}: ${result.stderr}`)
+        resolve(1)
+      })
+    }).catch((exception) => {
+      resolve(-1)
     })
   })
-}*/
+  if(promise === -1){
+    throw new Error('Can not start docker')
+  }
+}
 
-module.exports = { setUpServer }
+const endDocker = async (ip, pathToKey) => {
+  let promise = await new Promise((resolve) => {
+    ssh.connect({
+      host: ip,
+      username: parameters.ec2Username,
+      privateKey: pathToKey
+    })
+    .then(() => {
+      ssh.execCommand(`cd /home/${parameters.ec2Username}/image && sudo docker-compose down && exit`).then((result) => {
+        console.log(`STDOUT of ${ip}: ${result.stdout}`)
+        console.log(`STDERR of ${ip}: ${result.stderr}`)
+        resolve(1)
+      })
+    })
+    .catch((exception) => {
+      resolve(-1)
+    })
+  })
+  if(promise === -1){
+    throw new Error('Can not stop docker')
+  }
+ 
+}
+
+module.exports = { setUpServer, startDocker, endDocker }

@@ -14,8 +14,12 @@ const ShowImages = (props) => {
   const [imageToReboot, setImageToReboot] = useState(null)
   const [imageToStart, setImageToStart] = useState(null)
   const [imageToStop, setImageToStop] = useState(null)
+  const [imageToStartDocker, setImageToStartDocker] = useState(null)
+  const [imageToStopDocker, setImageToStopDocker] = useState(null)
   const [showStartConfirmationModal, setShowStartConfirmationModal] = useState(false)
   const [showStopConfirmationModal, setShowStopConfirmationModal] = useState(false)
+  const [showStartDockerConfirmationModal, setShowStartDockerConfirmationModal] = useState(false)
+  const [showStopDockerConfirmationModal, setShowStopDockerConfirmationModal] = useState(false)
   const [showRebootConfirmationModal, setShowRebootConfirmationModal] = useState(false)
 
   const { addToast } = useToasts()
@@ -28,6 +32,16 @@ const ShowImages = (props) => {
   const handleReboot = (image) => {
     setImageToReboot(image)
     setShowRebootConfirmationModal(true)
+  }
+
+  const handleStartDocker = (image) => {
+    setImageToStartDocker(image)
+    setShowStartDockerConfirmationModal(true)
+  }
+
+  const handleStopDocker = (image) => {
+    setImageToStopDocker(image)
+    setShowStopDockerConfirmationModal(true)
   }
 
   const handleStart = (image) => {
@@ -58,6 +72,53 @@ const ShowImages = (props) => {
       setImageToStart(null)
     }
   }
+
+  const startDocker = async () => {
+    try{
+      addToast(`Trying to start ${imageToStartDocker.ip} docker`, {
+        appearance: 'success',
+        autoDismiss: true,
+      })
+      const response = await imagesService.startDocker(imageToStartDocker)
+      props.exchangeImage(response.data)
+      addToast(`${imageToStartDocker.ip} docker is starting`, {
+        appearance: 'success',
+        autoDismiss: true,
+      })
+      setImageToStart(null)
+    }
+    catch(exception){
+      addToast(`${imageToStartDocker.ip} docker is not starting`, {
+        appearance: 'error',
+        autoDismiss: true,
+      })
+      setImageToStart(null)
+    }
+  }
+
+  const stopDocker = async () => {
+    try{
+      addToast(`Trying to stop ${imageToStartDocker.ip} docker`, {
+        appearance: 'success',
+        autoDismiss: true,
+      })
+      const response = await imagesService.stopDocker(imageToStopDocker)
+      props.exchangeImage(response.data)
+      addToast(`${imageToStopDocker.ip} docker is stopping`, {
+        appearance: 'success',
+        autoDismiss: true,
+      })
+      setImageToStart(null)
+    }
+    catch(exception){
+      addToast(`${imageToStopDocker.ip} docker is not stopping`, {
+        appearance: 'error',
+        autoDismiss: true,
+      })
+      setImageToStart(null)
+    }
+  }
+
 
   const stopImage = async () => {
     try{
@@ -107,11 +168,8 @@ const ShowImages = (props) => {
     else if(status === 'stopping'){
       return   <Badge variant="warning">Stopping</Badge>
     }
-    else if(status === 'installed'){
-      return   <Badge variant="success">Software installed</Badge>
-    }
     else if(status === 'booting'){
-      return   <Badge variant="info">Software not installed</Badge>
+      return   <Badge variant="info">Instance is booting</Badge>
     }
     else {
       return   <Badge variant="danger">Stopped</Badge>
@@ -120,6 +178,16 @@ const ShowImages = (props) => {
   }
   return(
     <div>
+      <ConfirmationModal
+        showConfirmationModal={showStopDockerConfirmationModal}
+        setConfirmation={setShowStopDockerConfirmationModal}
+        handleConfirmation={stopDocker}
+      />
+      <ConfirmationModal
+        showConfirmationModal={showStartDockerConfirmationModal}
+        setConfirmation={setShowStartDockerConfirmationModal}
+        handleConfirmation={startDocker}
+      />
       <ConfirmationModal
         showConfirmationModal={showDeleteConfirmationModal}
         setConfirmation={setShowDeleteConfirmationModal}
@@ -169,8 +237,10 @@ const ShowImages = (props) => {
                 <td>
                   <Button variant='primary' id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
                   <Button variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Reboot Image' onClick={() => handleReboot(image)}><i className="fa fa-sort" /></Button>
-                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? '' : 'none' }} variant='primary' id='idImagesStart'  data-toggle='tooltip' data-placement='top' title='Start Image' onClick={() => handleStart(image)}><i className="fa fa-plus" /></Button>
-                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? 'none' : '' }} variant='primary' id='idImagesStop'  data-toggle='tooltip' data-placement='top' title='Stop Image' onClick={() => handleStop(image)}><i className="fa fa-remove" /></Button>
+                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? '' : 'none' }} variant='primary' id='idImagesStart'  data-toggle='tooltip' data-placement='top' title='Start Image' onClick={() => handleStart(image)}><i className="fa fa-sort-up" /></Button>
+                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? 'none' : '' }} variant='primary' id='idImagesStop'  data-toggle='tooltip' data-placement='top' title='Stop Image' onClick={() => handleStop(image)}><i className="fa fa-sort-desc" /></Button>
+                  <Button style={{ display: (image.status === 'stopped' && image.state === 'running') ? '' : 'none' }} variant='primary' id='idImagesStartDocker'  data-toggle='tooltip' data-placement='top' title='Start Docker' onClick={() => handleStartDocker(image)}><i className="fa fa-toggle-up" /></Button>
+                  <Button style={{ display: (image.status === 'running') ? '' : 'none' }} variant='primary' id='idImagesStopDocker'  data-toggle='tooltip' data-placement='top' title='Stop Docker' onClick={() => handleStopDocker(image)}><i className="fa fa-toggle-down" /></Button>
                 </td>
               </tr>
             </tbody>

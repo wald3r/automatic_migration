@@ -36,6 +36,7 @@ const ec2Username = 'ec2-user'
 const securityGroupName = 'elmit-group'
 const securityGroupDescription = 'elmit'
 const linuxInstallFile = './linux_install.sh'
+const linuxStartFile = './start.sh'
 
 const workDir = __dirname
 
@@ -43,6 +44,7 @@ const waitForInstanceId = 10
 
 module.exports = { 
     keyName,
+    linuxStartFile,
     waitForInstanceId,
     securityGroupDescription,
     securityGroupName,

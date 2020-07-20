@@ -26,7 +26,7 @@ const startImage = async (image) => {
     headers: { Authorization: token },
   }
 
-  const response = await axios.get(`${baseUrl}/start/${image.rowid}`, config)
+  const response = await axios.get(`${baseUrl}/start/instance/${image.rowid}`, config)
   return response
 }
 
@@ -36,7 +36,27 @@ const stopImage = async (image) => {
     headers: { Authorization: token },
   }
 
-  const response = await axios.get(`${baseUrl}/stop/${image.rowid}`, config)
+  const response = await axios.get(`${baseUrl}/stop/instance/${image.rowid}`, config)
+  return response
+}
+
+const startDocker = async (image) => {
+
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const response = await axios.get(`${baseUrl}/start/docker/${image.rowid}`, config)
+  return response
+}
+
+const stopDocker = async (image) => {
+
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const response = await axios.get(`${baseUrl}/stop/docker/${image.rowid}`, config)
   return response
 }
 
@@ -72,4 +92,14 @@ const deleteImage = async (obj) => {
   return response
 }
 
-export default { startImage, stopImage, rebootImage, newImage, getAllImages, deleteImage, setToken }
+export default {
+  startImage,
+  stopImage,
+  rebootImage,
+  newImage,
+  getAllImages,
+  deleteImage,
+  setToken,
+  stopDocker,
+  startDocker 
+}

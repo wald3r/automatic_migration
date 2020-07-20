@@ -30,22 +30,26 @@ const newInstance = async (instance, image) => {
     return false
   }
   const ip = await spotInstances.getPublicIpFromRequest(instanceIds, image.rowid)
-  console.log('MigrationHelper: Waiting for instance to boot')
+  console.log(`InstanceBootHelper: Waiting for instance ${instanceIds} to boot`)
   await spotInstances.waitForInstanceToBoot(instanceIds)
 
-  setupServer(ip, image)
+  await setupServer(ip, image)
+  await startDocker(ip, image.key)
   const db = await databaseHelper.openDatabase()
-  const params = ['installed', timeHelper.utc_timestamp, image.rowid]
+  const params = ['running', timeHelper.utc_timestamp, image.rowid]
   const values = 'status = ?, updatedAt = ?'
   await databaseHelper.updateById(db, parameters.imageTableName, values, params)
   await databaseHelper.closeDatabase(db)
   return true
 }
 
-const setupServer = (ip, image) => {
-  sshConnection.setUpServer(ip, image.key, image.path)
+const setupServer = async (ip, image) => {
+  await sshConnection.setUpServer(ip, image.key, image.path)
 }
 
+const startDocker = async (ip, key) => {
+  await sshConnection.startDocker(ip, key)
+}
 
 
 
