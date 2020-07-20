@@ -9,7 +9,10 @@
     "start": "NODE_ENV=prod node index.js"
   },
   "nodemonConfig": {
-    "ignore": ["images/*", "ml_model/*"]
+    "ignore": [
+      "images/*",
+      "ml_model/*"
+    ]
   },
   "author": "Daniel Walder",
   "license": "ISC",
