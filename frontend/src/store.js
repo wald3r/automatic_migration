@@ -7,6 +7,7 @@ import zonesListReducer from './reducers/zonesListReducer'
 import modelsReducer from './reducers/modelsReducer'
 import imagesReducer from './reducers/imagesReducer'
 import userReducer from './reducers/userReducer'
+import billingReducer from './reducers/billingReducer'
 
 
 const reducer = combineReducers({
@@ -14,7 +15,8 @@ const reducer = combineReducers({
   zonesList: zonesListReducer,
   instancesList: instancesListReducer,
   images: imagesReducer,
-  user: userReducer
+  user: userReducer,
+  billing: billingReducer
 })
 
 

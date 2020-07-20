@@ -140,6 +140,7 @@ modelsRouter.delete('/:rowid', async(request, response, next) => {
       migrationHelper.deletePredictions(image)
       await migrationHelper.terminateInstance(image)
       await fileHelper.deleteFolderRecursively(image.path)
+      await databaseHelper.deleteRowsByValue(db, parameters.billingTableName, image.rowid, 'imageId') //on delete cascade alternative
     })
   }
   await databaseHelper.deleteRowsByValue(db, parameters.imageTableName, rowid, 'modelId') //on delete cascade alternative

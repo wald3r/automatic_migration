@@ -1,19 +1,47 @@
 import React from 'react'
-import { Button } from 'react-bootstrap'
-import billingService from '../services/billingService'
+import { Table } from 'react-bootstrap'
+import { connect } from 'react-redux'
 
-const Billing = () => {
+const Billing = (props) => {
 
-  const handleBilling = async () => {
-    await billingService.getBilling()
-  }
+
 
   return(
     <div>
-      <Button onClick={() => handleBilling()}>test</Button>
+      <div className='tableContainer'>
+        <Table responsive className='table table-hover'>
+          <thead className='thead-dark'>
+            <tr>
+              <th>ID</th>
+              <th>Predicted Costs</th>
+              <th>Actual Costs</th>
+              <th>Created At</th>
+              <th>Updated At</th>
+              <th></th>
+            </tr>
+          </thead>
+          {props.billing.map(billing => (
+            <tbody key={billing.rowid}>
+              <tr id='idBillingRow'>
+                <td id='idBillingImageId'>{billing.imageId}</td>
+                <td id='idBillingPredicted'>{billing.predictedCost}</td>
+                <td id='idBillingActual'>{billing.actualCost}</td>
+                <td id='idBillingCreatedAt'>{billing.createdAt}</td>
+                <td id='idBillingUpdatedAt'>{billing.updatedAt}</td>
+              </tr>
+            </tbody>
+          ))}
+        </Table>
+      </div>
     </div>
   )
 }
 
+const mapStateToProps = (state) => {
+  return{
+    billing: state.billing
+  }
+}
 
-export default Billing
+
+export default connect(mapStateToProps, null)(Billing)

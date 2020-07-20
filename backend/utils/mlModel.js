@@ -36,7 +36,7 @@ const trainModel = async (instance, product, simulation) => {
     
 
     let db = await databaseHelper.openDatabase()
-    let outcome = null
+    let outcome = databaseHelper.selectByValue
     await new Promise((resolve, reject) => {
       db.get(`SELECT ${parameters.modelTableValues} FROM ${parameters.modelTableName} WHERE 
         type = '${instance}' AND
@@ -91,7 +91,7 @@ function sortFunction(a, b) {
 }
 
 
-const predictModel = async (instance, product, image) => {
+const predictModel = async (instance, product, image, user) => {
   const python = spawn('python3', [parameters.mlPredictFile, instance, product, image.rowid])
   console.log(`Started prediction of ml model ${instance} ${product}`)
 
@@ -111,6 +111,7 @@ const predictModel = async (instance, product, image) => {
           let zone = results[0][1]
           const params = [path, zone, timeHelper.utc_timestamp, image.rowid]
           const values = 'predictionFile = ?, zone = ?, updatedAt = ?'
+          await databaseHelper.insertRow(db, parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?)', [results[0][0], null, image.rowid, user.rowid, timeHelper.utc_timestamp, timeHelper.utc_timestamp])
           await databaseHelper.updateById(db, parameters.imageTableName, values, params)
           await databaseHelper.closeDatabase(db)
 

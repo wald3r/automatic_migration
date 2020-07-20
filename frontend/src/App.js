@@ -3,6 +3,7 @@ import './stylesheets/general.css'
 import ShowModels from './components/ShowModels'
 import { connect } from 'react-redux'
 import { getModels } from './reducers/modelsReducer'
+import { getBilling } from './reducers/billingReducer'
 import { getImages } from './reducers/imagesReducer'
 import Login from './components/Login'
 import Profile from './components/Profile'
@@ -27,6 +28,7 @@ const App = ( props ) => {
       const newUser = JSON.parse(loggedUserJSON)
       props.setUser(newUser)
       props.getImages()
+      props.getBilling()
     }
     props.getModels()
     csv(instancesData, (err, data) => {
@@ -97,7 +99,8 @@ const mapDispatchToProps = {
   setZonesList,
   setInstancesList,
   getImages,
-  setUser
+  setUser,
+  getBilling,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)

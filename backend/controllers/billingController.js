@@ -1,6 +1,7 @@
 const billingRouter = require('express').Router()
 const authenticationHelper = require('../utils/authenticationHelper')
-const AWS = require('aws-sdk')
+const parameters = require('../parameters')
+const databaseHelper = require('../utils/databaseHelper')
 
 
 billingRouter.get('/', async(request, response, next) => {
@@ -11,18 +12,13 @@ billingRouter.get('/', async(request, response, next) => {
     if(user == undefined){
       return response.status(401).send('Not Authenticated')
     }
-    /*
-    var params = {
-      TimePeriod: { 
-        End: 'STRING_VALUE', 
-        Start: 'STRING_VALUE' 
-      },
-    }
-    costexplorer.getCostAndUsage(params, function(err, data) {
-      if (err) console.log(err, err.stack)
-      else     console.log(data)
-    })
-    */
+    
+    const db = await databaseHelper.openDatabase()
+    const billingRows = await databaseHelper.selectByUserId(db, parameters.billingTableValues, parameters.billingTableName, user.rowid)
+    await databaseHelper.closeDatabase(db)
+
+    response.status(200).json(billingRows)
+
 
   }catch(exception){
     next(exception)

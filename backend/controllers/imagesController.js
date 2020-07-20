@@ -299,7 +299,7 @@ imagesRouter.post('/', async(request, response, next) => {
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)
   }
 
-  migrationHelper.newInstance(modelRow, imageRow)
+  migrationHelper.newInstance(modelRow, imageRow, user)
 
   response.status(200).json(imageRow)
   await databaseHelper.closeDatabase(db)
@@ -320,6 +320,8 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
   if(modelRow.simulation === 0){
     migrationHelper.terminateInstance(imageRow)
   }
+
+  await databaseHelper.deleteRowsByValue(db, parameters.billingTableName, imageRow.rowid, 'imageId')
   await databaseHelper.deleteRowById(db, parameters.imageTableName, rowid)     
   migrationHelper.deletePredictions(imageRow)
   await fileHelper.deleteFolderRecursively(imageRow.path)
