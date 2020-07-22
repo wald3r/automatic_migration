@@ -135,6 +135,26 @@ const selectByUserId = async(db, tableValues, tableName, id) => {
 
 }
 
+const selectIsNull = async(db, tableValues, tableName, value) => {
+  let responseArray = []
+
+  return await new Promise((resolve) => {
+    db.serialize(async () => {
+      db.all(`SELECT ${tableValues} FROM ${tableName} WHERE ${value} is NULL`, (err, rows) => {
+        if(rows === undefined){
+          resolve(responseArray)
+        }else{
+          rows.map(row =>{
+            responseArray = responseArray.concat(row)
+          })
+          resolve(responseArray)
+        }
+      })
+    })
+  })
+
+}
+
 
 const selectByValue = async(db, tableValues, tableName, value, param) => {
   let responseArray = []
@@ -226,5 +246,6 @@ module.exports = {
   createTable, 
   deleteRowById, 
   selectById, 
-  deleteRowsByValue 
+  deleteRowsByValue,
+  selectIsNull 
 }

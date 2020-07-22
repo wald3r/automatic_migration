@@ -47,15 +47,36 @@ const requestAndSetupInstance = async(model, image, zone) => {
   return true
 }
 
-const setScheduler = async (image, model, user) => {
+const setScheduler = async (image, model, user, flag) => {
 
-  const db = await databaseHelper.openDatabase()
-  const newImage = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, image.rowid)
-  await databaseHelper.insertRow(db, parameters.migrationTableName, `(null, ?, ?, ?, ?, ?, ?)`, [newImage.zone, null, newImage.spotInstanceId, newImage.rowid, Date.now(), Date.now()])
+  let newImage = null
+  if(flag){
+    const db = await databaseHelper.openDatabase()
+    newImage = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, image.rowid)
+    await databaseHelper.insertRow(db, parameters.migrationTableName, `(null, ?, ?, ?, ?, ?, ?,  ?)`, [newImage.zone, null, 1, newImage.spotInstanceId, newImage.rowid, Date.now(), Date.now()])
+    await databaseHelper.closeDatabase(db)
+  }
   let hour = timeHelper.getMigrationHour(Date.now())
   let minutes = timeHelper.getMigrationMinutes(Date.now())
-  scheduler.setMigrationScheduler(`${minutes} ${hour} * * *`, model, newImage, user)
-  await databaseHelper.closeDatabase(db)
+  scheduler.setMigrationScheduler(`${minutes} ${hour} * * *`, model, newImage === null ? image : newImage, user)
+
+}
+
+const setSchedulerAgain = async (image, model, user, time) => {
+
+  let hour = timeHelper.getMigrationHour(time)
+  let minutes = timeHelper.getMigrationMinutes(time)
+
+  let hoursToMs = parameters.migrationHour * 3600 * 1000
+  let minToMs = parameters.migrationMinutes * 60 * 1000
+  console.log(Date.now(), (time+hoursToMs+minToMs))
+  if(Date.now() > (time+hoursToMs+minToMs)){
+    console.log(`ChangeSchedulerHelper: Set new scheduler time for ${image.rowid}`)
+    scheduler.setMigrationScheduler(`${new Date(Date.now()).getMinutes()+2} ${new Date(Date.now()).getHours()} * * *`, model, image, user)
+  }else{
+    console.log(`ChangeSchedulerHelper: Set old scheduler time for ${image.rowid}`)
+    scheduler.setMigrationScheduler(`${minutes} ${hour} * * *`, model, image, user)
+  }
 
 }
 
@@ -64,7 +85,7 @@ const newInstance = async (model, image, user) => {
   const zone = await getPrediction(model, image, user)
   if(zone !== image.zone){
     const flag = await requestAndSetupInstance(model, image, zone)
-    await setScheduler(image, model, user)
+    await setScheduler(image, model, user, true)
     if(flag && tmp.zone){
       const db = await databaseHelper.openDatabase()
       const migrationRows = await databaseHelper.selectByValue(db, parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', tmp.spotInstanceId)
@@ -80,10 +101,10 @@ const newInstance = async (model, image, user) => {
     const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, image.rowid)
     const migrationRows = await databaseHelper.selectByValue(db, parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', imageRow.spotInstanceId)
     await migrationRows.map(async row => {
-      await databaseHelper.updateById(db, parameters.migrationTableName, 'newZone = ?, updatedAt = ?', [zone, Date.now(), row.rowid])
+      await databaseHelper.updateById(db, parameters.migrationTableName, 'count = ?, updatedAt = ?', [row.count+1, Date.now(), row.rowid])
     })
     await databaseHelper.closeDatabase(db)
-    await setScheduler(image, model, user)
+    await setScheduler(image, model, user, false)
   }
 
 }
@@ -109,5 +130,6 @@ module.exports = {
   startInstance, 
   setupServer, 
   getPrediction, 
-  terminateInstance 
+  terminateInstance,
+  setSchedulerAgain 
 }

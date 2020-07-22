@@ -4,6 +4,7 @@ const migrationModel = `
   rowid INTEGER PRIMARY KEY AUTOINCREMENT,
   oldZone TEXT NOT NULL, 
   newZone TEXT, 
+  count INTEGER,
   oldSpotInstanceId TEXT,
   imageId INTEGER NOT NULL,
   createdAt INTEGER, 

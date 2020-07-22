@@ -13,7 +13,8 @@ const databaseHelper = require('./utils/databaseHelper')
 const scheduler = require('./utils/scheduler')
 const auth = require('./middleware/authentication')
 const fs = require('fs')
-
+const migrationHelper = require('./utils/migrationHelper')
+const parameters = require('./parameters')
 
 const credentialsChecker = async () => {
   
@@ -25,9 +26,26 @@ const credentialsChecker = async () => {
     process.exit(1)
   }
 }
+
+
+const checkMigrationStatus = async () => {
+
+  const db = await databaseHelper.openDatabase()
+  const migrationRows = await databaseHelper.selectIsNull(db, parameters.migrationTableValues, parameters.migrationTableName, 'newZone')
+  await migrationRows.map(async migRow => {
+    const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, migRow.imageId)
+    const modelRow = await databaseHelper.selectById(db, parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
+    const userRow = await databaseHelper.selectById(db, parameters.userTableValues, parameters.userTableName, imageRow.userId)
+    await migrationHelper.setSchedulerAgain(imageRow, modelRow, userRow, migRow.createdAt)
+  })
+  console.log(`MigrationStatusHelper: Set ${migrationRows.length} open schedulers`)
+  await databaseHelper.closeDatabase(db)
+}
+
+
 credentialsChecker()
 databaseHelper.checkDatabase()
-scheduler.scheduleCollectSpotPrices
+//scheduler.scheduleCollectSpotPrices
 app.use(express.static('build'))
 app.use(cors())
 app.use(bodyparser.json())
@@ -39,5 +57,6 @@ app.use('/api/login', loginRouter)
 app.use('/api/registration', registrationRouter)
 app.use('/api/billing', billingRouter)
 app.use('/api/user', userRouter)
+checkMigrationStatus()
 
 module.exports = app

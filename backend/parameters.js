@@ -19,7 +19,7 @@ const modelTableValues = 'rowid, type, product, bidprice, region, simulation, st
 const imageTableValues = 'rowid, predictionFile, userId, status, modelId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
 const userTableValues = 'rowid, username, password, createdAt, updatedAt'
 const billingTableValues = 'rowid, predictedCost, actualCost, imageId, userid, createdAt, updatedAt'
-const migrationTableValues = 'rowid, oldZone, newZone, oldSpotInstanceId, imageId, createdAt, updatedAt'
+const migrationTableValues = 'rowid, oldZone, newZone, count, oldSpotInstanceId, imageId, createdAt, updatedAt'
 
 const mlTrainFile = '/home/walder/workspace/automatic_migration/backend/ml_model/train_ml_model.py'
 const mlDeleteFile = '/home/walder/workspace/automatic_migration/backend/ml_model/delete_ml_model.py'
@@ -40,7 +40,7 @@ const workDir = __dirname
 const waitForInstanceId = 10
 
 const migrationHour = 0
-const migrationMinutes = 2
+const migrationMinutes = 5
 
 module.exports = { 
     migrationMinutes,
