@@ -6,8 +6,8 @@ const modelModel = `
   region TEXT, 
   simulation INT NOT NULL, 
   status TEXT, 
-  createdAt TEXT, 
-  updatedAt Text`
+  createdAt INTEGER, 
+  updatedAt INTEGER`
 
 
   module.exports = { modelModel }

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Table } from 'react-bootstrap'
 import { connect } from 'react-redux'
+import {  convertTime } from '../utils/helperClass'
 
 const Billing = (props) => {
 
@@ -26,8 +27,8 @@ const Billing = (props) => {
                 <td id='idBillingImageId'>{billing.imageId}</td>
                 <td id='idBillingPredicted'>{billing.predictedCost}</td>
                 <td id='idBillingActual'>{billing.actualCost}</td>
-                <td id='idBillingCreatedAt'>{billing.createdAt}</td>
-                <td id='idBillingUpdatedAt'>{billing.updatedAt}</td>
+                <td id='idBillingCreatedAt'>{convertTime(billing.createdAt)}</td>
+                <td id='idBillingUpdatedAt'>{convertTime(billing.updatedAt)}</td>
               </tr>
             </tbody>
           ))}

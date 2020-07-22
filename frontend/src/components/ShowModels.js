@@ -10,7 +10,7 @@ import modelsService from '../services/modelsService'
 import imagesService from '../services/imagesService'
 import { useToasts } from 'react-toast-notifications'
 import '../stylesheets/general.css'
-
+import {  convertTime } from '../utils/helperClass'
 
 const ShowModels = ( props ) => {
 
@@ -160,8 +160,8 @@ const ShowModels = ( props ) => {
                 <td id='idModelRegion'>{model.region}</td>
                 <td id='idModelStatus'>{badgeStatus(model.status)}</td>
                 <td id='idModelSimulation'>{simulationConverter(model.simulation)}</td>
-                <td id='idModelCreatedAt'>{model.createdAt}</td>
-                <td id='idModelUpdatedAt'>{model.updatedAt}</td>
+                <td id='idModelCreatedAt'>{convertTime(model.createdAt)}</td>
+                <td id='idModelUpdatedAt'>{convertTime(model.updatedAt)}</td>
                 <td>
                   <Button variant='primary' style={{ display: model.status === 'trained' ? '' : 'none' }} id='idModelsDelete'  data-toggle='tooltip' data-placement='top' title='Run Image' onClick={() => handleRunImage(model)}><i className="fa fa-plus" /></Button>
                   <Button variant='primary' id='idModelsDelete'  data-toggle='tooltip' data-placement='top' title='Remove Model' onClick={() => handleModelDeletion(model)}><i className="fa fa-trash" /></Button>

@@ -1,7 +1,6 @@
 const modelsRouter = require('express').Router()
 const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
-const timeHelper = require('../utils/timeHelper')
 const mlModel = require('../utils/mlModel')
 const authenticationHelper = require('../utils/authenticationHelper')
 const migrationHelper = require('../utils/migrationHelper')
@@ -53,7 +52,7 @@ modelsRouter.put('/:rowid', async(request, response, next) => {
   const rowid = request.params.rowid
   const body = request.body
   db = await databaseHelper.openDatabase()
-  const params = [body.bidprice, body.type, body.product, body.region, body.simulation, timeHelper.utc_timestamp, body.status, rowid]
+  const params = [body.bidprice, body.type, body.product, body.region, body.simulation, Date.now(), body.status, rowid]
   const values = 'bidprice = ?, type = ?, product = ?, region = ?, simulation = ?, updatedAt = ?, status = ?'
   const status = await databaseHelper.updateById(db, parameters.modelTableName, values, params)
   if(status === 500){
@@ -94,9 +93,7 @@ modelsRouter.post('/', async(request, response, next) => {
     })
 
     if(outcome === undefined){
-
-      let list = []
-      const params = [body.type, body.product, body.bidprice, body.region, body.simulation, 'training', timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+      const params = [body.type, body.product, body.bidprice, body.region, body.simulation, 'training', Date.now(), Date.now()]
       const modelId = await databaseHelper.insertRow(db, parameters.modelTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?)', params)
       if(modelId === -1){
         response.status(500).send(`${parameters.modelTableName}: Could not insert row`)

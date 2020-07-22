@@ -3,8 +3,8 @@
     rowid INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE, 
     password TEXT NOT NULL, 
-    createdAt TEXT, 
-    updatedAt TEXT
+    createdAt INTEGER, 
+    updatedAt INTEGER
   `
 
 module.exports = { userModel }

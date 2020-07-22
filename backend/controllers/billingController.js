@@ -3,7 +3,6 @@ const authenticationHelper = require('../utils/authenticationHelper')
 const parameters = require('../parameters')
 const databaseHelper = require('../utils/databaseHelper')
 
-
 billingRouter.get('/', async(request, response, next) => {
 
   try{
@@ -17,6 +16,7 @@ billingRouter.get('/', async(request, response, next) => {
     const billingRows = await databaseHelper.selectByUserId(db, parameters.billingTableValues, parameters.billingTableName, user.rowid)
     await databaseHelper.closeDatabase(db)
 
+    
     response.status(200).json(billingRows)
 
 

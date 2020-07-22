@@ -1,7 +1,6 @@
 const imagesRouter = require('express').Router()
 const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
-const timeHelper = require('../utils/timeHelper')
 const spotInstances = require('../utils/spotInstances')
 const migrationHelper = require('../utils/migrationHelper')
 const fs = require('fs')
@@ -109,7 +108,7 @@ imagesRouter.get('/stop/instance/:rowid', async(request, response, next) => {
     }
     
     await spotInstances.stopInstance(imageRow.spotInstanceId, imageRow.zone)
-    const params = ['stopped', timeHelper.utc_timestamp, imageRow.rowid]
+    const params = ['stopped', Date.now(), imageRow.rowid]
     const values = 'status = ?, updatedAt = ?'
     await databaseHelper.updateById(db, parameters.imageTableName, values, params)
     await databaseHelper.closeDatabase(db)
@@ -170,7 +169,7 @@ imagesRouter.get('/start/docker/:rowid', async(request, response, next) => {
     
     await sshConnection.startDocker(imageRow.ip, imageRow.key)
     
-    const params = ['running', timeHelper.utc_timestamp, imageRow.rowid]
+    const params = ['running', Date.now(), imageRow.rowid]
     const values = 'status = ?, updatedAt = ?'
     await databaseHelper.updateById(db, parameters.imageTableName, values, params)
     imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
@@ -201,7 +200,7 @@ imagesRouter.get('/stop/docker/:rowid', async(request, response, next) => {
       return response.status(500).send('Image does not exist')
     }
     await sshConnection.endDocker(imageRow.ip, imageRow.key)
-    const params = ['stopped', timeHelper.utc_timestamp, imageRow.rowid]
+    const params = ['stopped', Date.now(), imageRow.rowid]
     const values = 'status = ?, updatedAt = ?'
     await databaseHelper.updateById(db, parameters.imageTableName, values, params)
     imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
@@ -221,7 +220,7 @@ imagesRouter.put('/:rowid', async(request, response, next) => {
   const rowid = request.params.rowid
   const body = request.body
   db = await databaseHelper.openDatabase()
-  const params = [body.modelId, body.zone, body.path, body.ip, body.key, timeHelper.utc_timestamp, rowid]
+  const params = [body.modelId, body.zone, body.path, body.ip, body.key, Date.now(), rowid]
   const values = 'modelId = ?, zone = ?, path = ?, ip = ?, key = ?, updatedAt = ?'
   const status = await databaseHelper.updateById(db, parameters.imageTableName, values, params)
   if(status === 500){
@@ -276,7 +275,7 @@ imagesRouter.post('/', async(request, response, next) => {
   })
   
   db = await databaseHelper.openDatabase()
-  const params = [null, user.rowid, 'booting', modelId, null, null, null, path, null, null, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+  const params = [null, user.rowid, 'booting', modelId, null, null, null, path, null, null, Date.now(), Date.now()]
   const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
@@ -322,7 +321,8 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
   }
 
   await databaseHelper.deleteRowsByValue(db, parameters.billingTableName, imageRow.rowid, 'imageId')
-  await databaseHelper.deleteRowById(db, parameters.imageTableName, rowid)     
+  await databaseHelper.deleteRowsByValue(db, parameters.migrationTableName, imageRow.rowid, 'imageId')   
+  await databaseHelper.deleteRowById(db, parameters.imageTableName, rowid)  
   migrationHelper.deletePredictions(imageRow)
   await fileHelper.deleteFolderRecursively(imageRow.path)
   response.status(200).send('Successfully deleted')

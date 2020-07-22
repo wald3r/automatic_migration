@@ -1,7 +1,6 @@
 const AWS = require('aws-sdk')
 const parameters = require('../parameters')
 const databaseHelper = require('./databaseHelper')
-const timeHelper = require('./timeHelper')
 const fileHelper = require('./fileHelper')
 
 let AWSRegion = 'eu-west-3'
@@ -326,7 +325,7 @@ const getInstanceIds = async (id, rowid) => {
 
   if(instanceIds.length === 1){
     const db = await databaseHelper.openDatabase()
-    const params = [instanceIds[0], timeHelper.utc_timestamp, rowid]
+    const params = [instanceIds[0], Date.now(), rowid]
     const values = 'spotInstanceId = ?, updatedAt = ?'
     await databaseHelper.updateById(db, parameters.imageTableName, values, params)
     await databaseHelper.closeDatabase(db)
@@ -404,6 +403,47 @@ const getInstanceState = async (zone, ids) => {
   
 }
 
+const deleteTag = async (instanceId, zone) => {
+  
+  setRegion(zone)
+  const ec2 = await getEC2Object()
+  const params = {
+    Resources: [
+       instanceId
+    ], 
+    Tags: [
+       {
+      Key: `elmit_${instanceId}`, 
+      Value: `elmit_${instanceId}`
+     }
+    ]
+   }
+   ec2.deleteTags(params, (err) => {
+     if (err) console.log(`DeleteTagHelper: ${err.message}`)
+     else     console.log(`DeleteTagHelper: elmit_${instanceId} tag was deleted`)
+   })
+}
+
+const createTag = async (instanceId, zone) => {
+
+  tagParams = {Resources: [instanceId], Tags: [
+    {
+       Key: `elmit_${instanceId}`,
+       Value: `elmit_${instanceId}`
+    }
+  ]}
+
+  setRegion(zone)
+  const ec2 = await getEC2Object()
+  ec2.createTags(tagParams, async (err) => {
+    if (err) console.log(`CreateTagsHelper: ${err.message}`) 
+    else {
+      console.log(`CreateTagsHelper: Tags created for ${instanceId}`)
+    }       
+  })
+
+}
+
 const requestSpotInstance = async (instance, zone, serverImage, bidprice, simulation, id, path, keyPath) => {
 
   setRegion(zone)
@@ -427,7 +467,7 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
       securityGroupId
      ]
     }, 
-    SpotPrice: `${bidprice}`, 
+    SpotPrice: `${bidprice}`,
     Type: 'persistent'
   }
 
@@ -441,7 +481,7 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
       else{
 
         const db = await databaseHelper.openDatabase()
-        params = [data.SpotInstanceRequests[0].SpotInstanceRequestId, zone, timeHelper.utc_timestamp, id]
+        params = [data.SpotInstanceRequests[0].SpotInstanceRequestId, zone, Date.now(), id]
         requestId = data.SpotInstanceRequests[0].SpotInstanceRequestId
         const values = 'requestId = ?, zone = ?, updatedAt = ?'
         await databaseHelper.updateById(db, parameters.imageTableName, values, params)
@@ -463,7 +503,7 @@ const getPublicIpFromRequest = async (instanceIds, rowid) => {
       else {
         const ip = data.Reservations[0].Instances[0].PublicIpAddress
         const db = await databaseHelper.openDatabase()
-        const params = [ip, timeHelper.utc_timestamp, rowid]
+        const params = [ip, Date.now(), rowid]
         const values = 'ip = ?, updatedAt = ?'
         await databaseHelper.updateById(db, parameters.imageTableName, values, params)
         await databaseHelper.closeDatabase(db)
@@ -494,6 +534,8 @@ const cancelSpotInstance = async (image) => {
 
 
 module.exports = { 
+  createTag,
+  deleteTag,
   startInstance,
   stopInstance,
   rebootInstance, 

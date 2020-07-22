@@ -1,7 +1,6 @@
 const {spawn} = require('child_process')
 const parameters = require('../parameters')
 const databaseHelper = require('../utils/databaseHelper')
-const timeHelper = require('../utils/timeHelper')
 const fs = require('fs')
 const csv = require('csv-parse')
 
@@ -51,7 +50,7 @@ const trainModel = async (instance, product, simulation) => {
         }
       })
     })
-    const params = ['trained', timeHelper.utc_timestamp, outcome.rowid]
+    const params = ['trained', Date.now(), outcome.rowid]
     const values = 'status = ?, updatedAt = ?'
     await databaseHelper.updateById(db, parameters.modelTableName, values, params)
     await databaseHelper.closeDatabase(db)
@@ -109,9 +108,9 @@ const predictModel = async (instance, product, image, user) => {
           results = results.sort(sortFunction)
           const db = await databaseHelper.openDatabase()
           let zone = results[0][1]
-          const params = [path, zone, timeHelper.utc_timestamp, image.rowid]
+          const params = [path, zone, Date.now(), image.rowid]
           const values = 'predictionFile = ?, zone = ?, updatedAt = ?'
-          await databaseHelper.insertRow(db, parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?)', [results[0][0], null, image.rowid, user.rowid, timeHelper.utc_timestamp, timeHelper.utc_timestamp])
+          await databaseHelper.insertRow(db, parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?)', [results[0][0], 0, image.rowid, user.rowid, Date.now(), Date.now()])
           await databaseHelper.updateById(db, parameters.imageTableName, values, params)
           await databaseHelper.closeDatabase(db)
 

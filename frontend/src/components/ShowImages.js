@@ -6,6 +6,7 @@ import ConfirmationModal from './modals/ConfirmationModal'
 import { deleteImage, exchangeImage } from '../reducers/imagesReducer'
 import '../stylesheets/general.css'
 import imagesService from '../services/imagesService'
+import {  convertTime } from '../utils/helperClass'
 
 const ShowImages = (props) => {
 
@@ -212,8 +213,7 @@ const ShowImages = (props) => {
         <Table responsive className='table table-hover'>
           <thead className='thead-dark'>
             <tr>
-              <th>ID</th>
-              <th>Request ID</th>
+              <th>Model ID</th>
               <th>Zone</th>
               <th>IP</th>
               <th>Status</th>
@@ -227,18 +227,17 @@ const ShowImages = (props) => {
             <tbody key={image.rowid}>
               <tr id='idImageRow'>
                 <td id='idImageModelId'>{image.modelId}</td>
-                <td id='idImageRequestId'>{image.requestId}</td>
                 <td id='idImageZone'>{image.zone}</td>
                 <td id='idImageIp'>{image.ip}</td>
                 <td id='idImageStatus'>{badgeStatus(image.status)}</td>
                 <td id='idImageStatus'>{badgeStatus(image.state)}</td>
-                <td id='idImageCreatedAt'>{image.createdAt}</td>
-                <td id='idImageUpdatedAt'>{image.updatedAt}</td>
+                <td id='idImageCreatedAt'>{convertTime(image.createdAt)}</td>
+                <td id='idImageUpdatedAt'>{convertTime(image.updatedAt)}</td>
                 <td>
                   <Button variant='primary' id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
-                  <Button variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Reboot Image' onClick={() => handleReboot(image)}><i className="fa fa-sort" /></Button>
-                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? '' : 'none' }} variant='primary' id='idImagesStart'  data-toggle='tooltip' data-placement='top' title='Start Image' onClick={() => handleStart(image)}><i className="fa fa-sort-up" /></Button>
-                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? 'none' : '' }} variant='primary' id='idImagesStop'  data-toggle='tooltip' data-placement='top' title='Stop Image' onClick={() => handleStop(image)}><i className="fa fa-sort-desc" /></Button>
+                  <Button style={{ display: (image.status === 'running') ? '' : 'none' }} variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Reboot Image' onClick={() => handleReboot(image)}><i className="fa fa-sort" /></Button>
+                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? '' : 'none' }} variant='primary' id='idImagesStart'  data-toggle='tooltip' data-placement='top' title='Start State' onClick={() => handleStart(image)}><i className="fa fa-sort-up" /></Button>
+                  <Button style={{ display: (image.state === 'running' || image.state === 'pending') ? '' : 'none' }} variant='primary' id='idImagesStop'  data-toggle='tooltip' data-placement='top' title='Stop State' onClick={() => handleStop(image)}><i className="fa fa-sort-desc" /></Button>
                   <Button style={{ display: (image.status === 'stopped' && image.state === 'running') ? '' : 'none' }} variant='primary' id='idImagesStartDocker'  data-toggle='tooltip' data-placement='top' title='Start Docker' onClick={() => handleStartDocker(image)}><i className="fa fa-toggle-up" /></Button>
                   <Button style={{ display: (image.status === 'running') ? '' : 'none' }} variant='primary' id='idImagesStopDocker'  data-toggle='tooltip' data-placement='top' title='Stop Docker' onClick={() => handleStopDocker(image)}><i className="fa fa-toggle-down" /></Button>
                 </td>

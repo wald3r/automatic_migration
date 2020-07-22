@@ -12,8 +12,8 @@ const parameters = require('../parameters');
     path TEXT, 
     ip TEXT, 
     key TEXT, 
-    createdAt TEXT, 
-    updatedAt TEXT, 
+    createdAt INTEGER, 
+    updatedAt INTEGER, 
     FOREIGN KEY (modelId) REFERENCES ${parameters.modelTableName} (rowid) ON DELETE CASCADE, 
     FOREIGN KEY (userid) REFERENCES ${parameters.userTableName} (rowid) ON DELETE CASCADE`
 

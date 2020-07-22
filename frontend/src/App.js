@@ -65,7 +65,7 @@ const App = ( props ) => {
           <div className='container3'>
             <Router>
               <br/>
-              <div className='header'>Elastic Migration Tool</div>
+              <div className='header'>ELMIT - Elastic Migration Tool</div>
               <br/>
               <Link className='link2' to='/'>Models</Link>
               <Link className='link2' to='/app/images'>Images</Link>

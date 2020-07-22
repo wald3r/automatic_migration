@@ -2,7 +2,6 @@ const registrationRouter = require('express').Router()
 const bcrypt = require('bcrypt')
 const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
-const timeHelper = require('../utils/timeHelper')
 
 registrationRouter.post('/', async(request, response) => {
 
@@ -13,7 +12,7 @@ registrationRouter.post('/', async(request, response) => {
   const passwordHash = await bcrypt.hash(body.password, salt)
 
   const db = await databaseHelper.openDatabase()
-  const params = [body.username, passwordHash, timeHelper.utc_timestamp, timeHelper.utc_timestamp]
+  const params = [body.username, passwordHash, Date.now(), Date.now()]
   const userId = await databaseHelper.insertRow(db, parameters.userTableName, '(null, ?, ?, ?, ?)', params)
   const userRow = await databaseHelper.selectById(db, parameters.userTableValues, parameters.userTableName, userId)
   await databaseHelper.closeDatabase(db)

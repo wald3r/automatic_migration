@@ -20,6 +20,7 @@ const checkDatabase = async () => {
   createTable(db, parameters.userTableName, user.userModel)
   createTable(db, parameters.modelTableName, model.modelModel)
   createTable(db, parameters.imageTableName, image.imageModel)
+
   await closeDatabase(db)
 }
 
@@ -140,7 +141,7 @@ const selectByValue = async(db, tableValues, tableName, value, param) => {
 
   return await new Promise((resolve) => {
     db.serialize(async () => {
-      db.all(`SELECT ${tableValues} FROM ${tableName} WHERE ${value} = ${param}`, (err, rows) => {
+      db.all(`SELECT ${tableValues} FROM ${tableName} WHERE ${value} = '${param}'`, (err, rows) => {
         if(rows === undefined){
           resolve(responseArray)
         }else{
