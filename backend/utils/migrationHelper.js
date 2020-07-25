@@ -5,8 +5,16 @@ const mlModel = require('../utils/mlModel')
 const timeHelper = require('./timeHelper')
 const parameters = require('../parameters')
 const scheduler = require('./scheduler')
+const spotPrices = require('./spotPrices')
 
-const getPrediction = async (model, image, user) => await mlModel.predictModel(model.type, model.product, image, user)
+const getPrediction = async (model, image, user) => {
+  
+  await new Promise ((resolve) => {
+    spotPrices.collectSpecificSpotPrices(model.type)
+    resolve()
+  })
+  await mlModel.predictModel(model.type, model.product, image, user)
+}
 
 const deletePredictions = (image) => mlModel.deletePredictions(image)
 

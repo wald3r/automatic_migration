@@ -35,18 +35,19 @@ def replace_name(name):
 
 def main():
 
-    if (len(sys.argv) != 3):
-        print("Two Arguments needed! How to: python3 train_ml_model.py <instanceType> <productDescription>")
+    if (len(sys.argv) != 4):
+        print("Three Arguments needed! How to: python3 train_ml_model.py <instanceType> <productDescription> <test run = 1 or actual run = 2>")
         exit(0)
+
+    version = int(sys.argv[3])
+
+    if(version != 1 and version != 2):
+        print("Last argument has to be 1 or 2")
+        exit(0)
+
 
     instance_type = str(sys.argv[1])
     product_description = str(sys.argv[2])
-
-    epochs = 1
-    ticks = 15
-    batch_size = 32
-    shape = 1
-    test_size = 24
 
     gen = GenerateTrainingData('training_data_v2.csv')
 
@@ -65,12 +66,12 @@ def main():
                 architecture_name = instance_type + '_' + rep_product_description + '_' + str(x) + '_architecture.json'
                 weights_name = instance_type + '_' + rep_product_description + '_'+ str(x) + '_weights.h5'
 
-                mlobj = MLModel(weights_name, architecture_name, shape, ticks, epochs, batch_size, test_size, ticks, instance_type, rep_product_description)
+                mlobj = MLModel(weights_name, architecture_name, instance_type, rep_product_description)
                 model = mlobj.getModel()
 
                 model.compile(optimizer='nadam', loss='mean_squared_error', metrics=['accuracy'])
 
-                training_features, labels, scaler = mlobj.generate_training_data(df, x)
+                training_features, labels, scaler = mlobj.generate_training_data(df, x, version)
 
                 model = mlobj.train(model, training_features, labels)
 

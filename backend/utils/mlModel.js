@@ -23,7 +23,7 @@ const replace_name = (name) => {
 
 const trainModel = async (instance, product, simulation) => {
 
-  const python = spawn('python3', [parameters.mlTrainFile, instance, product])
+  const python = spawn('python3', [parameters.mlTrainFile, instance, product, 2])
   console.log(`Start training ml model ${instance} ${product}`)
 
   //python.stdout.on('data', (data) => {
@@ -91,7 +91,7 @@ function sortFunction(a, b) {
 
 
 const predictModel = async (instance, product, image, user) => {
-  const python = spawn('python3', [parameters.mlPredictFile, instance, product, image.rowid])
+  const python = spawn('python3', [parameters.mlPredictFile, instance, product, image.rowid, 2])
   console.log(`Started prediction of ml model ${instance} ${product}`)
 
   return await new Promise((resolve) => {

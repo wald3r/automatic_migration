@@ -3,15 +3,18 @@ import datetime
 import os
 import pandas as pd
 import pytz
-
+import sys
 utc=pytz.UTC
 
 client=boto3.client('ec2', region_name='us-west-2')
 
-instancePath = os.getcwd()+'/spot_pricing/instances.csv'
-instances = pd.read_csv(instancePath, sep=',').values
-regions = client.describe_regions()
+if(len(sys.argv) == 2):
+    instances = [[str(sys.argv[1])]]
+else:
+    instancePath = os.getcwd() + '/spot_pricing/instances.csv'
+    instances = pd.read_csv(instancePath, sep=',').values
 
+regions = client.describe_regions()
 
 token = ''
 

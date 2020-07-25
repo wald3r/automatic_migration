@@ -33,20 +33,19 @@ def replace_name(name):
 
 def main():
 
-    if(len(sys.argv) != 4):
-        print("Three Arguments needed! How to: python3 predict_ml_model.py <instanceType> <productDescription> <id>")
+    if(len(sys.argv) != 5):
+        print("Four Arguments needed! How to: python3 predict_ml_model.py <instanceType> <productDescription> <id> <test run = 1 or actual run = 2>")
+        exit(0)
+
+    version = int(sys.argv[4])
+
+    if(version != 1 and version != 2):
+        print("Last argument has to be 1 or 2")
         exit(0)
 
     instance_type = str(sys.argv[1])
     product_description = str(sys.argv[2])
     image_id = str(sys.argv[3])
-
-    epochs = 1
-    ticks = 15
-    batch_size = 32
-    shape = 1
-    test_size = 24
-
     gen = GenerateTrainingData('training_data_v3.csv')
     if(gen.generate(instance_type, product_description, 1) == 0):
         exit(0)
@@ -58,7 +57,7 @@ def main():
     
     file_name = 'predictions/'+instance_type+'_'+rep_product_description+'_'+image_id+'.csv'
     try:
-    	os.remove(file_name)
+        os.remove(file_name)
     except:
     	pass
     	
@@ -68,23 +67,29 @@ def main():
         try:
             architecture_name = instance_type + '_' + rep_product_description + '_' + str(x) + '_architecture.json'
             weights_name = instance_type + '_' + rep_product_description + '_' + str(x) + '_weights.h5'
-            mlobj = MLModel(weights_name, architecture_name, shape, ticks, epochs, batch_size, test_size, ticks, instance_type, rep_product_description)
+            mlobj = MLModel(weights_name, architecture_name, instance_type, rep_product_description)
             model = mlobj.load_model()
             model.compile(optimizer='nadam', loss='mean_squared_error', metrics=['accuracy'])
-            training_features, labels, scaler = mlobj.generate_training_data(df, x)
-            test_features, test_data = mlobj.generate_test_data(df, scaler, x)
 
-            predictions, model = mlobj.predict(model, test_features, scaler)
+            training_features, labels, scaler = mlobj.generate_training_data(df, x, version) #only needed for the scaler
 
-            column = 0
+            prediction = 0
 
-            mse_outcome, mae_outcome, mape_outcome = mlobj.getErrors(predictions[:,column], test_data[:,column])
+            if(version == 1):
+                test_predictions, test_data = mlobj.predict_testdata(df, scaler, x) #predict test data
+                prediction = sum(test_predictions)
+                sum_test = sum(test_data[:, 0])
+                print(prediction, sum_test)
 
-            sum_test = sum(predictions[:,column])
-            sum_prediction = sum(test_data[:,column])
+            elif(version == 2):
+                future_predictions = mlobj.predict_future(df, scaler, x)   #predict future
+                prediction = sum(future_predictions)
+                print(prediction)
+
+            #mse_outcome, mae_outcome, mape_outcome = mlobj.getErrors(test_predictions[:,column], test_data[:,column])
 
             with open(file_name, 'a+') as f:
-                f.write("%s,%s\n" % (round(sum_prediction, 4), x))
+                f.write("%s,%s\n" % (round(prediction, 4), x))
 
             #print(round(mape_outcome, 4), round(sum_test, 4), round(sum_prediction - sum_test, 4))
             #with open('predictions.csv', 'a') as f:

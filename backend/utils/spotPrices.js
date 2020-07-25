@@ -17,5 +17,20 @@ const collectSpotPrices = async () => {
   })
 }
 
+const collectSpecificSpotPrices = async (instance) => {
 
-module.exports = { collectSpotPrices }
+  const python = spawn('python3', [parameters.collectSpotPricesFile, instance])
+  console.log(`Start collecting spot prices`)
+
+  python.stdout.on('data', (data) => {
+    console.log(data.toString())
+    
+  })
+   
+  python.stdout.on('close', async () => {
+    console.log(`Finished collecting spot prices`)
+  })
+}
+
+
+module.exports = { collectSpotPrices, collectSpecificSpotPrices }
