@@ -44,10 +44,12 @@ const openDatabase = async () => {
   return db
 }
 
-const selectAllRows = async(db, tableValues, tableName) => {
+const selectAllRows = async(tableValues, tableName) => {
+
+  let db = await openDatabase()
   let responseArray = []
 
-  return await new Promise((resolve) => {
+  responseArray = await new Promise((resolve) => {
     db.serialize(async () => {
       db.all(`SELECT ${tableValues} FROM ${tableName}`, (err, rows) => {
         if(rows === undefined){
@@ -61,12 +63,13 @@ const selectAllRows = async(db, tableValues, tableName) => {
       })
     })
   })
-
+  await closeDatabase(db)
+  return responseArray
 }
 
-const insertRow = async(db, tableName, tableValues, params) => {
-
-  return await new Promise((resolve) => {
+const insertRow = async(tableName, tableValues, params) => {
+  let db = await openDatabase()
+  let id = await new Promise((resolve) => {
     db.serialize(() => {
       const stmt = db.prepare(`INSERT INTO ${tableName} VALUES ${tableValues}`)
       stmt.run(params, function(err){
@@ -81,10 +84,13 @@ const insertRow = async(db, tableName, tableValues, params) => {
       })
     })
   })
+  await closeDatabase(db)
+  return id
 }
 
-const updateById = async(db, tableName, tableValues, params) => {
-  return await new Promise((resolve) => {
+const updateById = async(tableName, tableValues, params) => {
+  let db = await openDatabase()
+  let code = await new Promise((resolve) => {
     db.run(`UPDATE ${tableName} 
           SET ${tableValues}
           WHERE rowid=?`, params,(err) => {
@@ -97,28 +103,37 @@ const updateById = async(db, tableName, tableValues, params) => {
       }
     })
   })
+  await closeDatabase(db)
+  return code
 }
 
-const selectById = async(db, tableValues, tableName, id) => {
-  return new Promise((resolve) => {
+const selectById = async(tableValues, tableName, id) => {
+  let db = await openDatabase()
+  let newRow = null
+  await new Promise((resolve) => {
     db.get(`SELECT ${tableValues} FROM ${tableName} WHERE rowid=${id}`, (err, row) => {
       if(err){
         console.error(`${tableName}: ${err.message}`)
-        resolve(null)
+        resolve()
       }else if (row === undefined) {
         console.log(`No entry under rowid ${id}`)
-        resolve(null)
+        resolve()
       }else{
-        resolve(row)
+        newRow = row
+        resolve()
       }
     })
   })
+  await closeDatabase(db)
+  return newRow
 }
 
-const selectByUserId = async(db, tableValues, tableName, id) => {
+const selectByUserId = async(tableValues, tableName, id) => {
+
+  let db = await openDatabase()
   let responseArray = []
 
-  return await new Promise((resolve) => {
+  responseArray = await new Promise((resolve) => {
     db.serialize(async () => {
       db.all(`SELECT ${tableValues} FROM ${tableName} WHERE userid = ${id}`, (err, rows) => {
         if(rows === undefined){
@@ -132,15 +147,18 @@ const selectByUserId = async(db, tableValues, tableName, id) => {
       })
     })
   })
+  await closeDatabase(db)
+  return responseArray
 
 }
 
-const selectIsNull = async(db, tableValues, tableName, value) => {
+const selectIsNull = async(tableValues, tableName, value) => {
   let responseArray = []
+  let db = await openDatabase()
 
-  return await new Promise((resolve) => {
+  await new Promise((resolve) => {
     db.serialize(async () => {
-      db.all(`SELECT ${tableValues} FROM ${tableName} WHERE ${value} is NULL`, (err, rows) => {
+      db.all(`SELECT ${tableValues} FROM ${tableName} WHERE ${value} IS NULL`, (err, rows) => {
         if(rows === undefined){
           resolve(responseArray)
         }else{
@@ -152,14 +170,36 @@ const selectIsNull = async(db, tableValues, tableName, value) => {
       })
     })
   })
+  await closeDatabase(db)
+  return responseArray
 
 }
 
+const selectRowByValues = async(tableValues, tableName, values, params) => {
+  let db = await openDatabase()
+  let newRow = null
 
-const selectByValue = async(db, tableValues, tableName, value, param) => {
+  newRow = await new Promise((resolve) => {
+    db.serialize(async () => {
+      db.get(`SELECT ${tableValues} FROM ${tableName} WHERE ${values}`, params, (err, row) => {
+        if(row === undefined){
+          resolve(null)
+        }else{
+          resolve(row)
+        }
+      })
+    })
+  })
+
+  await closeDatabase(db)
+  return newRow
+}
+
+const selectByValue = async(tableValues, tableName, value, param) => {
+  let db = await openDatabase()
   let responseArray = []
 
-  return await new Promise((resolve) => {
+  responseArray = await new Promise((resolve) => {
     db.serialize(async () => {
       db.all(`SELECT ${tableValues} FROM ${tableName} WHERE ${value} = '${param}'`, (err, rows) => {
         if(rows === undefined){
@@ -174,11 +214,15 @@ const selectByValue = async(db, tableValues, tableName, value, param) => {
     })
   })
 
+  await closeDatabase(db)
+  return responseArray
 }
 
 
-const selectByUsername = async(db, tableValues, tableName, username) => {
-  return new Promise((resolve) => {
+const selectByUsername = async(tableValues, tableName, username) => {
+  
+  let db = await openDatabase()
+  let row = await new Promise((resolve) => {
     db.get(`SELECT ${tableValues} FROM ${tableName} WHERE username = '${username}'`, (err, row) => {
       if(err){
         console.error(`${tableName}: ${err.message}`)
@@ -191,34 +235,46 @@ const selectByUsername = async(db, tableValues, tableName, username) => {
       }
     })
   })
+
+  await closeDatabase(db)
+  return row
 }
 
-const deleteRowById = async (db, tableName, id) => {
-  return new Promise((resolve) => {
+const deleteRowById = async (tableName, id) => {
+
+  let db = await openDatabase()
+
+  let code = await new Promise((resolve) => {
     db.run(`DELETE FROM ${tableName} WHERE rowid=?`, id, (err) => {
       if (err) {
         console.error(`${tableName}: ${err.message}`)
-        resolve()
+        resolve(-1)
       }else{
         console.log(`${tableName}: Row deleted ${id}`)
-        resolve()
+        resolve(1)
       }
     })
   })
+  await closeDatabase(db)
+  return code
 }
 
-const deleteRowsByValue = async (db, tableName, param, value) => {
-  return new Promise((resolve) => {
+const deleteRowsByValue = async (tableName, param, value) => {
+
+  let db = await openDatabase()
+  let code = await new Promise((resolve) => {
     db.run(`DELETE FROM ${tableName} WHERE ${value}=?`, param, (err) => {
       if (err) {
         console.error(`${tableName}: ${err.message}`)
-        resolve()
+        resolve(-1)
       }else{
         console.log(`${tableName}: Rows with ${value} ${param} deleted`)
-        resolve()
+        resolve(1)
       }
     })
   })
+  await closeDatabase(db)
+  return code
 }
 
 const closeDatabase = async (db) => {
@@ -247,5 +303,6 @@ module.exports = {
   deleteRowById, 
   selectById, 
   deleteRowsByValue,
-  selectIsNull 
+  selectIsNull,
+  selectRowByValues 
 }

@@ -28,7 +28,7 @@ def main():
     product_description = str(sys.argv[2])
 
     try:
-        mlobj = MLModel(None, None, None, None, None, None, None, None, instance_type, replace_name(product_description))
+        mlobj = MLModel(None, None, instance_type, replace_name(product_description))
         mlobj.delete_model()
         print('Ml model %s %s deleted' %(instance_type, product_description))
     except:

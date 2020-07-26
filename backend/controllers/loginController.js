@@ -9,9 +9,7 @@ loginRouter.post('/', async(request, response) => {
 
   const body = request.body
 
-  const db = await databaseHelper.openDatabase()
-  const userRow = await databaseHelper.selectByUsername(db, parameters.userTableValues, parameters.userTableName, body.username)
-  await databaseHelper.closeDatabase(db)
+  const userRow = await databaseHelper.selectByUsername(parameters.userTableValues, parameters.userTableName, body.username)
   
   if(userRow === null){
     return response.status(401).send('invalid username')

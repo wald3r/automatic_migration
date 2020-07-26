@@ -26,10 +26,13 @@ const collectSpecificSpotPrices = async (instance) => {
     console.log(data.toString())
     
   })
-   
-  python.stdout.on('close', async () => {
-    console.log(`Finished collecting spot prices`)
+  await new Promise((resolve) => {
+    python.stdout.on('close', async () => {
+      console.log(`Finished collecting spot prices`)
+      resolve()
+    })
   })
+  
 }
 
 

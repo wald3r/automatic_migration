@@ -17,16 +17,19 @@ const setMigrationScheduler = (time, model, image, user) => {
     const databaseHelper = require('./databaseHelper')
     const parameters = require('../parameters')
 
-    const db = await databaseHelper.openDatabase()
-    const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, image.rowid)
-    await databaseHelper.closeDatabase(db)
-    if(imageRow !== null){
+    const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
+    const migrationRows = await databaseHelper.selectIsNull(parameters.migrationTableValues, parameters.migrationTableName, 'newZone')
+    const migrationRow = migrationRows.filter(row => row.imageId === imageRow.rowid)
+
+    if(imageRow !== null && migrationRow.length !== 0){
       console.log(`MigrationSchedulerHelper: Start with evaluation of image ${image.rowid}`)
       await migrationHelper.newInstance(model, image, user)
+
     }else{
       console.log(`MigrationSchedulerHelper: Evaluation cancelled because ${image.rowid} does not exist anymore`)
 
     }    
+
   })
 }
 

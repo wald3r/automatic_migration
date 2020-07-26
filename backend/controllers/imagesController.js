@@ -19,8 +19,7 @@ imagesRouter.get('/', async(request, response, next) => {
       return response.status(401).send('Not Authenticated')
     }
 
-    const db = await databaseHelper.openDatabase()
-    let responseArray = await databaseHelper.selectByUserId(db, parameters.imageTableValues, parameters.imageTableName, user.rowid)
+    let responseArray = await databaseHelper.selectByUserId(parameters.imageTableValues, parameters.imageTableName, user.rowid)
     
     await new Promise(async (resolve) => {
       for(let a = 0; a < responseArray.length; a++){
@@ -32,8 +31,6 @@ imagesRouter.get('/', async(request, response, next) => {
         }
       }
     })
-    
-    await databaseHelper.closeDatabase(db)
     return response.status(200).json(responseArray)
 
 
@@ -53,14 +50,12 @@ imagesRouter.get('/:rowid', async(request,response, next) => {
       return response.status(401).send('Not Authenticated')
     }
 
-    const db = await databaseHelper.openDatabase()
-    let outcome = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    let outcome = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
     if(outcome === null){
       response.status(500).send(`Could not retrieve rowid ${rowid}`)
     }else{
       response.status(200).json(outcome)
     }
-    await databaseHelper.closeDatabase(db)
 
   }catch(exception){
     next(exception)
@@ -75,9 +70,7 @@ imagesRouter.get('/reboot/:rowid', async(request, response, next) => {
       return response.status(401).send('Not Authenticated')
     }
     
-    const db = await databaseHelper.openDatabase()
-    let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
-    await databaseHelper.closeDatabase(db)
+    let imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
 
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
@@ -100,8 +93,7 @@ imagesRouter.get('/stop/instance/:rowid', async(request, response, next) => {
       return response.status(401).send('Not Authenticated')
     }
     
-    const db = await databaseHelper.openDatabase()
-    let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    let imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
 
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
@@ -110,8 +102,7 @@ imagesRouter.get('/stop/instance/:rowid', async(request, response, next) => {
     await spotInstances.stopInstance(imageRow.spotInstanceId, imageRow.zone)
     const params = ['stopped', Date.now(), imageRow.rowid]
     const values = 'status = ?, updatedAt = ?'
-    await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-    await databaseHelper.closeDatabase(db)
+    await databaseHelper.updateById(parameters.imageTableName, values, params)
       
     imageRow.state = 'stopping'
     return response.status(200).json(imageRow)
@@ -130,8 +121,7 @@ imagesRouter.get('/start/instance/:rowid', async(request, response, next) => {
       return response.status(401).send('Not Authenticated')
     }
     
-    const db = await databaseHelper.openDatabase()
-    let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    let imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
 
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
@@ -160,8 +150,7 @@ imagesRouter.get('/start/docker/:rowid', async(request, response, next) => {
       return response.status(401).send('Not Authenticated')
     }
     
-    const db = await databaseHelper.openDatabase()
-    let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    let imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
 
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
@@ -171,9 +160,8 @@ imagesRouter.get('/start/docker/:rowid', async(request, response, next) => {
     
     const params = ['running', Date.now(), imageRow.rowid]
     const values = 'status = ?, updatedAt = ?'
-    await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-    imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
-    await databaseHelper.closeDatabase(db)
+    await databaseHelper.updateById(parameters.imageTableName, values, params)
+    imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
     
     imageRow.state = await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId])
     return response.status(200).send(imageRow)
@@ -193,8 +181,7 @@ imagesRouter.get('/stop/docker/:rowid', async(request, response, next) => {
       return response.status(401).send('Not Authenticated')
     }
     
-    const db = await databaseHelper.openDatabase()
-    let imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
+    let imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
 
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
@@ -202,9 +189,8 @@ imagesRouter.get('/stop/docker/:rowid', async(request, response, next) => {
     await sshConnection.endDocker(imageRow.ip, imageRow.key)
     const params = ['stopped', Date.now(), imageRow.rowid]
     const values = 'status = ?, updatedAt = ?'
-    await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-    imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)
-    await databaseHelper.closeDatabase(db)
+    await databaseHelper.updateById(parameters.imageTableName, values, params)
+    imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
     imageRow.state = await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId])
 
     return response.status(200).json(imageRow)
@@ -219,18 +205,13 @@ imagesRouter.put('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const body = request.body
-  db = await databaseHelper.openDatabase()
-  const params = [body.modelId, body.zone, body.path, body.ip, body.key, Date.now(), rowid]
-  const values = 'modelId = ?, zone = ?, path = ?, ip = ?, key = ?, updatedAt = ?'
-  const status = await databaseHelper.updateById(db, parameters.imageTableName, values, params)
+
+  const status = await databaseHelper.updateById(parameters.imageTableName, 'modelId = ?, zone = ?, path = ?, ip = ?, key = ?, updatedAt = ?', [body.modelId, body.zone, body.path, body.ip, body.key, Date.now(), rowid])
   if(status === 500){
     response.status(500).send(err.message)
   }else{
     response.status(200).send('Successfully updated')
   }
-    
-  await databaseHelper.closeDatabase(db)
-
 })
 
 
@@ -274,17 +255,17 @@ imagesRouter.post('/', async(request, response, next) => {
     })
   })
   
-  db = await databaseHelper.openDatabase()
   const params = [null, user.rowid, 'booting', modelId, null, null, null, path, null, null, Date.now(), Date.now()]
-  const imageId = await databaseHelper.insertRow(db, parameters.imageTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+  const imageId = await databaseHelper.insertRow(parameters.imageTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
   let keyFile = `${path}/${parameters.keyName}_${imageId}.pem`
-  await databaseHelper.updateById(db, parameters.imageTableName, 'key = ?', [keyFile, imageId])
+  
+  await databaseHelper.updateById(parameters.imageTableName, 'key = ?', [keyFile, imageId])
 
-  const modelRow = await databaseHelper.selectById(db, parameters.modelTableValues, parameters.modelTableName, modelId)
-  const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, imageId)
+  const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, modelId)
+  const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, imageId)
 
   if(modelRow.product === 'Linux/UNIX'){
     fs.copyFile(parameters.linuxInstallFile, path+'/install.sh', (err) => {
@@ -301,7 +282,6 @@ imagesRouter.post('/', async(request, response, next) => {
   migrationHelper.newInstance(modelRow, imageRow, user)
 
   response.status(200).json(imageRow)
-  await databaseHelper.closeDatabase(db)
 })
 
 
@@ -313,20 +293,17 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
   }
 
   const rowid = request.params.rowid
-  const db = await databaseHelper.openDatabase()
-  const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, rowid)  
-  const modelRow = await databaseHelper.selectById(db, parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
+  const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)  
+  const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
   if(modelRow.simulation === 0){
     migrationHelper.terminateInstance(imageRow)
   }
-
-  await databaseHelper.deleteRowsByValue(db, parameters.billingTableName, imageRow.rowid, 'imageId')
-  await databaseHelper.deleteRowsByValue(db, parameters.migrationTableName, imageRow.rowid, 'imageId')   
-  await databaseHelper.deleteRowById(db, parameters.imageTableName, rowid)  
+  await databaseHelper.deleteRowsByValue(parameters.billingTableName, imageRow.rowid, 'imageId')
+  await databaseHelper.deleteRowsByValue(parameters.migrationTableName, imageRow.rowid, 'imageId')   
+  await databaseHelper.deleteRowById(parameters.imageTableName, rowid)  
   migrationHelper.deletePredictions(imageRow)
   await fileHelper.deleteFolderRecursively(imageRow.path)
   response.status(200).send('Successfully deleted')
-  await databaseHelper.closeDatabase(db)
 
 })
 

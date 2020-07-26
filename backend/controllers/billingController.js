@@ -11,12 +11,7 @@ billingRouter.get('/', async(request, response, next) => {
     if(user == undefined){
       return response.status(401).send('Not Authenticated')
     }
-    
-    const db = await databaseHelper.openDatabase()
-    const billingRows = await databaseHelper.selectByUserId(db, parameters.billingTableValues, parameters.billingTableName, user.rowid)
-    await databaseHelper.closeDatabase(db)
-
-    
+    const billingRows = await databaseHelper.selectByUserId(parameters.billingTableValues, parameters.billingTableName, user.rowid)
     response.status(200).json(billingRows)
 
 

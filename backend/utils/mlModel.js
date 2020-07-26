@@ -26,34 +26,10 @@ const trainModel = async (instance, product, simulation) => {
   const python = spawn('python3', [parameters.mlTrainFile, instance, product, 2])
   console.log(`Start training ml model ${instance} ${product}`)
 
-  //python.stdout.on('data', (data) => {
-  //  console.log(data.toString())
-  //})
-
   python.on('close', async () => {
     console.log(`Finished training model ${instance} ${product}`)
-    
-
-    let db = await databaseHelper.openDatabase()
-    let outcome = databaseHelper.selectByValue
-    await new Promise((resolve, reject) => {
-      db.get(`SELECT ${parameters.modelTableValues} FROM ${parameters.modelTableName} WHERE 
-        type = '${instance}' AND
-        product = '${product}' AND
-        simulation = '${simulation}'`, (err ,row) => {
-        if(err){
-          console.error(`${parameters.modelTableName}: ${err.message}`)
-          reject()
-        }else{
-          outcome = row
-          resolve()
-        }
-      })
-    })
-    const params = ['trained', Date.now(), outcome.rowid]
-    const values = 'status = ?, updatedAt = ?'
-    await databaseHelper.updateById(db, parameters.modelTableName, values, params)
-    await databaseHelper.closeDatabase(db)
+    let outcome = await databaseHelper.selectRowByValues(parameters.modelTableValues, parameters.modelTableName, 'type = ? AND product = ?', [instance, product])   
+    await databaseHelper.updateById(parameters.modelTableName, 'status = ?, updatedAt = ?', ['trained', Date.now(), outcome.rowid])
   })
 }
 
@@ -106,13 +82,9 @@ const predictModel = async (instance, product, image, user) => {
         .on('end', async () => {
           console.log(results)
           results = results.sort(sortFunction)
-          const db = await databaseHelper.openDatabase()
           let zone = results[0][1]
-          const params = [path, zone, Date.now(), image.rowid]
-          const values = 'predictionFile = ?, zone = ?, updatedAt = ?'
-          await databaseHelper.insertRow(db, parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?)', [results[0][0], 0, image.rowid, user.rowid, Date.now(), Date.now()])
-          await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-          await databaseHelper.closeDatabase(db)
+          await databaseHelper.insertRow(parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?)', [results[0][0], null, image.rowid, user.rowid, Date.now(), Date.now()])
+          await databaseHelper.updateById(parameters.imageTableName, 'predictionFile = ?, zone = ?, updatedAt = ?', [path, zone, Date.now(), image.rowid])
 
           resolve(zone)
         })

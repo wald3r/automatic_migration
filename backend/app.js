@@ -30,16 +30,14 @@ const credentialsChecker = async () => {
 
 const checkMigrationStatus = async () => {
 
-  const db = await databaseHelper.openDatabase()
-  const migrationRows = await databaseHelper.selectIsNull(db, parameters.migrationTableValues, parameters.migrationTableName, 'newZone')
+  const migrationRows = await databaseHelper.selectIsNull(parameters.migrationTableValues, parameters.migrationTableName, 'newZone')
   await migrationRows.map(async migRow => {
-    const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, migRow.imageId)
-    const modelRow = await databaseHelper.selectById(db, parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
-    const userRow = await databaseHelper.selectById(db, parameters.userTableValues, parameters.userTableName, imageRow.userId)
-    await migrationHelper.setSchedulerAgain(imageRow, modelRow, userRow, migRow.createdAt)
+    const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, migRow.imageId)
+    const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
+    const userRow = await databaseHelper.selectById(parameters.userTableValues, parameters.userTableName, imageRow.userId)
+    await migrationHelper.setSchedulerAgain(imageRow, modelRow, userRow, migRow.updatedAt)
   })
   console.log(`MigrationStatusHelper: Set ${migrationRows.length} open schedulers`)
-  await databaseHelper.closeDatabase(db)
 }
 
 

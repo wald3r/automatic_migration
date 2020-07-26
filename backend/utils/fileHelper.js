@@ -1,6 +1,5 @@
 const fs = require('fs')
 const Path = require('path')
-const parameters = require('../parameters')
 
 const deleteFolderRecursively = (path) => {
   if (fs.existsSync(path)) {

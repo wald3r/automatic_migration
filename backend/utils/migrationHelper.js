@@ -6,14 +6,15 @@ const timeHelper = require('./timeHelper')
 const parameters = require('../parameters')
 const scheduler = require('./scheduler')
 const spotPrices = require('./spotPrices')
+const billingHelper = require('./billingHelper')
 
 const getPrediction = async (model, image, user) => {
   
-  await new Promise ((resolve) => {
-    spotPrices.collectSpecificSpotPrices(model.type)
-    resolve()
+  return await new Promise (async (resolve) => {
+    await spotPrices.collectSpecificSpotPrices(model.type)
+    const zone = await mlModel.predictModel(model.type, model.product, image, user)
+    resolve(zone)
   })
-  await mlModel.predictModel(model.type, model.product, image, user)
 }
 
 const deletePredictions = (image) => mlModel.deletePredictions(image)
@@ -47,11 +48,7 @@ const requestAndSetupInstance = async(model, image, zone) => {
 
   await setupServer(ip, image)
   await startDocker(ip, image.key)
-  const db = await databaseHelper.openDatabase()
-  const params = ['running', Date.now(), image.rowid]
-  const values = 'status = ?, updatedAt = ?'
-  await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-  await databaseHelper.closeDatabase(db)
+  await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), image.rowid])
   return true
 }
 
@@ -59,10 +56,8 @@ const setScheduler = async (image, model, user, flag) => {
 
   let newImage = null
   if(flag){
-    const db = await databaseHelper.openDatabase()
-    newImage = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, image.rowid)
-    await databaseHelper.insertRow(db, parameters.migrationTableName, `(null, ?, ?, ?, ?, ?, ?,  ?)`, [newImage.zone, null, 1, newImage.spotInstanceId, newImage.rowid, Date.now(), Date.now()])
-    await databaseHelper.closeDatabase(db)
+    newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
+    await databaseHelper.insertRow(parameters.migrationTableName, `(null, ?, ?, ?, ?, ?, ?,  ?)`, [newImage.zone, null, 1, newImage.spotInstanceId, newImage.rowid, Date.now(), Date.now()])
   }
   let hour = timeHelper.getMigrationHour(Date.now())
   let minutes = timeHelper.getMigrationMinutes(Date.now())
@@ -95,23 +90,24 @@ const newInstance = async (model, image, user) => {
     const flag = await requestAndSetupInstance(model, image, zone)
     await setScheduler(image, model, user, true)
     if(flag && tmp.zone){
-      const db = await databaseHelper.openDatabase()
-      const migrationRows = await databaseHelper.selectByValue(db, parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', tmp.spotInstanceId)
+      const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', tmp.spotInstanceId)
       await migrationRows.map(async row => {
-        await databaseHelper.updateById(db, parameters.migrationTableName, 'newZone = ?, updatedAt = ?', [zone, Date.now(), row.rowid])
+        await databaseHelper.updateById(parameters.migrationTableName, 'newZone = ?, updatedAt = ?', [zone, Date.now(), row.rowid])
       })
-      await databaseHelper.closeDatabase(db)
       await terminateInstance(tmp)
     }
   }else{
     console.log(`MigrationHelper: No migration of ${image.rowid} needed`)
-    const db = await databaseHelper.openDatabase()
-    const imageRow = await databaseHelper.selectById(db, parameters.imageTableValues, parameters.imageTableName, image.rowid)
-    const migrationRows = await databaseHelper.selectByValue(db, parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', imageRow.spotInstanceId)
+    const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
+    const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', imageRow.spotInstanceId)
     await migrationRows.map(async row => {
-      await databaseHelper.updateById(db, parameters.migrationTableName, 'count = ?, updatedAt = ?', [row.count+1, Date.now(), row.rowid])
+      await databaseHelper.updateById(parameters.migrationTableName, 'count = ?, updatedAt = ?', [row.count+1, Date.now(), row.rowid])
+      const currentCosts = await billingHelper.getCosts(`elmit_${imageRow.spotInstanceId}`, timeHelper.convertTime(row.createdAt-86400000), timeHelper.convertTime(Date.now()))
+      const billingRows = await databaseHelper.selectIsNull(parameters.billingTableValues, parameters.billingTableName, 'actualCost')
+      const billingRow = billingRows.filter(r => r.imageId === imageRow.rowid)[0]
+
+      await databaseHelper.updateById(parameters.billingTableName, 'actualCost = ?, updatedAt = ?', [currentCosts, Date.now(), billingRow.rowid])
     })
-    await databaseHelper.closeDatabase(db)
     await setScheduler(image, model, user, false)
   }
 

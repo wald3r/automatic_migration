@@ -324,11 +324,7 @@ const getInstanceIds = async (id, rowid) => {
   }
 
   if(instanceIds.length === 1){
-    const db = await databaseHelper.openDatabase()
-    const params = [instanceIds[0], Date.now(), rowid]
-    const values = 'spotInstanceId = ?, updatedAt = ?'
-    await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-    await databaseHelper.closeDatabase(db)
+    await databaseHelper.updateById(parameters.imageTableName, 'spotInstanceId = ?, updatedAt = ?', [instanceIds[0], Date.now(), rowid])
   }
   return instanceIds
 
@@ -436,16 +432,16 @@ const createTag = async (instanceId, zone) => {
   setRegion(zone)
   const ec2 = await getEC2Object()
   ec2.createTags(tagParams, async (err) => {
-    if (err) console.log(`CreateTagsHelper: ${err.message}`) 
+    if (err) console.log(`CreateTagHelper: ${err.message}`) 
     else {
-      console.log(`CreateTagsHelper: Tags created for ${instanceId}`)
+      console.log(`CreateTagHelper: Tag created for ${instanceId}`)
     }       
   })
 
 }
 
 const requestSpotInstance = async (instance, zone, serverImage, bidprice, simulation, id, path, keyPath) => {
-
+  console.log(zone)
   setRegion(zone)
   const ec2 = await getEC2Object()
   const imageId = await describeImages(serverImage)
@@ -471,7 +467,6 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
     Type: 'persistent'
   }
 
-  let requestId = null
   return await new Promise((resolve) => {
     ec2.requestSpotInstances(params, async (err, data) => {
       if (err) {
@@ -479,13 +474,8 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
         resolve(null)
       }
       else{
-
-        const db = await databaseHelper.openDatabase()
-        params = [data.SpotInstanceRequests[0].SpotInstanceRequestId, zone, Date.now(), id]
-        requestId = data.SpotInstanceRequests[0].SpotInstanceRequestId
-        const values = 'requestId = ?, zone = ?, updatedAt = ?'
-        await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-        await databaseHelper.closeDatabase(db)
+        let requestId = data.SpotInstanceRequests[0].SpotInstanceRequestId
+        await databaseHelper.updateById(parameters.imageTableName, 'requestId = ?, zone = ?, updatedAt = ?', [requestId, zone, Date.now(), id])
         resolve(requestId)
       }
     })
@@ -502,11 +492,7 @@ const getPublicIpFromRequest = async (instanceIds, rowid) => {
       if (err) console.log(`SpotInstanceHelper: ${err.message}`) 
       else {
         const ip = data.Reservations[0].Instances[0].PublicIpAddress
-        const db = await databaseHelper.openDatabase()
-        const params = [ip, Date.now(), rowid]
-        const values = 'ip = ?, updatedAt = ?'
-        await databaseHelper.updateById(db, parameters.imageTableName, values, params)
-        await databaseHelper.closeDatabase(db)
+        await databaseHelper.updateById(parameters.imageTableName, 'ip = ?, updatedAt = ?', [ip, Date.now(), rowid])
         resolve(ip)
       }       
     })

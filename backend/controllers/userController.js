@@ -15,10 +15,8 @@ userRouter.post('/:rowid', async(request, response, next) => {
       return response.status(401).send('Not Authenticated')
     }
 
-    const db = await databaseHelper.openDatabase()
-    let userRow = await databaseHelper.selectById(db, parameters.userTableValues, parameters.userTableName, rowid)
+    let userRow = await databaseHelper.selectById(parameters.userTableValues, parameters.userTableName, rowid)
     if(userRow === null){
-      await databaseHelper.closeDatabase(db)
       return response.status(500).send('User does not exist')
     }
     const salt = 10
@@ -26,8 +24,7 @@ userRouter.post('/:rowid', async(request, response, next) => {
 
     const values = 'username = ?, password = ?, updatedAt = ?'
     const params = [body.username, passwordHash, Date.now(), rowid]
-    const status = await databaseHelper.updateById(db, parameters.userTableName, values, params)
-    await databaseHelper.closeDatabase(db)
+    const status = await databaseHelper.updateById(parameters.userTableName, values, params)
     if(status === 500){
       return response.status(500).send('Update did not work')
     }
