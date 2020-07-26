@@ -5,9 +5,7 @@ import { connect } from 'react-redux'
 const CreateModelModal = ( { showCreateModelModal, setCreateModelModal, handleCreation, ...props } ) => {
 
   const productList = ['Linux/UNIX', 'Windows', 'Red Hat Enterprise Linux', 'SUSE Linux']
-  const [simulation, setSimulation] = useState(false)
   const [type, setType] = useState('r5.4xlarge')
-  const [bidprice, setBidprice] = useState(null)
   const [product, setProduct] = useState(productList[0])
   const [region, setRegion] = useState(null)
   const [filter, setFilter] = useState('')
@@ -20,8 +18,7 @@ const CreateModelModal = ( { showCreateModelModal, setCreateModelModal, handleCr
 
   const createModel = (event) => {
     setCreateModelModal(false)
-    let tmpSim = simulation === false ? 0 : 1
-    handleCreation({ simulation: tmpSim, type, bidprice, product, region }, event)
+    handleCreation({ type, product, region }, event)
   }
 
   const noChanges = () => {
@@ -65,27 +62,10 @@ const CreateModelModal = ( { showCreateModelModal, setCreateModelModal, handleCr
                 </tr>
                 <tr>
                   <td width="10">
-                    Bid Price:
-                  </td>
-
-                  <td>
-                    <input id='modelBidPrice' autoComplete='off' type='number' step='0.1' required onChange={({ target }) => setBidprice(target.value)}/>
-                  </td>
-                </tr>
-                <tr>
-                  <td width="10">
                     Region:
                   </td>
                   <td>
                     <input id='modelRegion' autoComplete='off' type='text' />
-                  </td>
-                </tr>
-                <tr>
-                  <td width="10">
-                    Simulation
-                  </td>
-                  <td>
-                    <input id='modelSimulation' autoComplete='off' type='checkbox' onChange={() => setSimulation(true)} />
                   </td>
                 </tr>
               </tbody>

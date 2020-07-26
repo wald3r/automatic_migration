@@ -76,6 +76,12 @@ const createKeyFile = (key, path) => {
     
   })
   
+  fs.chmod(path, 0o400, (err) => {
+    if (err) console.log(`KeyCreatorHelper: ${err.message}`)
+    console.log(path)
+
+  })
+  
 }
 
 module.exports = { deleteFile, createKeyFile, createDirectory, deleteFolderRecursively }

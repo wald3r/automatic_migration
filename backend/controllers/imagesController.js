@@ -23,15 +23,52 @@ imagesRouter.get('/', async(request, response, next) => {
     
     await new Promise(async (resolve) => {
       for(let a = 0; a < responseArray.length; a++){
-        if(responseArray[0].spotInstanceId !== null){
-          responseArray[a].state = await spotInstances.getInstanceState(responseArray[a].zone, [responseArray[a].spotInstanceId])
+        if(responseArray[a].spotInstanceId !== null){
+          responseArray[a].state = await spotInstances.getInstanceState(responseArray[a].zone, [responseArray[a].spotInstanceId]) 
+        }else{
+          responseArray[a].state = responseArray[a].simulation === 0 ? 'pending' : 'simulation'
         }
         if(a + 1 === responseArray.length){
           resolve()
         }
       }
     })
+    console.log(responseArray)
     return response.status(200).json(responseArray)
+
+
+  }catch(exception){
+    next(exception)
+  }
+
+})
+
+imagesRouter.post('/startinformation/', async(request, response, next) => {
+
+  try{
+
+    const user = await authenticationHelper.isLoggedIn(request.token)
+    if(user == undefined){
+      return response.status(401).send('Not Authenticated')
+    }
+
+    const body = request.body
+    const imageId = body.imageId
+    const port = body.port
+    const bidprice = body.bidprice
+    const simulation = body.simulation === false ? 0 : 1
+
+    const code = await databaseHelper.updateById(parameters.imageTableName, 'status = ?, port = ?, bidprice = ?, simulation = ?, updatedAt = ?', [simulation === 0 ? 'booting' : 'simulation', port, bidprice, simulation, Date.now(), imageId])
+    if(code === 500){
+      return response.status(500).send(`Could not update ${imageId}`)
+    }
+    const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, imageId)
+    const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
+    migrationHelper.newInstance(modelRow, imageRow, user)
+
+
+
+    return response.status(200).json(imageRow)
 
 
   }catch(exception){
@@ -132,10 +169,7 @@ imagesRouter.get('/start/instance/:rowid', async(request, response, next) => {
     imageRow.state = 'pending'
     return response.status(200).send(imageRow)
 
-   /* console.log(`InstanceBootHelper: Waiting for instance ${imageRow.spotInstanceId} to boot`)
-    await spotInstances.waitForInstanceToBoot([imageRow.spotInstanceId])
-    await sshConnection.startDocker(imageRow.ip, imageRow.key)
-*/
+  
   }catch(exception){
     return response.status(500).send('Can not start instance')
 
@@ -255,8 +289,8 @@ imagesRouter.post('/', async(request, response, next) => {
     })
   })
   
-  const params = [null, user.rowid, 'booting', modelId, null, null, null, path, null, null, Date.now(), Date.now()]
-  const imageId = await databaseHelper.insertRow(parameters.imageTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+  const params = [null, null, null, null, user.rowid, null, modelId, null, null, null, path, null, null, Date.now(), Date.now()]
+  const imageId = await databaseHelper.insertRow(parameters.imageTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
@@ -279,8 +313,6 @@ imagesRouter.post('/', async(request, response, next) => {
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)
   }
 
-  migrationHelper.newInstance(modelRow, imageRow, user)
-
   response.status(200).json(imageRow)
 })
 
@@ -294,8 +326,7 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)  
-  const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
-  if(modelRow.simulation === 0){
+  if(imageRow.simulation === 0){
     migrationHelper.terminateInstance(imageRow)
   }
   await databaseHelper.deleteRowsByValue(parameters.billingTableName, imageRow.rowid, 'imageId')

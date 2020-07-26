@@ -10,6 +10,7 @@ const setToken = newToken => {
   token = `bearer ${newToken}`
 }
 
+
 const rebootImage = async (image) => {
 
   const config = {
@@ -70,6 +71,16 @@ const newImage = async (obj) => {
   return response
 }
 
+const newImageInformation = async (obj) => {
+
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const response = await axios.post(`${baseUrl}/startinformation/`, obj, config)
+  return response
+}
+
 
 const getAllImages = async () => {
 
@@ -101,5 +112,6 @@ export default {
   deleteImage,
   setToken,
   stopDocker,
-  startDocker 
+  startDocker,
+  newImageInformation
 }

@@ -59,14 +59,14 @@ const ShowImages = (props) => {
     try{
       const response = await imagesService.startImage(imageToStart)
       props.exchangeImage(response.data)
-      addToast(`${imageToStart.ip} is starting`, {
+      addToast(`Image ${imageToStart.rowid} is starting`, {
         appearance: 'success',
         autoDismiss: true,
       })
       setImageToStart(null)
     }
     catch(exception){
-      addToast(`${imageToStart.ip} is not starting`, {
+      addToast(`Image ${imageToStart.rowid} is not starting`, {
         appearance: 'error',
         autoDismiss: true,
       })
@@ -76,20 +76,20 @@ const ShowImages = (props) => {
 
   const startDocker = async () => {
     try{
-      addToast(`Trying to start ${imageToStartDocker.ip} docker`, {
+      addToast(`Trying to start docker service of image id ${imageToStartDocker.rowid}`, {
         appearance: 'success',
         autoDismiss: true,
       })
       const response = await imagesService.startDocker(imageToStartDocker)
       props.exchangeImage(response.data)
-      addToast(`${imageToStartDocker.ip} docker is starting`, {
+      addToast(`Docker service of image id ${imageToStartDocker.rowid} is starting`, {
         appearance: 'success',
         autoDismiss: true,
       })
       setImageToStart(null)
     }
     catch(exception){
-      addToast(`${imageToStartDocker.ip} docker is not starting`, {
+      addToast(`Docker service of image id ${imageToStartDocker.rowid} is not starting`, {
         appearance: 'error',
         autoDismiss: true,
       })
@@ -99,20 +99,20 @@ const ShowImages = (props) => {
 
   const stopDocker = async () => {
     try{
-      addToast(`Trying to stop ${imageToStopDocker.ip} docker`, {
+      addToast(`Trying to stop docker service of image id ${imageToStopDocker.rowid}`, {
         appearance: 'success',
         autoDismiss: true,
       })
       const response = await imagesService.stopDocker(imageToStopDocker)
       props.exchangeImage(response.data)
-      addToast(`${imageToStopDocker.ip} docker is stopping`, {
+      addToast(`Docker service of image id ${imageToStopDocker.rowid} is stopping`, {
         appearance: 'success',
         autoDismiss: true,
       })
       setImageToStart(null)
     }
     catch(exception){
-      addToast(`${imageToStopDocker.ip} docker is not stopping`, {
+      addToast(`Docker service of image id ${imageToStopDocker.rowid} is not stopping`, {
         appearance: 'error',
         autoDismiss: true,
       })
@@ -125,14 +125,14 @@ const ShowImages = (props) => {
     try{
       const response = await imagesService.stopImage(imageToStop)
       props.exchangeImage(response.data)
-      addToast(`${imageToStop.ip} is stopping`, {
+      addToast(`Image ${imageToStop.rowid} is stopping`, {
         appearance: 'success',
         autoDismiss: true,
       })
       setImageToStart(null)
     }
     catch(exception){
-      addToast(`${imageToStop.ip} is not stopping`, {
+      addToast(`Image ${imageToStop.rowid} is not stopping`, {
         appearance: 'error',
         autoDismiss: true,
       })
@@ -142,7 +142,7 @@ const ShowImages = (props) => {
 
   const deleteImage = async () => {
     await props.deleteImage(imageToDelete)
-    addToast(`${imageToDelete.ip} was deleted`, {
+    addToast(`Image ${imageToDelete.rowid} was deleted`, {
       appearance: 'success',
       autoDismiss: true,
     })
@@ -152,7 +152,7 @@ const ShowImages = (props) => {
   const rebootImage = async () => {
 
     await imagesService.rebootImage(imageToReboot)
-    addToast(`${imageToReboot.ip} is rebooting`, {
+    addToast(`Image ${imageToReboot.rowid} is rebooting`, {
       appearance: 'success',
       autoDismiss: true,
     })
@@ -166,6 +166,9 @@ const ShowImages = (props) => {
     else if(status === 'running'){
       return   <Badge variant="success">Running</Badge>
     }
+    else if(status === 'simulation'){
+      return   <Badge variant="secondary">Simulation</Badge>
+    }
     else if(status === 'stopping'){
       return   <Badge variant="warning">Stopping</Badge>
     }
@@ -177,6 +180,7 @@ const ShowImages = (props) => {
     }
 
   }
+
   return(
     <div>
       <ConfirmationModal
@@ -213,11 +217,14 @@ const ShowImages = (props) => {
         <Table responsive className='table table-hover'>
           <thead className='thead-dark'>
             <tr>
+              <th>ID</th>
               <th>Model ID</th>
               <th>Zone</th>
               <th>IP</th>
               <th>Status</th>
               <th>State</th>
+              <th>Port</th>
+              <th>Bidprice</th>
               <th>Created At</th>
               <th>Updated At</th>
               <th></th>
@@ -226,16 +233,18 @@ const ShowImages = (props) => {
           {props.images.map(image => (
             <tbody key={image.rowid}>
               <tr id='idImageRow'>
+                <td id='idImageId'>{image.rowid}</td>
                 <td id='idImageModelId'>{image.modelId}</td>
                 <td id='idImageZone'>{image.zone}</td>
                 <td id='idImageIp'>{image.ip}</td>
                 <td id='idImageStatus'>{badgeStatus(image.status)}</td>
-                <td id='idImageStatus'>{badgeStatus(image.state)}</td>
+                <td id='idImageState'>{badgeStatus(image.state)}</td>
+                <td id='idImagePort'>{image.port}</td>
+                <td id='idImageBidprice'>{image.bidprice}</td>
                 <td id='idImageCreatedAt'>{convertTime(image.createdAt)}</td>
                 <td id='idImageUpdatedAt'>{convertTime(image.updatedAt)}</td>
                 <td>
                   <Button variant='primary' id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
-                  <Button style={{ display: (image.status === 'running') ? '' : 'none' }} variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Reboot Image' onClick={() => handleReboot(image)}><i className="fa fa-sort" /></Button>
                   <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? '' : 'none' }} variant='primary' id='idImagesStart'  data-toggle='tooltip' data-placement='top' title='Start State' onClick={() => handleStart(image)}><i className="fa fa-sort-up" /></Button>
                   <Button style={{ display: (image.state === 'running' || image.state === 'pending') ? '' : 'none' }} variant='primary' id='idImagesStop'  data-toggle='tooltip' data-placement='top' title='Stop State' onClick={() => handleStop(image)}><i className="fa fa-sort-desc" /></Button>
                   <Button style={{ display: (image.status === 'stopped' && image.state === 'running') ? '' : 'none' }} variant='primary' id='idImagesStartDocker'  data-toggle='tooltip' data-placement='top' title='Start Docker' onClick={() => handleStartDocker(image)}><i className="fa fa-toggle-up" /></Button>
@@ -249,6 +258,7 @@ const ShowImages = (props) => {
     </div>
   )
 }
+//<Button style={{ display: (image.status === 'running') ? '' : 'none' }} variant='primary' id='idImagesReboot'  data-toggle='tooltip' data-placement='top' title='Reboot Image' onClick={() => handleReboot(image)}><i className="fa fa-sort" /></Button>
 
 const mapStateToProps = (state) => {
   return {

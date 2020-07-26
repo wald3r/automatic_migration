@@ -46,8 +46,8 @@ modelsRouter.put('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const body = request.body
-  const params = [body.bidprice, body.type, body.product, body.region, body.simulation, Date.now(), body.status, rowid]
-  const values = 'bidprice = ?, type = ?, product = ?, region = ?, simulation = ?, updatedAt = ?, status = ?'
+  const params = [wbody.type, body.product, body.region, Date.now(), body.status, rowid]
+  const values = 'type = ?, product = ?, region = ?, updatedAt = ?, status = ?'
   const status = await databaseHelper.updateById(parameters.modelTableName, values, params)
   if(status === 500){
     response.status(500).send('Update did not work')
@@ -70,8 +70,8 @@ modelsRouter.post('/', async(request, response, next) => {
 
     let outcome = await databaseHelper.selectRowByValues(parameters.modelTableValues, parameters.modelTableName, 'type = ? AND product = ?', [body.type, body.product])
     if(outcome === null){
-      const params = [body.type, body.product, body.bidprice, body.region, body.simulation, 'training', Date.now(), Date.now()]
-      const modelId = await databaseHelper.insertRow(parameters.modelTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+      const params = [body.type, body.product, body.region, 'training', Date.now(), Date.now()]
+      const modelId = await databaseHelper.insertRow(parameters.modelTableName, '(null, ?, ?, ?, ?, ?, ?)', params)
       if(modelId === -1){
         response.status(500).send(`${parameters.modelTableName}: Could not insert row`)
       }
@@ -82,7 +82,7 @@ modelsRouter.post('/', async(request, response, next) => {
       response.status(200).json(model)
     
       if(process.env.NODE_ENV !== 'test'){ 
-        await mlModel.trainModel(body.type, body.product, body.simulation)
+        await mlModel.trainModel(body.type, body.product)
       }
     }else{
       response.status(500).send('Model already exists!')

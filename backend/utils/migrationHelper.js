@@ -19,10 +19,10 @@ const getPrediction = async (model, image, user) => {
 
 const deletePredictions = (image) => mlModel.deletePredictions(image)
 
-const stopInstance = async (image) => await spotInstances.stopInstance(image.spotInstanceId, image.zone)
-const startInstance = async (image) => await spotInstances.startInstance(image.spotInstanceId, image.zone)
+const stopInstance = async (image) => image.simulation === 0 ? await spotInstances.stopInstance(image.spotInstanceId, image.zone) : null
+const startInstance = async (image) => image.simulation === 0 ? await spotInstances.startInstance(image.spotInstanceId, image.zone) : null
 
-const rebootInstance = async (image) => await spotInstances.rebootInstance(image.zone, image.spotInstanceId)
+const rebootInstance = async (image) => image.simulation === 0 ? await spotInstances.rebootInstance(image.zone, image.spotInstanceId) : null
 
 const terminateInstance = async (image) => {
   await spotInstances.deleteKeyPair(image.zone, image.key, image.rowid)
@@ -34,22 +34,27 @@ const terminateInstance = async (image) => {
 
 const requestAndSetupInstance = async(model, image, zone) => {
   
- 
-
-  const requestId = await spotInstances.requestSpotInstance(model.type, zone, model.product, model.bidprice, model.simulation, image.rowid, image.path, image.key)
-  const instanceIds = await spotInstances.getInstanceIds(requestId, image.rowid)
-  if(instanceIds.length === 0){
-    return false
+  const requestId = await spotInstances.requestSpotInstance(model.type, zone, model.product, image.bidprice, image.simulation, image.rowid, image.key, image.port)
+  await databaseHelper.updateById(parameters.imageTableName, 'zone = ?', [zone, image.rowid])
+  if(image.simulation === 0){
+    const instanceIds = await spotInstances.getInstanceIds(requestId, image.rowid)
+    if(instanceIds.length === 0){
+      return false
+    }
+     
+    await spotInstances.createTag(instanceIds[0], zone)
+    const ip = await spotInstances.getPublicIpFromRequest(instanceIds, image.rowid)
+    console.log(`InstanceBootHelper: Waiting for instance ${instanceIds} to boot`)
+    await spotInstances.waitForInstanceToBoot(instanceIds)
+    await setupServer(ip, image)
+    await startDocker(ip, image.key)
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), image.rowid])
+    return true
+  }else{
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?', ['simulation', image.rowid])
+    return true
   }
-  await spotInstances.createTag(instanceIds[0], zone)
-  const ip = await spotInstances.getPublicIpFromRequest(instanceIds, image.rowid)
-  console.log(`InstanceBootHelper: Waiting for instance ${instanceIds} to boot`)
-  await spotInstances.waitForInstanceToBoot(instanceIds)
-
-  await setupServer(ip, image)
-  await startDocker(ip, image.key)
-  await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), image.rowid])
-  return true
+ 
 }
 
 const setScheduler = async (image, model, user, flag) => {
@@ -72,7 +77,6 @@ const setSchedulerAgain = async (image, model, user, time) => {
 
   let hoursToMs = parameters.migrationHour * 3600 * 1000
   let minToMs = parameters.migrationMinutes * 60 * 1000
-  console.log(Date.now(), (time+hoursToMs+minToMs))
   if(Date.now() > (time+hoursToMs+minToMs)){
     console.log(`ChangeSchedulerHelper: Set new scheduler time for ${image.rowid}`)
     scheduler.setMigrationScheduler(`${new Date(Date.now()).getMinutes()+2} ${new Date(Date.now()).getHours()} * * *`, model, image, user)
@@ -94,7 +98,7 @@ const newInstance = async (model, image, user) => {
       await migrationRows.map(async row => {
         await databaseHelper.updateById(parameters.migrationTableName, 'newZone = ?, updatedAt = ?', [zone, Date.now(), row.rowid])
       })
-      await terminateInstance(tmp)
+      if(image.simulation === 0) await terminateInstance(tmp)
     }
   }else{
     console.log(`MigrationHelper: No migration of ${image.rowid} needed`)

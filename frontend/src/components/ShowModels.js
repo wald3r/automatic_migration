@@ -75,14 +75,17 @@ const ShowModels = ( props ) => {
     else return false
   }
 
-  const runImage = async (files, event) => {
+  const runImage = async (obj, event) => {
     event.preventDefault()
     let data = new FormData()
-    if(checkFiles(files)){
-      for(let x = 0; x<files.length; x++) {
-        data.append('file', files[x], `${modelToRunWithImage.rowid}___${createPathName(files[x].webkitRelativePath)}___${files[x].name}`)
+    if(checkFiles(obj.files)){
+      for(let x = 0; x<obj.files.length; x++) {
+        data.append('file', obj.files[x], `${modelToRunWithImage.rowid}___${createPathName(obj.files[x].webkitRelativePath)}___${obj.files[x].name}`)
       }
-      const response = await imagesService.newImage(data)
+      let response = await imagesService.newImage(data)
+      console.log(response.data)
+      response = await imagesService.newImageInformation({ simulation: obj.simulation, port: obj.port, bidprice: obj.bidprice, imageId: response.data.rowid })
+
       if(response.status === 200){
         addToast(`New Image added to ${modelToRunWithImage.type}`, {
           appearance: 'success',
@@ -102,8 +105,6 @@ const ShowModels = ( props ) => {
     setShowRunImageModal(true)
     setModelToRunWithimage(model)
   }
-
-  const simulationConverter = (simulation) => simulation === 0 ? 'No' : 'Yes'
 
   const badgeStatus = (status) => {
     if(status === 'training'){
@@ -139,10 +140,8 @@ const ShowModels = ( props ) => {
               <th>ID</th>
               <th>Type</th>
               <th>Product</th>
-              <th>BidPrice</th>
               <th>Region</th>
               <th>Status</th>
-              <th>Simulation</th>
               <th>Created</th>
               <th>Updated</th>
               <th id='idAdd'><Button onClick={handleCreation} className="fa fa-plus"></Button></th>
@@ -156,10 +155,8 @@ const ShowModels = ( props ) => {
                 <td id='idModelId'>{model.rowid}</td>
                 <td id='idModelType'>{model.type}</td>
                 <td id='idModelProduct'>{model.product}</td>
-                <td id='idModelBidPrice'>{model.bidprice}</td>
                 <td id='idModelRegion'>{model.region}</td>
                 <td id='idModelStatus'>{badgeStatus(model.status)}</td>
-                <td id='idModelSimulation'>{simulationConverter(model.simulation)}</td>
                 <td id='idModelCreatedAt'>{convertTime(model.createdAt)}</td>
                 <td id='idModelUpdatedAt'>{convertTime(model.updatedAt)}</td>
                 <td>

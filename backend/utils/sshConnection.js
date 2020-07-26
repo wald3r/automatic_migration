@@ -57,6 +57,7 @@ const startDocker = async (ip, pathToKey) => {
         resolve(1)
       })
     }).catch((exception) => {
+      console.log(exception)
       resolve(-1)
     })
   })

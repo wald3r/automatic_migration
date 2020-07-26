@@ -7,6 +7,10 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
   const [uploading, setUploading] = useState(false)
   const [files, setFiles] = useState([])
   const [notification, setNotification] = useState('')
+  const [simulation, setSimulation] = useState(false)
+  const [bidprice, setBidprice] = useState(null)
+  const [port, setPort] = useState(null)
+
 
   const uploadHandler = async(event) => {
     setUploading(true)
@@ -15,7 +19,7 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
     if(files.length === 0){
       setNotification('No files!')
     }else{
-      handleRun(files, event)
+      handleRun({ simulation, bidprice, port, files }, event)
       setShowRunImageModal(false)
     }
     setFiles([])
@@ -31,6 +35,10 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
 
 
   const noChanges = () => {
+    setFiles([])
+    setSimulation(false)
+    setBidprice(null)
+    setPort(null)
     setShowRunImageModal(false)
   }
   return(
@@ -44,6 +52,36 @@ const RunImageModal = ( { showRunImageModal, setShowRunImageModal, handleRun } )
             <Modal.Body>
               {notification}
               <input type='file' autoComplete='off' name='files' directory="" webkitdirectory="" onChange={onChangeHandler}/>
+              <table className='table .table-striped' width="10">
+                <tbody width="10">
+                  <tr>
+                    <td width="10">
+                      Bidbrice:
+                    </td>
+
+                    <td>
+                      <input id='modelBidPrice' autoComplete='off' type='number' step='0.1' required onChange={({ target }) => setBidprice(target.value)}/>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="10">
+                      Port:
+                    </td>
+
+                    <td>
+                      <input id='modelPort' autoComplete='off' type='number' step='1' required onChange={({ target }) => setPort(target.value)}/>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="10">
+                      Simulation
+                    </td>
+                    <td>
+                      <input id='modelSimulation' autoComplete='off' type='checkbox' onChange={() => setSimulation(!simulation)} />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </Modal.Body>
             <Modal.Footer>
               <br/>

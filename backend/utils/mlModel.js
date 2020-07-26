@@ -21,7 +21,7 @@ const replace_name = (name) => {
 }
 
 
-const trainModel = async (instance, product, simulation) => {
+const trainModel = async (instance, product) => {
 
   const python = spawn('python3', [parameters.mlTrainFile, instance, product, 2])
   console.log(`Start training ml model ${instance} ${product}`)

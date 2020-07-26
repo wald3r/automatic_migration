@@ -19,9 +19,12 @@ const setMigrationScheduler = (time, model, image, user) => {
 
     const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
     const migrationRows = await databaseHelper.selectIsNull(parameters.migrationTableValues, parameters.migrationTableName, 'newZone')
-    const migrationRow = migrationRows.filter(row => row.imageId === imageRow.rowid)
+    let migrationRow = null
+    if(migrationRows.length !== 0){
+      migrationRow = migrationRows.filter(row => row.imageId === imageRow.rowid)
+    }
 
-    if(imageRow !== null && migrationRow.length !== 0){
+    if(imageRow !== null && migrationRow !== null){
       console.log(`MigrationSchedulerHelper: Start with evaluation of image ${image.rowid}`)
       await migrationHelper.newInstance(model, image, user)
 

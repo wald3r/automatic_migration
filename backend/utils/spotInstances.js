@@ -154,7 +154,7 @@ const describeSecurityGroups = async () => {
  })
 }
 
-const authorizeSecurityGroupIngress = async (securityGroupId) => {
+const authorizeSecurityGroupIngress = async (securityGroupId, port) => {
 
   const ec2 = await getEC2Object()
 
@@ -163,8 +163,8 @@ const authorizeSecurityGroupIngress = async (securityGroupId) => {
     IpPermissions:[
       {
         IpProtocol: "tcp",
-        FromPort: 8000,
-        ToPort: 8000,
+        FromPort: port,
+        ToPort: port,
         IpRanges: [{"CidrIp":"0.0.0.0/0"}]
       },
       {
@@ -183,7 +183,7 @@ const authorizeSecurityGroupIngress = async (securityGroupId) => {
   })
 }
 
-const createSecurityGroup = async (zone) => {
+const createSecurityGroup = async (zone, port) => {
   
   const ec2 = await getEC2Object()
   let vpc = null
@@ -207,7 +207,7 @@ const createSecurityGroup = async (zone) => {
               console.log(`SecurityGroupHelper: ${err.message}`)
             } else {
                 const SecurityGroupId = data.GroupId
-                await authorizeSecurityGroupIngress(SecurityGroupId)
+                await authorizeSecurityGroupIngress(SecurityGroupId, port)
                 resolve(SecurityGroupId)
             }
           })
@@ -440,14 +440,18 @@ const createTag = async (instanceId, zone) => {
 
 }
 
-const requestSpotInstance = async (instance, zone, serverImage, bidprice, simulation, id, path, keyPath) => {
-  console.log(zone)
+const requestSpotInstance = async (instance, zone, serverImage, bidprice, simulation, id, keyPath, port) => {
+
   setRegion(zone)
   const ec2 = await getEC2Object()
+  let securityGroupId = null
   const imageId = await describeImages(serverImage)
-  const securityGroupId = await createSecurityGroup(zone)
-  await createKeyPair(keyPath, id)
-  console.log(`ImageDescribeHelper: For ${zone} the following image was chosen: ${imageId.Images[0].Name}`) 
+  console.log(simulation)
+  if(!isSimulation(simulation)){
+    securityGroupId = await createSecurityGroup(zone, port)
+    await createKeyPair(keyPath, id)
+    console.log(`ImageDescribeHelper: For ${zone} the following image was chosen: ${imageId.Images[0].Name}`) 
+  } 
   
   let params = {
     InstanceCount: 1, 
@@ -475,7 +479,7 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
       }
       else{
         let requestId = data.SpotInstanceRequests[0].SpotInstanceRequestId
-        await databaseHelper.updateById(parameters.imageTableName, 'requestId = ?, zone = ?, updatedAt = ?', [requestId, zone, Date.now(), id])
+        await databaseHelper.updateById(parameters.imageTableName, 'requestId = ?, updatedAt = ?', [requestId, Date.now(), id])
         resolve(requestId)
       }
     })
