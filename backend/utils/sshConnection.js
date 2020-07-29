@@ -13,7 +13,8 @@ const setUpServer = async (ip, pathToKey, pathToDocker) => {
     ssh.connect({
       host: ip,
       username: parameters.ec2Username,
-      privateKey: pathToKey
+      privateKey: pathToKey,
+      readyTimeout: 99999
     })
     .then(() => {
       ssh.putDirectory(pathToDocker, `/home/${parameters.ec2Username}/image`, {
@@ -48,7 +49,8 @@ const startDocker = async (ip, pathToKey) => {
     ssh.connect({
       host: ip,
       username: parameters.ec2Username,
-      privateKey: pathToKey
+      privateKey: pathToKey,
+      readyTimeout: 99999
     })
     .then(() => {
       ssh.execCommand(`cd /home/${parameters.ec2Username}/image/ && sudo docker-compose up -d && exit`).then((result) => {
@@ -71,7 +73,8 @@ const endDocker = async (ip, pathToKey) => {
     ssh.connect({
       host: ip,
       username: parameters.ec2Username,
-      privateKey: pathToKey
+      privateKey: pathToKey,
+      readyTimeout: 99999
     })
     .then(() => {
       ssh.execCommand(`cd /home/${parameters.ec2Username}/image && sudo docker-compose down && exit`).then((result) => {

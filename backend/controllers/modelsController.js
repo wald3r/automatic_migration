@@ -5,6 +5,7 @@ const mlModel = require('../utils/mlModel')
 const authenticationHelper = require('../utils/authenticationHelper')
 const migrationHelper = require('../utils/migrationHelper')
 const fileHelper = require('../utils/fileHelper')
+const scheduler = require('../utils/scheduler')
 
 modelsRouter.get('/', async(request, response, next) => {
 
@@ -112,6 +113,7 @@ modelsRouter.delete('/:rowid', async(request, response, next) => {
       migrationHelper.deletePredictions(image)
       await migrationHelper.terminateInstance(image)
       await fileHelper.deleteFolderRecursively(image.path)
+      scheduler.cancelScheduler(image)
       await databaseHelper.deleteRowsByValue(parameters.billingTableName, image.rowid, 'imageId') //on delete cascade alternative
       await databaseHelper.deleteRowsByValue(parameters.migrationTableName, image.rowid, 'imageId') //on delete cascade alternative
 

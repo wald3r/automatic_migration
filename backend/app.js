@@ -31,6 +31,10 @@ const credentialsChecker = async () => {
 const checkMigrationStatus = async () => {
 
   const migrationRows = await databaseHelper.selectIsNull(parameters.migrationTableValues, parameters.migrationTableName, 'newZone')
+  const imageRows = await databaseHelper.selectAllRows(parameters.imageTableValues, parameters.imageTableName)
+  await imageRows.map(async image => {
+    await databaseHelper.updateById(parameters.imageTableName, 'schedulerName = ?', [null, image.rowid])
+  })
   await migrationRows.map(async migRow => {
     const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, migRow.imageId)
     const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)

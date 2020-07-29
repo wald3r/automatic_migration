@@ -1,6 +1,7 @@
 const schedule = require('node-schedule')
 const spotPrices = require('./spotPrices')
-
+const databaseHelper = require('./databaseHelper')
+let parameters = require('../parameters')
 
 const scheduleCollectSpotPrices = schedule.scheduleJob('23 11 * * *', () => {
 
@@ -8,33 +9,40 @@ const scheduleCollectSpotPrices = schedule.scheduleJob('23 11 * * *', () => {
 
 })
 
+const cancelScheduler = async (image) => {
+  const toCancel = schedule.scheduledJobs[image.schedulerName]
+  toCancel.cancel()
+  console.log(`CancelSchedulerHelper: Cancelled scheduler of image ${image.rowid}`)
+  await databaseHelper.updateById(parameters.imageTableName, `schedulerName = ?`, [null, image.rowid])
 
-const setMigrationScheduler = (time, model, image, user) => {
+
+}
+
+const setMigrationScheduler = async (time, model, image, user) => {
   
   console.log(`MigrationSchedulerHelper: Set scheduler at ${time} for ${image.rowid}`)
-  schedule.scheduleJob(time, async () => {
+  const j = schedule.scheduleJob(time, async function () {
     const migrationHelper = require('./migrationHelper')
     const databaseHelper = require('./databaseHelper')
-    const parameters = require('../parameters')
+    parameters = require('../parameters')
+    const spotInstances = require('./spotInstances')
 
     const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
-    const migrationRows = await databaseHelper.selectIsNull(parameters.migrationTableValues, parameters.migrationTableName, 'newZone')
-    let migrationRow = null
-    if(migrationRows.length !== 0){
-      migrationRow = migrationRows.filter(row => row.imageId === imageRow.rowid)
-    }
 
-    if(imageRow !== null && migrationRow !== null){
-      console.log(`MigrationSchedulerHelper: Start with evaluation of image ${image.rowid}`)
+
+    console.log(`MigrationSchedulerHelper: Start with evaluation of image ${image.rowid}`)
+
+    const state = await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) 
+    if(state === 'running'){
       await migrationHelper.newInstance(model, image, user)
-
     }else{
-      console.log(`MigrationSchedulerHelper: Evaluation cancelled because ${image.rowid} does not exist anymore`)
-
-    }    
+      console.log(`MigrationSchedulerHelper: Image ${image.rowid} is currently not active`)
+    }
+   
 
   })
+  await databaseHelper.updateById(parameters.imageTableName, `schedulerName = ?`, [j.name, image.rowid])
 }
 
 
-module.exports =  { scheduleCollectSpotPrices, setMigrationScheduler }
+module.exports =  { cancelScheduler, scheduleCollectSpotPrices, setMigrationScheduler }

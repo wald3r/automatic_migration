@@ -13,7 +13,7 @@ const Billing = (props) => {
         <Table responsive className='table table-hover'>
           <thead className='thead-dark'>
             <tr>
-              <th>ID</th>
+              <th>Image ID</th>
               <th>Predicted Costs</th>
               <th>Actual Costs</th>
               <th>Created At</th>

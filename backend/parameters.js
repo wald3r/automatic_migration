@@ -16,7 +16,7 @@ const migrationTableName = 'migration'
 const billingTableName = 'billing'
 
 const modelTableValues = 'rowid, type, product, region, status, createdAt, updatedAt'
-const imageTableValues = 'rowid, bidprice, simulation, port, predictionFile, userId, status, modelId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
+const imageTableValues = 'rowid, schedulerName, bidprice, simulation, port, predictionFile, userId, status, modelId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
 const userTableValues = 'rowid, username, password, createdAt, updatedAt'
 const billingTableValues = 'rowid, predictedCost, actualCost, imageId, userid, createdAt, updatedAt'
 const migrationTableValues = 'rowid, oldZone, newZone, count, oldSpotInstanceId, imageId, createdAt, updatedAt'

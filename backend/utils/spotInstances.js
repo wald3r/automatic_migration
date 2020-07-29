@@ -128,17 +128,17 @@ const startInstance = async (id, zone) => {
 }
 
 
-const describeSecurityGroups = async () => {
+const describeSecurityGroups = async (id) => {
  
   const params = {
     Filters: [
       {
         Name: 'description',
-        Values: [parameters.securityGroupDescription]
+        Values: [`${parameters.securityGroupDescription}_${id}`]
       }
     ],
     GroupNames: [
-      parameters.securityGroupName
+      `${parameters.securityGroupName}_${id}`
     ]
   }
 
@@ -183,12 +183,12 @@ const authorizeSecurityGroupIngress = async (securityGroupId, port) => {
   })
 }
 
-const createSecurityGroup = async (zone, port) => {
+const createSecurityGroup = async (zone, port, id) => {
   
   const ec2 = await getEC2Object()
   let vpc = null
   
-  const securityGroup = await describeSecurityGroups()
+  const securityGroup = await describeSecurityGroups(id)
   if(securityGroup === undefined){
     console.log(`SecurityGroupHelper: Create security group for ${zone}`)
     return await new Promise((resolve) => {
@@ -198,8 +198,8 @@ const createSecurityGroup = async (zone, port) => {
         }else {
           vpc = data.Vpcs[0].VpcId
           const paramsSecurityGroup = {
-            Description: parameters.securityGroupDescription,
-            GroupName: parameters.securityGroupName,
+            Description: `${parameters.securityGroupDescription}_${id}`,
+            GroupName: `${parameters.securityGroupName}_${id}`,
             VpcId: vpc
           }
           ec2.createSecurityGroup(paramsSecurityGroup, async (err, data) => {
@@ -222,14 +222,14 @@ const createSecurityGroup = async (zone, port) => {
 }
 
 
-const deleteSecurityGroup = async (zone) => {
+const deleteSecurityGroup = async (zone, id) => {
 
   setRegion(zone)
   const ec2 = await getEC2Object()
 
   const params = {
     DryRun: false,
-    GroupName: parameters.securityGroupName
+    GroupName: `${parameters.securityGroupName}_${id}`
   }
 
   ec2.deleteSecurityGroup(params, (err, data) => {
@@ -446,9 +446,8 @@ const requestSpotInstance = async (instance, zone, serverImage, bidprice, simula
   const ec2 = await getEC2Object()
   let securityGroupId = null
   const imageId = await describeImages(serverImage)
-  console.log(simulation)
   if(!isSimulation(simulation)){
-    securityGroupId = await createSecurityGroup(zone, port)
+    securityGroupId = await createSecurityGroup(zone, port, id)
     await createKeyPair(keyPath, id)
     console.log(`ImageDescribeHelper: For ${zone} the following image was chosen: ${imageId.Images[0].Name}`) 
   } 

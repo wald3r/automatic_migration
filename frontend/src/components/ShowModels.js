@@ -83,7 +83,6 @@ const ShowModels = ( props ) => {
         data.append('file', obj.files[x], `${modelToRunWithImage.rowid}___${createPathName(obj.files[x].webkitRelativePath)}___${obj.files[x].name}`)
       }
       let response = await imagesService.newImage(data)
-      console.log(response.data)
       response = await imagesService.newImageInformation({ simulation: obj.simulation, port: obj.port, bidprice: obj.bidprice, imageId: response.data.rowid })
 
       if(response.status === 200){

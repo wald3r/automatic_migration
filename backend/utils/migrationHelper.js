@@ -27,7 +27,7 @@ const rebootInstance = async (image) => image.simulation === 0 ? await spotInsta
 const terminateInstance = async (image) => {
   await spotInstances.deleteKeyPair(image.zone, image.key, image.rowid)
   await spotInstances.cancelSpotInstance(image)
-  await spotInstances.deleteSecurityGroup(image.zone)
+  await spotInstances.deleteSecurityGroup(image.zone, image.rowid)
   await spotInstances.deleteTag(image.spotInstanceId, image.zone)
 }
 
@@ -64,9 +64,9 @@ const setScheduler = async (image, model, user, flag) => {
     newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
     await databaseHelper.insertRow(parameters.migrationTableName, `(null, ?, ?, ?, ?, ?, ?,  ?)`, [newImage.zone, null, 1, newImage.spotInstanceId, newImage.rowid, Date.now(), Date.now()])
   }
-  let hour = timeHelper.getMigrationHour(Date.now())
-  let minutes = timeHelper.getMigrationMinutes(Date.now())
-  scheduler.setMigrationScheduler(`${minutes} ${hour} * * *`, model, newImage === null ? image : newImage, user)
+
+  const time = Date.now()+ (parameters.migrationHour * 3600 * 1000) + parameters.migrationMinutes * 60 * 1000
+  scheduler.setMigrationScheduler(new Date(time), model, newImage === null ? image : newImage, user)
 
 }
 
@@ -79,10 +79,11 @@ const setSchedulerAgain = async (image, model, user, time) => {
   let minToMs = parameters.migrationMinutes * 60 * 1000
   if(Date.now() > (time+hoursToMs+minToMs)){
     console.log(`ChangeSchedulerHelper: Set new scheduler time for ${image.rowid}`)
-    scheduler.setMigrationScheduler(`${new Date(Date.now()).getMinutes()+2} ${new Date(Date.now()).getHours()} * * *`, model, image, user)
+    const newTime = Date.now() + (2 * 60 * 1000)
+    scheduler.setMigrationScheduler(new Date(newTime), model, image, user)
   }else{
     console.log(`ChangeSchedulerHelper: Set old scheduler time for ${image.rowid}`)
-    scheduler.setMigrationScheduler(`${minutes} ${hour} * * *`, model, image, user)
+    scheduler.setMigrationScheduler(new Date(time), model, image, user)
   }
 
 }
@@ -106,11 +107,11 @@ const newInstance = async (model, image, user) => {
     const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', imageRow.spotInstanceId)
     await migrationRows.map(async row => {
       await databaseHelper.updateById(parameters.migrationTableName, 'count = ?, updatedAt = ?', [row.count+1, Date.now(), row.rowid])
-      const currentCosts = await billingHelper.getCosts(`elmit_${imageRow.spotInstanceId}`, timeHelper.convertTime(row.createdAt-86400000), timeHelper.convertTime(Date.now()))
+      //const currentCosts = await billingHelper.getCosts(`elmit_${imageRow.spotInstanceId}`, timeHelper.convertTime(row.createdAt-86400000), timeHelper.convertTime(Date.now()))
       const billingRows = await databaseHelper.selectIsNull(parameters.billingTableValues, parameters.billingTableName, 'actualCost')
       const billingRow = billingRows.filter(r => r.imageId === imageRow.rowid)[0]
 
-      await databaseHelper.updateById(parameters.billingTableName, 'actualCost = ?, updatedAt = ?', [currentCosts, Date.now(), billingRow.rowid])
+      await databaseHelper.updateById(parameters.billingTableName, 'actualCost = ?, updatedAt = ?', [0, Date.now(), billingRow.rowid])
     })
     await setScheduler(image, model, user, false)
   }
