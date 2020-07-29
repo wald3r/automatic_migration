@@ -19,9 +19,8 @@ const cancelScheduler = async (image) => {
 }
 
 const setMigrationScheduler = async (time, model, image, user) => {
-  
   console.log(`MigrationSchedulerHelper: Set scheduler at ${time} for ${image.rowid}`)
-  const j = schedule.scheduleJob(time, async function () {
+  const j = schedule.scheduleJob(time, async () => {
     const migrationHelper = require('./migrationHelper')
     const databaseHelper = require('./databaseHelper')
     parameters = require('../parameters')
@@ -41,6 +40,7 @@ const setMigrationScheduler = async (time, model, image, user) => {
    
 
   })
+  console.log(j)
   await databaseHelper.updateById(parameters.imageTableName, `schedulerName = ?`, [j.name, image.rowid])
 }
 

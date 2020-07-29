@@ -34,6 +34,7 @@ const ec2Username = 'ec2-user'
 const securityGroupName = 'elmit-group'
 const securityGroupDescription = 'elmit'
 const linuxInstallFile = './linux_install.sh'
+const suseInstallFile = './suse_install.sh'
 
 const workDir = __dirname
 
@@ -43,6 +44,7 @@ const migrationHour = 0
 const migrationMinutes = 3
 
 module.exports = { 
+    suseInstallFile,
     migrationMinutes,
     migrationHour,
     migrationTableValues,

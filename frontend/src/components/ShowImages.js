@@ -227,7 +227,7 @@ const ShowImages = (props) => {
               <th>Bidprice</th>
               <th>Created At</th>
               <th>Updated At</th>
-              <th></th>
+              <th id='idRefresh'><Button variant='primary' id='idRefreshPage'  data-toggle='tooltip' data-placement='top' title='Refresh' onClick={() => window.location.reload()}><i className="fa fa-refresh" /></Button></th>
             </tr>
           </thead>
           {props.images.map(image => (

@@ -69,11 +69,13 @@ const deleteFile = (path) => {
   
 }
 
-const createKeyFile = (key, path) => {
+const createKeyFile = async (key, path) => {
 
-  fs.writeFile(path, key.KeyMaterial, (err) => {
-    if (err) console.log(`KeyCreatorHelper: ${err.message}`)
-    
+  await new Promise((resolve) => {
+    fs.writeFile(path, key.KeyMaterial, (err) => {
+      if (err) console.log(`KeyCreatorHelper: ${err.message}`)
+      resolve()  
+    })
   })
   
   fs.chmod(path, 0o400, (err) => {

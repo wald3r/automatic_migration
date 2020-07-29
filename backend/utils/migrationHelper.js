@@ -27,8 +27,10 @@ const rebootInstance = async (image) => image.simulation === 0 ? await spotInsta
 const terminateInstance = async (image) => {
   await spotInstances.deleteKeyPair(image.zone, image.key, image.rowid)
   await spotInstances.cancelSpotInstance(image)
-  await spotInstances.deleteSecurityGroup(image.zone, image.rowid)
   await spotInstances.deleteTag(image.spotInstanceId, image.zone)
+  setTimeout(() => {
+    spotInstances.deleteSecurityGroup(image.zone, image.rowid)
+ }, 50000)
 }
 
 

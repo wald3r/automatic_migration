@@ -440,12 +440,14 @@ const createTag = async (instanceId, zone) => {
 
 }
 
-const requestSpotInstance = async (instance, zone, serverImage, bidprice, simulation, id, keyPath, port) => {
+const requestSpotInstance = async (instance, zone, product, bidprice, simulation, id, keyPath, port) => {
 
   setRegion(zone)
   const ec2 = await getEC2Object()
   let securityGroupId = null
-  const imageId = await describeImages(serverImage)
+  const imageId = await describeImages(product)
+  console.log(imageId)
+  console.log(product)
   if(!isSimulation(simulation)){
     securityGroupId = await createSecurityGroup(zone, port, id)
     await createKeyPair(keyPath, id)

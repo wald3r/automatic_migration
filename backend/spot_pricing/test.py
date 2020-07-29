@@ -1,11 +1,9 @@
 import pandas as pd
-import os
 
-df = pd.read_csv(os.getcwd()+'/pricing_history/t2.micro', sep=',')
+df = pd.read_csv('aws_spot_pricing.csv', sep=',')
 
-df_group = df.groupby(['AvailabilityZone'])
+df['AvailabilityZone'] = df['AvailabilityZone'].str[:-1]
 
-for x, y in df_group:
-    if(x == 'ap-south-1b'):
-        print(x)
-        print(y.to_string())
+df = df['AvailabilityZone'].unique()
+
+print(df)

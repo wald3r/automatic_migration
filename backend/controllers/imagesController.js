@@ -307,14 +307,20 @@ imagesRouter.post('/', async(request, response, next) => {
 
   const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, modelId)
   const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, imageId)
-
-  if(modelRow.product !== 'Windows'){
-    fs.copyFile(parameters.linuxInstallFile, path+'/install.sh', (err) => {
-      if(err) console.log(`InstallScriptHelper: Could not copy file to ${path+'/install.sh'}`)
-      else console.log(`InstallScriptHelper: Copied file to ${path+'/install.sh'}`)
-    })
+  
+  let installFile = null
+  if(modelRow.product === 'Linux/UNIX'){
+    installFile = parameters.linuxInstallFile
+  }else if(modelRow.product === 'SUSE Linux'){
+    installFile = parameters.suseInstallFile
+  }else if(modelRow.product === 'Red Hat Enterprise Linux'){
+    installFile = parameters.linuxInstallFile
   }
 
+  fs.copyFile(installFile, path+'/install.sh', (err) => {
+    if(err) console.log(`InstallScriptHelper: Could not copy file to ${path+'/install.sh'}`)
+    else console.log(`InstallScriptHelper: Copied file to ${path+'/install.sh'}`)
+  })
 
   if(imageRow === null){
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)

@@ -14,6 +14,8 @@ import Billing from './components/Billing'
 import { csv } from 'd3-request'
 import instancesData from './data/instances.csv'
 import zonesData from './data/zones.csv'
+import regionsData from './data/regions.csv'
+import { setRegionsList } from './reducers/regionsListReducer'
 import { setInstancesList } from './reducers/instancesListReducer'
 import { setZonesList } from './reducers/zonesListReducer'
 import { ToastProvider } from 'react-toast-notifications'
@@ -33,6 +35,9 @@ const App = ( props ) => {
     props.getModels()
     csv(instancesData, (err, data) => {
       props.setInstancesList(data)
+    })
+    csv(regionsData, (err, data) => {
+      props.setRegionsList(data)
     })
     csv(zonesData, (err, data) => {
       props.setZonesList(data)
@@ -101,6 +106,7 @@ const mapDispatchToProps = {
   getImages,
   setUser,
   getBilling,
+  setRegionsList
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)
