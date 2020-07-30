@@ -120,7 +120,7 @@ const ShowModels = ( props ) => {
               <th>Created</th>
               <th>Updated</th>
               <th id='idButtons'>
-                <Button data-toggle='tooltip' data-placement='top' title='New Image' onClick={handleCreation} className="fa fa-plus"></Button>
+                <Button data-toggle='tooltip' data-placement='top' title='New Model' onClick={handleCreation} className="fa fa-plus"></Button>
                 <Button id='idRefreshPage'  data-toggle='tooltip' data-placement='top' title='Refresh' onClick={() => window.location.reload()}><i className="fa fa-refresh" /></Button>
               </th>
 
