@@ -21,12 +21,12 @@ const userTableValues = 'rowid, username, password, createdAt, updatedAt'
 const billingTableValues = 'rowid, predictedCost, actualCost, imageId, userid, createdAt, updatedAt'
 const migrationTableValues = 'rowid, oldZone, newZone, count, oldSpotInstanceId, imageId, createdAt, updatedAt'
 
-const mlTrainFile = '/home/walder/workspace/automatic_migration/backend/ml_model/train_ml_model.py'
-const mlDeleteFile = '/home/walder/workspace/automatic_migration/backend/ml_model/delete_ml_model.py'
-const mlPredictFile = '/home/walder/workspace/automatic_migration/backend/ml_model/predict_ml_model.py'
-const mlPredictions = '/home/walder/workspace/automatic_migration/backend/predictions/'
+const mlTrainFile = __dirname+'/ml_model/train_ml_model.py'
+const mlDeleteFile = __dirname+'/ml_model/delete_ml_model.py'
+const mlPredictFile = __dirname+'/ml_model/predict_ml_model.py'
+const mlPredictions = __dirname+'/predictions/'
 
-const collectSpotPricesFile = '/home/walder/workspace/automatic_migration/backend/spot_pricing/collect_spot_prices.py'
+const collectSpotPricesFile = __dirname+'/spot_pricing/collect_spot_prices.py'
 
 const keyFileName = 'elmit.pem'
 const keyName = 'elmit'
