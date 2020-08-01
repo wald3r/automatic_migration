@@ -172,6 +172,9 @@ const ShowImages = (props) => {
     else if(status === 'stopping'){
       return   <Badge variant="warning">Stopping</Badge>
     }
+    else if(status === 'migrating'){
+      return   <Badge variant="warning">Migrating</Badge>
+    }
     else if(status === 'booting'){
       return   <Badge variant="info">Instance is booting</Badge>
     }

@@ -56,7 +56,7 @@ const ShowModels = ( props ) => {
     setShowCreateModelModal(true)
   }
 
-  const createPathName = (path) => path.replaceAll('/', '__')
+  const createPathName = (path) => path.split('/').join('__')
 
   const runImage = async (obj, event) => {
     event.preventDefault()

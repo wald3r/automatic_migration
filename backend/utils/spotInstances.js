@@ -2,6 +2,8 @@ const AWS = require('aws-sdk')
 const parameters = require('../parameters')
 const databaseHelper = require('./databaseHelper')
 const fileHelper = require('./fileHelper')
+const fs = require('fs')
+const csv = require('csv-parse')
 
 let AWSRegion = 'eu-west-3'
 
@@ -36,7 +38,28 @@ const getEC2Object = async () => {
   return ec2
 }
 
-const describeImages = async (product) => {
+const describeImages = async (product, zone) => {
+
+  let id = null
+  let results = []
+
+  await new Promise((resolve) => {
+    fs.createReadStream(parameters.imageFile)
+    .pipe(csv())
+    .on('data', (data) => results.push(data))
+    .on('end', async () => {
+      const imageRows = results.filter(row => {
+        if(row[1] === product && row[0] === zone.slice(0, -1)){
+          return row
+        }
+      })
+      id = imageRows[0][2]
+      resolve()
+    })
+  })
+  
+  return id
+  /*
   const params = {
     Filters: [
       {
@@ -71,7 +94,7 @@ const describeImages = async (product) => {
       },
     ],
     Owners: [
-      'amazon',
+      'amazon'
     ]  
    }
 
@@ -82,7 +105,7 @@ const describeImages = async (product) => {
       if (err) console.log(`DescribeImagesHelper: ${err.message}`)
       else resolve(data)
     })
-   })
+   })*/
 }
 
 const stopInstance = async (id, zone) => {
@@ -274,13 +297,15 @@ const deleteKeyPair = async (zone, path, rowid) => {
   const params = {
     KeyName: `${parameters.keyName}_${rowid}`
   }
-  ec2.deleteKeyPair(params, function(err, data) {
-    if (err) console.log(`DeleteKeyPairHelper: ${err.message}`)
-    else { 
-      fileHelper.deleteFile(path)
-    }           
+  return await new Promise(async (resolve) => {
+    await ec2.deleteKeyPair(params, async (err) => {
+      if (err) console.log(`DeleteKeyPairHelper: ${err.message}`)
+      else { 
+        await fileHelper.deleteFile(path)
+        resolve()
+      }           
+    })
   })
-
 }
 
 
@@ -445,20 +470,18 @@ const requestSpotInstance = async (instance, zone, product, bidprice, simulation
   setRegion(zone)
   const ec2 = await getEC2Object()
   let securityGroupId = null
-  const imageId = await describeImages(product)
-  console.log(imageId)
-  console.log(product)
+  const imageId = await describeImages(product, zone)
   if(!isSimulation(simulation)){
     securityGroupId = await createSecurityGroup(zone, port, id)
     await createKeyPair(keyPath, id)
-    console.log(`ImageDescribeHelper: For ${zone} the following image was chosen: ${imageId.Images[0].Name}`) 
+    console.log(`ImageDescribeHelper: For ${zone} the following image was chosen: ${imageId}`) 
   } 
   
   let params = {
     InstanceCount: 1, 
     DryRun: isSimulation(simulation),
     LaunchSpecification: {
-     ImageId: imageId.Images[0].ImageId, 
+     ImageId: imageId,//.Images[0].ImageId, 
      InstanceType: instance,
      KeyName: `elmit_${id}`, 
      Placement: {
@@ -526,6 +549,7 @@ const cancelSpotInstance = async (image) => {
 
 module.exports = { 
   createTag,
+  describeImages,
   deleteTag,
   startInstance,
   stopInstance,

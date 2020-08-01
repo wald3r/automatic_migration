@@ -20,6 +20,7 @@ const cancelScheduler = async (image) => {
 
 const setMigrationScheduler = async (time, model, image, user) => {
   console.log(`MigrationSchedulerHelper: Set scheduler at ${time} for ${image.rowid}`)
+  console.log(time)
   const j = schedule.scheduleJob(time, async () => {
     const migrationHelper = require('./migrationHelper')
     const databaseHelper = require('./databaseHelper')
@@ -28,19 +29,20 @@ const setMigrationScheduler = async (time, model, image, user) => {
 
     const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
 
-
-    console.log(`MigrationSchedulerHelper: Start with evaluation of image ${image.rowid}`)
+    if(imageRow === null){
+      return
+    }
+    console.log(`MigrationSchedulerHelper: Start with evaluation of image ${imageRow.rowid}`)
 
     const state = await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) 
     if(state === 'running'){
-      await migrationHelper.newInstance(model, image, user)
+      await migrationHelper.newInstance(model, imageRow, user)
     }else{
-      console.log(`MigrationSchedulerHelper: Image ${image.rowid} is currently not active`)
+      console.log(`MigrationSchedulerHelper: Image ${imageRow.rowid} is currently not active`)
     }
    
 
   })
-  console.log(j)
   await databaseHelper.updateById(parameters.imageTableName, `schedulerName = ?`, [j.name, image.rowid])
 }
 

@@ -314,12 +314,17 @@ imagesRouter.post('/', async(request, response, next) => {
   }else if(modelRow.product === 'SUSE Linux'){
     installFile = parameters.suseInstallFile
   }else if(modelRow.product === 'Red Hat Enterprise Linux'){
-    installFile = parameters.linuxInstallFile
+    installFile = parameters.redInstallFile
   }
 
   fs.copyFile(installFile, path+'/install.sh', (err) => {
     if(err) console.log(`InstallScriptHelper: Could not copy file to ${path+'/install.sh'}`)
     else console.log(`InstallScriptHelper: Copied file to ${path+'/install.sh'}`)
+  })
+
+  fs.copyFile(parameters.migrationFile, path+'/migration.sh', (err) => {
+    if(err) console.log(`MigrationScriptHelper: Could not copy file to ${path+'/migration.sh'}`)
+    else console.log(`MigrationScriptHelper: Copied file to ${path+'/migration.sh'}`)
   })
 
   if(imageRow === null){

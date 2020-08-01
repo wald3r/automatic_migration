@@ -35,6 +35,11 @@ const securityGroupName = 'elmit-group'
 const securityGroupDescription = 'elmit'
 const linuxInstallFile = './linux_install.sh'
 const suseInstallFile = './suse_install.sh'
+const redInstallFile = './red_install.sh'
+
+const migrationFile = './migration.sh'
+
+const imageFile = './images.csv'
 
 const workDir = __dirname
 
@@ -44,6 +49,9 @@ const migrationHour = 0
 const migrationMinutes = 3
 
 module.exports = { 
+    redInstallFile,
+    imageFile,
+    migrationFile,
     suseInstallFile,
     migrationMinutes,
     migrationHour,

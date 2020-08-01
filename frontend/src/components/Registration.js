@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import '../stylesheets/general.css'
 import { useToasts } from 'react-toast-notifications'
 
-const Registration = ( props ) => {
+const Registration = () => {
 
   const { addToast } = useToasts()
 
@@ -19,14 +19,14 @@ const Registration = ( props ) => {
     try{
       setRegistering(true)
       const response = await registrationService.register({ username, password })
-      addToast(`${response.data.username} got Registered!"`, {
+      addToast(`${response.data.username} got Registered`, {
         appearance: 'success',
         autoDismiss: true,
       })
       setRegistering(false)
     }catch(error){
       setRegistering(false)
-      addToast('Registration failed!', {
+      addToast('Registration failed', {
         appearance: 'error',
         autoDismiss: true,
       })

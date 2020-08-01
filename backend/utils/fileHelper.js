@@ -61,27 +61,40 @@ const createDirectory = async (path, file) => {
 
 }
 
-const deleteFile = (path) => {
+const deleteFile = async (path) => {
 
-  fs.unlink(path, (err) => {
-    if (err) console.log(`FileDeleteHelper: ${err.message}`)
+  return await new Promise((resolve) => {
+    fs.unlink(path, (err) => {
+      if (err) console.log(`FileDeleteHelper: ${err.message}`)
+      resolve()
+    })
   })
-  
+ 
+}
+
+const renameFile = (oldFile, newFile) => {
+  fs.rename(oldFile, newFile, (err) => {
+    if (err) console.log(`FileRenameHelper: ${err.message}`)
+  })
 }
 
 const createKeyFile = async (key, path) => {
-
+  
+  let finalPath = path
   await new Promise((resolve) => {
-    fs.writeFile(path, key.KeyMaterial, (err) => {
+    if (fs.existsSync(finalPath)) {
+      finalPath = finalPath.replace('.pem', '_1.pem')
+    }
+    fs.writeFile(finalPath, key.KeyMaterial, (err) => {
       if (err) console.log(`KeyCreatorHelper: ${err.message}`)
       resolve()  
     })
   })
   
-  fs.chmod(path, 0o400, (err) => {
+  fs.chmod(finalPath, 0o400, (err) => {
     if (err) console.log(`KeyCreatorHelper: ${err.message}`)
   })
   
 }
 
-module.exports = { deleteFile, createKeyFile, createDirectory, deleteFolderRecursively }
+module.exports = { deleteFile, createKeyFile, createDirectory, deleteFolderRecursively, renameFile }
