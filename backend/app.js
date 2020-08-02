@@ -48,6 +48,7 @@ const checkMigrationStatus = async () => {
 credentialsChecker()
 databaseHelper.checkDatabase()
 //scheduler.scheduleCollectSpotPrices
+scheduler.trainModels
 app.use(express.static('build'))
 app.use(cors())
 app.use(bodyparser.json())

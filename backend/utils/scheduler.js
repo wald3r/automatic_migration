@@ -1,13 +1,28 @@
 const schedule = require('node-schedule')
 const spotPrices = require('./spotPrices')
 const databaseHelper = require('./databaseHelper')
-let parameters = require('../parameters')
+const parameters = require('../parameters')
+const mlModel = require('./mlModel')
 
-const scheduleCollectSpotPrices = schedule.scheduleJob('23 11 * * *', () => {
+const scheduleCollectSpotPrices = schedule.scheduleJob('59 23 * * *', () => {
 
   spotPrices.collectSpotPrices()
 
 })
+
+
+
+const trainModels = schedule.scheduleJob('25 11 * * *', async () => {
+
+  console.log(`TrainModelsHelper: Start with retraining of all existing models`)
+  const models = await databaseHelper.selectAllRows(parameters.modelTableValues, parameters.modelTableName)
+  await models.map(async row => {
+    await databaseHelper.updateById(parameters.modelTableName, 'status = ?, updatedAt = ?', ['training', Date.now(), row.rowid])
+    mlModel.trainModel(row.type, row.product)
+  })
+  
+})
+
 
 const cancelScheduler = async (image) => {
   const toCancel = schedule.scheduledJobs[image.schedulerName]
@@ -47,4 +62,4 @@ const setMigrationScheduler = async (time, model, image, user) => {
 }
 
 
-module.exports =  { cancelScheduler, scheduleCollectSpotPrices, setMigrationScheduler }
+module.exports =  { trainModels, cancelScheduler, scheduleCollectSpotPrices, setMigrationScheduler }

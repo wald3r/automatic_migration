@@ -47,7 +47,7 @@ def main():
     product_description = str(sys.argv[2])
     image_id = str(sys.argv[3])
     gen = GenerateTrainingData('training_data_v3.csv')
-    if(gen.generate(instance_type, product_description, 1) == 0):
+    if(gen.generate(instance_type, product_description) == 0):
         exit(0)
     df = pd.read_csv('training_data_v3.csv', sep=',')
 

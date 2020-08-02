@@ -7,16 +7,14 @@ import os
 def mark_trained_spots(instance_type, product_description):
 
     path = os.path.normpath(os.getcwd() + os.sep + os.pardir)
-    filepath = path + '/spot_pricing/pricing_history/' + instance_type
+    filepath = path + '/backend/spot_pricing/pricing_history/' + instance_type
+
     df = pd.read_csv(filepath, sep=',')
     df1 = df[df['InstanceType'] == instance_type]
     df1 = df1[df1['ProductDescription'] == product_description]
 
-    df2 = df[df['InstanceType'] != instance_type]
-    df2 = df2[df2['ProductDescription'] != product_description]
-
     df1['Training'] = 1
-    df = pd.concat([df1, df2])
+    df.update(df1)
     df.to_csv(filepath, index=False)
 
 
@@ -52,7 +50,7 @@ def main():
     gen = GenerateTrainingData('training_data_v2.csv')
 
 
-    if(gen.generate(instance_type, product_description, 0)):
+    if(gen.generate(instance_type, product_description)):
 
         df = pd.read_csv('training_data_v2.csv', sep=',')
 
@@ -82,10 +80,10 @@ def main():
 
 
         print('Trained:', instance_type, product_description)
-        with open('trained.csv', 'a') as f:
-            f.write("%s, %s\n" % (instance_type, product_description))
+        #with open('trained.csv', 'a') as f:
+        #    f.write("%s, %s\n" % (instance_type, product_description))
 
-        #mark_trained_spots(instance_type, product_description)
+        mark_trained_spots(instance_type, product_description)
 
 
 
