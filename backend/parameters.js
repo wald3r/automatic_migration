@@ -27,6 +27,8 @@ const mlPredictFile = __dirname+'/ml_model/predict_ml_model.py'
 const mlPredictions = __dirname+'/predictions/'
 
 const collectSpotPricesFile = __dirname+'/spot_pricing/collect_spot_prices.py'
+const billingFile = __dirname+'/spot_pricing/calculate_billing.py'
+
 
 const keyFileName = 'elmit.pem'
 const keyName = 'elmit'
@@ -49,6 +51,7 @@ const migrationHour = 0
 const migrationMinutes = 3
 
 module.exports = { 
+    billingFile,
     redInstallFile,
     imageFile,
     migrationFile,

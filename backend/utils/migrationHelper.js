@@ -116,12 +116,12 @@ const newInstance = async (model, image, user) => {
     const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
     const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', imageRow.spotInstanceId)
     await migrationRows.map(async row => {
+      const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
       await databaseHelper.updateById(parameters.migrationTableName, 'count = ?, updatedAt = ?', [row.count+1, Date.now(), row.rowid])
-      //const currentCosts = await billingHelper.getCosts(`elmit_${imageRow.spotInstanceId}`, timeHelper.convertTime(row.createdAt-86400000), timeHelper.convertTime(Date.now()))
       const billingRows = await databaseHelper.selectIsNull(parameters.billingTableValues, parameters.billingTableName, 'actualCost')
-      const billingRow = billingRows.filter(r => r.imageId === imageRow.rowid)[0]
-
-      await databaseHelper.updateById(parameters.billingTableName, 'actualCost = ?, updatedAt = ?', [0, Date.now(), billingRow.rowid])
+      const billingRow = billingRows.filter(b => b.imageId === imageRow.rowid)[0]
+      console.log(billingRow.rowid)
+      await billingHelper.getCosts(modelRow.type, modelRow.product, imageRow.zone, row.createdAt, billingRow.rowid)
     })
     await setScheduler(image, model, user, false)
   }

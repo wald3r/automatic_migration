@@ -6,7 +6,6 @@ import sys
 import os
 from generate_training_data import GenerateTrainingData
 
-
 def plot_all(predictions, test_data, epochs, instance, product, zone):
 
     plt.plot(test_data, color='blue', label='Actual EC2 Price')
@@ -71,7 +70,7 @@ def main():
             model = mlobj.load_model()
             model.compile(optimizer='nadam', loss='mean_squared_error', metrics=['accuracy'])
 
-            training_features, labels, scaler = mlobj.generate_training_data(df, x, version) #only needed for the scaler
+            training_features, labels, scaler = mlobj.generate_training_data(df, x, version, 0) #only needed for the scaler
 
             prediction = 0
 

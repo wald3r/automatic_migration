@@ -13,6 +13,7 @@ const Billing = (props) => {
         <Table responsive className='table table-hover'>
           <thead className='thead-dark'>
             <tr>
+              <th>ID</th>
               <th>Image ID</th>
               <th>Predicted Costs</th>
               <th>Actual Costs</th>
@@ -24,6 +25,7 @@ const Billing = (props) => {
           {props.billing.map(billing => (
             <tbody key={billing.rowid}>
               <tr id='idBillingRow'>
+                <td id='idBillingImageId'>{billing.rowid}</td>
                 <td id='idBillingImageId'>{billing.imageId}</td>
                 <td id='idBillingPredicted'>{billing.predictedCost}</td>
                 <td id='idBillingActual'>{billing.actualCost}</td>

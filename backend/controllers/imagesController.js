@@ -344,7 +344,7 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)  
-  if(imageRow.simulation === 0){
+  if(imageRow.simulation === 0 && imageRow.zone !== null){
     migrationHelper.terminateInstance(imageRow)
   }
   await databaseHelper.deleteRowsByValue(parameters.billingTableName, imageRow.rowid, 'imageId')
@@ -352,7 +352,9 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
   await databaseHelper.deleteRowById(parameters.imageTableName, rowid)  
   migrationHelper.deletePredictions(imageRow)
   await fileHelper.deleteFolderRecursively(imageRow.path)
-  scheduler.cancelScheduler(imageRow)
+  if(imageRow.schedulerName !== null){
+    scheduler.cancelScheduler(imageRow)
+  }
   response.status(200).send('Successfully deleted')
 
 })

@@ -102,17 +102,18 @@ class MLModel(object):
         return(mse_outcome, mae_outcome, mape_outcome)
 
 
-    def generate_training_data(self, df, availability_zone, version):
+    def generate_training_data(self, df, availability_zone, version, flag):
 
         df_tmp = df[df['AvailabilityZone'] == availability_zone]
         df_tmp = df_tmp.drop(['Unnamed: 0'], axis=1)
         df_0 = df_tmp[df_tmp['Training'] == 0]
         df_1 = df_tmp[df_tmp['Training'] == 1]
-        if(df_1.empty):
-           pass
-        else:
-            df_1 = df_1.tail(self.ticks)
-            df_tmp = df_1.append(df_0)
+        if(flag == 1):
+            if(df_1.empty):
+               pass
+            else:
+                df_1 = df_1.tail(self.ticks)
+                df_tmp = df_1.append(df_0)
 
         df_tmp = df_tmp[['SpotPrice']]
 

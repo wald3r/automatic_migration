@@ -69,7 +69,7 @@ def main():
 
                 model.compile(optimizer='nadam', loss='mean_squared_error', metrics=['accuracy'])
 
-                training_features, labels, scaler = mlobj.generate_training_data(df, x, version)
+                training_features, labels, scaler = mlobj.generate_training_data(df, x, version, 1)
 
                 model = mlobj.train(model, training_features, labels)
 

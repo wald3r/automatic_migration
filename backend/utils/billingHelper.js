@@ -1,45 +1,22 @@
-const AWS = require('aws-sdk')
+const parameters = require('../parameters')
+const {spawn} = require('child_process')
 
 
+const getCosts = async (instance, product, zone, start, rowid) => {
+  
+  
+  const python = spawn('python3', [parameters.billingFile, instance, product, zone, start, rowid])
+  console.log(`BillingHelper: Start collection costs of ${instance} ${product} ${zone} ${start}`)
 
-const getCosts = async (tag, start, end) => {
+  python.stdout.on('data', (data) => {
+    console.log(data.toString())    
+  }) 
 
-  AWS.config.update({region: 'us-east-1', apiVersion: '2017-10-25',})
-  const costexplorer = new AWS.CostExplorer()
-
-  const params = {
-    TimePeriod: { 
-      End: end, 
-      Start: start 
-    },
-    Granularity: 'DAILY',
-    Metrics: ['BlendedCost'],
-    Filter: { 
-      Tags: {
-        Key: tag,
-        Values: [
-          tag,
-        ]
-      }
-    },
-  }
-
-  let sum = 0
-
-  await new Promise((resolve) => {
-
-    costexplorer.getCostAndUsage(params, function(err, data) {
-      if (err) console.log(`CostHelper: ${err.message}`)
-      else {
-        data.ResultsByTime.map(result => {
-          console.log(result)
-          sum += Number(result.Total.BlendedCost.Amount)
-        })
-        resolve()
-      }
-    })
+  python.on('close', async () => {
+    console.log(`BillingHelper: Finished collection costs of ${instance} ${product} ${zone} ${start}`)
+  
   })
-  return sum
+
 
 }
 
