@@ -69,8 +69,19 @@ modelsRouter.post('/', async(request, response, next) => {
       return response.status(401).send('Not Authenticated')
     }
 
-    let outcome = await databaseHelper.selectRowByValues(parameters.modelTableValues, parameters.modelTableName, 'type = ? AND product = ?', [body.type, body.product])
-    if(outcome === null){
+    let outcome = await databaseHelper.selectRowsByValues(parameters.modelTableValues, parameters.modelTableName, 'type = ? AND product = ?', [body.type, body.product])
+    let flag = true
+    outcome.map(row => {
+      if(row.region === 'worldwide'){
+        flag = false
+      }else if(row.region === body.region){
+        flag = false
+      }
+    })
+    if(outcome.length !== 0 && body.region === 'worldwide'){
+      flag = false
+    } 
+    if(flag){
       const params = [body.type, body.product, body.region, 'training', Date.now(), Date.now()]
       const modelId = await databaseHelper.insertRow(parameters.modelTableName, '(null, ?, ?, ?, ?, ?, ?)', params)
       if(modelId === -1){
@@ -83,7 +94,7 @@ modelsRouter.post('/', async(request, response, next) => {
       response.status(200).json(model)
     
       if(process.env.NODE_ENV !== 'test'){ 
-        await mlModel.trainModel(body.type, body.product)
+        await mlModel.trainModel(body.type, body.product, body.region)
       }
     }else{
       response.status(500).send('Model already exists!')
@@ -121,7 +132,7 @@ modelsRouter.delete('/:rowid', async(request, response, next) => {
   }
   await databaseHelper.deleteRowsByValue(parameters.imageTableName, rowid, 'modelId') //on delete cascade alternative
   if(process.env.NODE_ENV !== 'test'){
-    mlModel.deleteModel(request.body.obj.type, request.body.obj.product)
+    mlModel.deleteModel(request.body.obj.type, request.body.obj.product, request.body.obj.region)
   }
   response.status(200).send('Successfully deleted')
 })

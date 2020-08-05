@@ -35,15 +35,22 @@ const ShowModels = ( props ) => {
 
   const createModel = async (obj, event) => {
     event.preventDefault()
-    const response = await modelsService.newModel(obj)
-    if(response.status === 200){
-      await props.newModel(response.data)
-      addToast('test', {
-        appearance: 'success',
+    try{
+      const response = await modelsService.newModel(obj)
+      if(response.status === 200){
+        await props.newModel(response.data)
+        addToast('New model added', {
+          appearance: 'success',
+          autoDismiss: true,
+        })
+      }
+      window.location.reload()
+    }catch(exception){
+      addToast('Creation failed', {
+        appearance: 'error',
         autoDismiss: true,
       })
     }
-    window.location.reload()
   }
 
 
@@ -120,8 +127,8 @@ const ShowModels = ( props ) => {
               <th>Created</th>
               <th>Updated</th>
               <th id='idButtons'>
-                <Button data-toggle='tooltip' data-placement='top' title='New Model' onClick={handleCreation} className="fa fa-plus"></Button>
-                <Button id='idRefreshPage'  data-toggle='tooltip' data-placement='top' title='Refresh' onClick={() => window.location.reload()}><i className="fa fa-refresh" /></Button>
+                <Button  data-toggle='tooltip' data-placement='top' title='New Model' onClick={handleCreation} className="fa fa-plus"></Button>
+                <Button size="sm" id='idRefreshPage'  data-toggle='tooltip' data-placement='top' title='Refresh' onClick={() => window.location.reload()}><i className="fa fa-refresh" /></Button>
               </th>
 
               <th></th>

@@ -13,14 +13,12 @@ const scheduler = require('../utils/scheduler')
 imagesRouter.get('/', async(request, response, next) => {
 
   try{
-
     const user = await authenticationHelper.isLoggedIn(request.token)
     if(user == undefined){
       return response.status(401).send('Not Authenticated')
     }
 
     let responseArray = await databaseHelper.selectByUserId(parameters.imageTableValues, parameters.imageTableName, user.rowid)
-    
     await new Promise(async (resolve) => {
       for(let a = 0; a < responseArray.length; a++){
         if(responseArray[a].spotInstanceId !== null){
@@ -31,6 +29,9 @@ imagesRouter.get('/', async(request, response, next) => {
         if(a + 1 === responseArray.length){
           resolve()
         }
+      }
+      if(responseArray.length === 0){
+        resolve()
       }
     })
     return response.status(200).json(responseArray)

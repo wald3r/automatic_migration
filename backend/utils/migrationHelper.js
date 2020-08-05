@@ -12,7 +12,7 @@ const getPrediction = async (model, image, user) => {
   
   return await new Promise (async (resolve) => {
     await spotPrices.collectSpecificSpotPrices(model.type)
-    const zone = await mlModel.predictModel(model.type, model.product, image, user)
+    const zone = await mlModel.predictModel(model.type, model.product, image, user, model.region)
     resolve(zone)
   })
 }
@@ -96,11 +96,13 @@ const newInstance = async (model, image, user) => {
       await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['migrating', Date.now(), newImage.rowid])
       await copyKey(image)
       await migrateFiles(image, newImage)
-      //if(image.simulation === 0) await terminateInstance(image)
-      //await fileHelper.renameFile(image.key.replace('.pem', '_1.pem'), image.key)
-      await sshConnection.installSoftware(newImage.ip, newImage.key)
+      if(image.simulation === 0) await terminateInstance(image)
+      await fileHelper.renameFile(image.key.replace('.pem', '_1.pem'), image.key)
+      await installSoftware(newImage)
+      await deleteKey(newImage)
       await startDocker(newImage.ip, newImage.key)
       await setScheduler(newImage, model, user, true)
+      await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), newImage.rowid])
       const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', newImage.spotInstanceId)
       await migrationRows.map(async row => {
         await databaseHelper.updateById(parameters.migrationTableName, 'newZone = ?, updatedAt = ?', [zone, Date.now(), row.rowid])
@@ -120,7 +122,6 @@ const newInstance = async (model, image, user) => {
       await databaseHelper.updateById(parameters.migrationTableName, 'count = ?, updatedAt = ?', [row.count+1, Date.now(), row.rowid])
       const billingRows = await databaseHelper.selectIsNull(parameters.billingTableValues, parameters.billingTableName, 'actualCost')
       const billingRow = billingRows.filter(b => b.imageId === imageRow.rowid)[0]
-      console.log(billingRow.rowid)
       await billingHelper.getCosts(modelRow.type, modelRow.product, imageRow.zone, row.createdAt, billingRow.rowid)
     })
     await setScheduler(image, model, user, false)
@@ -135,6 +136,14 @@ const setupServer = async (ip, image) => {
 
 const startDocker = async (ip, key) => {
   await sshConnection.startDocker(ip, key)
+}
+
+const installSoftware = async(image) => {
+  await sshConnection.installSoftware(image.ip, image.key)
+}
+
+const deleteKey = async(image) => {
+  await sshConnection.deleteKey(image.ip, image.key)
 }
 
 const copyKey = async (image) => {

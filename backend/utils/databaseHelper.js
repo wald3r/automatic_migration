@@ -175,24 +175,27 @@ const selectIsNull = async(tableValues, tableName, value) => {
 
 }
 
-const selectRowByValues = async(tableValues, tableName, values, params) => {
+const selectRowsByValues = async(tableValues, tableName, values, params) => {
   let db = await openDatabase()
-  let newRow = null
+  let responseArray = []
 
-  newRow = await new Promise((resolve) => {
+  await new Promise((resolve) => {
     db.serialize(async () => {
-      db.get(`SELECT ${tableValues} FROM ${tableName} WHERE ${values}`, params, (err, row) => {
-        if(row === undefined){
-          resolve(null)
+      db.all(`SELECT ${tableValues} FROM ${tableName} WHERE ${values}`, params, (err, rows) => {
+        if(rows === undefined){
+          resolve(responseArray)
         }else{
-          resolve(row)
+          rows.map(row =>{
+            responseArray = responseArray.concat(row)
+          })
+          resolve(responseArray)
         }
       })
     })
   })
 
   await closeDatabase(db)
-  return newRow
+  return responseArray
 }
 
 const selectByValue = async(tableValues, tableName, value, param) => {
@@ -304,5 +307,5 @@ module.exports = {
   selectById, 
   deleteRowsByValue,
   selectIsNull,
-  selectRowByValues 
+  selectRowsByValues 
 }

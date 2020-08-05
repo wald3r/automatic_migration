@@ -21,15 +21,18 @@ const replace_name = (name) => {
 }
 
 
-const trainModel = async (instance, product) => {
+const trainModel = async (instance, product, region) => {
 
-  const python = spawn('python3', [parameters.mlTrainFile, instance, product, 2])
+  const python = spawn('python3', [parameters.mlTrainFile, instance, product, region, 2])
   console.log(`Start training ml model ${instance} ${product}`)
-
+  
+  python.stdout.on('data', (data) => {
+    console.log(data.toString())
+  })
   python.on('close', async () => {
     console.log(`Finished training model ${instance} ${product}`)
-    let outcome = await databaseHelper.selectRowByValues(parameters.modelTableValues, parameters.modelTableName, 'type = ? AND product = ?', [instance, product])   
-    await databaseHelper.updateById(parameters.modelTableName, 'status = ?, updatedAt = ?', ['trained', Date.now(), outcome.rowid])
+    let outcome = await databaseHelper.selectRowsByValues(parameters.modelTableValues, parameters.modelTableName, 'type = ? AND product = ? AND region = ?', [instance, product, region])  
+    await databaseHelper.updateById(parameters.modelTableName, 'status = ?, updatedAt = ?', ['trained', Date.now(), outcome[0].rowid])
   })
 }
 
@@ -41,9 +44,9 @@ const deletePredictions = (image) => {
   
 }
 
-const deleteModel = (instance, product) => {
+const deleteModel = (instance, product, region) => {
 
-  const python = spawn('python3', [parameters.mlDeleteFile, instance, product])
+  const python = spawn('python3', [parameters.mlDeleteFile, instance, product, region])
   console.log(`Delete training ml model ${instance} ${product}`)
 
   python.stdout.on('data', (data) => {
@@ -66,8 +69,8 @@ function sortFunction(a, b) {
 }
 
 
-const predictModel = async (instance, product, image, user) => {
-  const python = spawn('python3', [parameters.mlPredictFile, instance, product, image.rowid, 2])
+const predictModel = async (instance, product, image, user, region) => {
+  const python = spawn('python3', [parameters.mlPredictFile, instance, product, image.rowid, region, 2])
   console.log(`Started prediction of ml model ${instance} ${product}`)
 
   return await new Promise((resolve) => {

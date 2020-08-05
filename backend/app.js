@@ -15,6 +15,8 @@ const auth = require('./middleware/authentication')
 const fs = require('fs')
 const migrationHelper = require('./utils/migrationHelper')
 const parameters = require('./parameters')
+const computeEngine = require('./utils/computeEngine')
+const keyRouter = require('./controllers/keyController')
 
 const credentialsChecker = async () => {
   
@@ -44,7 +46,7 @@ const checkMigrationStatus = async () => {
   console.log(`MigrationStatusHelper: Set ${migrationRows.length} open schedulers`)
 }
 
-
+computeEngine.getZones()
 credentialsChecker()
 databaseHelper.checkDatabase()
 //scheduler.scheduleCollectSpotPrices
@@ -60,6 +62,7 @@ app.use('/api/login', loginRouter)
 app.use('/api/registration', registrationRouter)
 app.use('/api/billing', billingRouter)
 app.use('/api/user', userRouter)
+app.use('/api/key', keyRouter)
 checkMigrationStatus()
 
 module.exports = app

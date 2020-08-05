@@ -18,7 +18,11 @@ const CreateModelModal = ( { showCreateModelModal, setCreateModelModal, handleCr
 
   const createModel = (event) => {
     setCreateModelModal(false)
+    console.log(region)
     handleCreation({ type, product, region }, event)
+    setType('r5.4xlarge')
+    setRegion('worldwide')
+    setProduct(productList[0])
   }
 
   const noChanges = () => {
@@ -65,7 +69,7 @@ const CreateModelModal = ( { showCreateModelModal, setCreateModelModal, handleCr
                     Region:
                   </td>
                   <td>
-                    <select value={type} onChange={({ target }) => setRegion(target.value)} name='regions' id='regions'>
+                    <select value={region} onChange={({ target }) => setRegion(target.value)} name='regions' id='regions'>
                       {props.regionsList.map(i =>
                         <option value={i.regions} key={i.regions}>{i.regions}</option>
                       )}

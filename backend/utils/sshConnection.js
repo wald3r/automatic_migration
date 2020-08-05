@@ -72,14 +72,15 @@ const installSoftware = async (ip, pathToKey) => {
       username: parameters.ec2Username,
       privateKey: pathToKey,
       readyTimeout: 99999
-    })
-    ssh.execCommand(`chmod +xr /home/${parameters.ec2Username}/image/install.sh && cd /home/${parameters.ec2Username}/image/ && ./install.sh && exit`).then((result) => {
-      console.log(`STDOUT of ${ip}: ${result.stdout}`)
-      console.log(`STDERR of ${ip}: ${result.stderr}`)
-      resolve(1)
-    }).catch((error) => {
-      console.log(error)
-      resolve(-1)
+    }).then(() => {
+      ssh.execCommand(`chmod +xr /home/${parameters.ec2Username}/image/install.sh && cd /home/${parameters.ec2Username}/image/ && ./install.sh && exit`).then((result) => {
+        console.log(`STDOUT of ${ip}: ${result.stdout}`)
+        console.log(`STDERR of ${ip}: ${result.stderr}`)
+        resolve(1)
+      }).catch((error) => {
+        console.log(error)
+        resolve(-1)
+      })
     })
   })
   if(promise === -1){
@@ -113,11 +114,7 @@ const endDocker = async (ip, pathToKey) => {
 }
 
 const executeMigration = async (fromIp, toIp, pathToKey, key) => {
-
-  console.log(fromIp)
-  console.log(toIp)
-  console.log(pathToKey)
-  console.log(key)  
+ 
   let promise = await new Promise((resolve) => {
     ssh.connect({
       host: fromIp,
@@ -170,5 +167,30 @@ const copyKey = async (ip, pathToKey1, pathToKey2) => {
 
 }
 
+const deleteKey = async (ip, pathToKey) => {
 
-module.exports = { installSoftware, setUpServer, startDocker, endDocker, copyKey, executeMigration }
+  let strings = pathToKey.split('/')
+  let keyName = strings[strings.length -1]
+  let promise = await new Promise((resolve) => {
+    ssh.connect({
+      host: ip,
+      username: parameters.ec2Username,
+      privateKey: pathToKey,
+      readyTimeout: 99999
+    }).then(() => {
+      ssh.execCommand(`cd /home/${parameters.ec2Username}/image && rm ${keyName}`).then((result) => {
+        console.log(`STDOUT of ${ip}: ${result.stdout}`)
+        console.log(`STDERR of ${ip}: ${result.stderr}`)
+        resolve(1)
+        
+      })
+    })
+  })
+  if(promise === -1){
+    //throw new Error('Can not copy key file')
+  }
+
+}
+
+
+module.exports = { deleteKey, installSoftware, setUpServer, startDocker, endDocker, copyKey, executeMigration }
