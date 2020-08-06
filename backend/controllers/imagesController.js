@@ -26,6 +26,10 @@ imagesRouter.get('/', async(request, response, next) => {
         }else{
           responseArray[a].state = responseArray[a].simulation === 0 ? 'pending' : 'simulation'
         }
+        if(responseArray[a].state === 'stopped' || responseArray[a].state === 'stopping'){
+          await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['stopped', Date.now(), responseArray[a].rowid])
+          responseArray[a].status = 'stopped'
+        }
         if(a + 1 === responseArray.length){
           resolve()
         }
@@ -137,9 +141,7 @@ imagesRouter.get('/stop/instance/:rowid', async(request, response, next) => {
     }
     
     await spotInstances.stopInstance(imageRow.spotInstanceId, imageRow.zone)
-    const params = ['stopped', Date.now(), imageRow.rowid]
-    const values = 'status = ?, updatedAt = ?'
-    await databaseHelper.updateById(parameters.imageTableName, values, params)
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['stopped', Date.now(), imageRow.rowid])
     let newRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, imageRow.rowid)
     newRow.state = 'stopping'
 

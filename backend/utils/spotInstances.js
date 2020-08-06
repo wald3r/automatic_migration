@@ -480,6 +480,7 @@ const requestSpotInstance = async (instance, zone, product, bidprice, simulation
   let params = {
     InstanceCount: 1, 
     DryRun: isSimulation(simulation),
+    InstanceInterruptionBehavior: 'stop',
     LaunchSpecification: {
      ImageId: imageId,//.Images[0].ImageId, 
      InstanceType: instance,
