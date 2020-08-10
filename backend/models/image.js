@@ -2,6 +2,7 @@ const parameters = require('../parameters');
 
   const imageModel= `
     rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+    manually INTEGER,
     schedulerName TEXT,
     bidprice FLOAT,
     simulation INTEGER,

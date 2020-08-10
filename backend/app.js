@@ -46,9 +46,10 @@ const checkMigrationStatus = async () => {
   console.log(`MigrationStatusHelper: Set ${migrationRows.length} open schedulers`)
 }
 
-computeEngine.getZones()
+//computeEngine.startVM('elmit')
 credentialsChecker()
 databaseHelper.checkDatabase()
+scheduler.checkInstances
 //scheduler.scheduleCollectSpotPrices
 scheduler.trainModels
 app.use(express.static('build'))

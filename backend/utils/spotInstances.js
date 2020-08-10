@@ -59,53 +59,7 @@ const describeImages = async (product, zone) => {
   })
   
   return id
-  /*
-  const params = {
-    Filters: [
-      {
-        Name: 'state',
-        Values: [
-          'available'
-        ]
-      },
-      {
-        Name: 'architecture',
-        Values: [
-          'x86_64'
-        ]
-      },
-      {
-        Name: 'image-type',
-        Values: [
-          'machine'
-        ]
-      },
-      {
-        Name: 'virtualization-type',
-        Values: [
-          'hvm'
-        ]
-      },
-      {
-        Name: 'platform-details',
-        Values: [
-          product
-        ]
-      },
-    ],
-    Owners: [
-      'amazon'
-    ]  
-   }
 
-   const ec2 = await getEC2Object()
-
-   return await new Promise((resolve) => {
-    ec2.describeImages(params, (err, data) => {
-      if (err) console.log(`DescribeImagesHelper: ${err.message}`)
-      else resolve(data)
-    })
-   })*/
 }
 
 const stopInstance = async (id, zone) => {
@@ -144,6 +98,7 @@ const startInstance = async (id, zone) => {
       }
     })
   })
+
   if(promise === -1){
     throw new Error('Can not start instance')
   }
@@ -261,20 +216,10 @@ const deleteSecurityGroup = async (zone, id) => {
   })
 }
 
-const describeKeyPair = async() => {
- 
-  const ec2 = await getEC2Object()
-  ec2.describeKeyPairs({ KeyNames: [parameters.keyName]}, (err, data) => {
-    if (err) console.log(`DescribeKeyPairHelper: ${err.message}`)
-    else     console.log(data)
-  })
-}
-
 const createKeyPair = async (path, rowid) => {
   
   const ec2 = await getEC2Object()
 
-  //await describeKeyPair
 
   const params = {
     KeyName: `${parameters.keyName}_${rowid}`
@@ -329,6 +274,7 @@ const getInstanceIds = async (id, rowid) => {
         console.log(`SpotInstanceHelper: ${err.message}`)
         resolve(undefined)
       }else{
+          console.log(data.SpotInstanceRequests)
           data.SpotInstanceRequests.map(instance => {
             instanceIds = instanceIds.concat(instance.InstanceId)
           })
@@ -343,12 +289,10 @@ const getInstanceIds = async (id, rowid) => {
       }, 3000)
     })
     counter = counter - 1 
-
     if(instanceIds[0] !== undefined) break
     if(counter === 0) break
   }
-
-  if(instanceIds.length === 1){
+  if(instanceIds[0] !== undefined){
     await databaseHelper.updateById(parameters.imageTableName, 'spotInstanceId = ?, updatedAt = ?', [instanceIds[0], Date.now(), rowid])
   }
   return instanceIds
@@ -422,47 +366,6 @@ const getInstanceState = async (zone, ids) => {
     })
   })
   
-}
-
-const deleteTag = async (instanceId, zone) => {
-  
-  setRegion(zone)
-  const ec2 = await getEC2Object()
-  const params = {
-    Resources: [
-       instanceId
-    ], 
-    Tags: [
-       {
-      Key: `elmit_${instanceId}`, 
-      Value: `elmit_${instanceId}`
-     }
-    ]
-   }
-   ec2.deleteTags(params, (err) => {
-     if (err) console.log(`DeleteTagHelper: ${err.message}`)
-     else     console.log(`DeleteTagHelper: elmit_${instanceId} tag was deleted`)
-   })
-}
-
-const createTag = async (instanceId, zone) => {
-
-  tagParams = {Resources: [instanceId], Tags: [
-    {
-       Key: `elmit_${instanceId}`,
-       Value: `elmit_${instanceId}`
-    }
-  ]}
-
-  setRegion(zone)
-  const ec2 = await getEC2Object()
-  ec2.createTags(tagParams, async (err) => {
-    if (err) console.log(`CreateTagHelper: ${err.message}`) 
-    else {
-      console.log(`CreateTagHelper: Tag created for ${instanceId}`)
-    }       
-  })
-
 }
 
 const requestSpotInstance = async (instance, zone, product, bidprice, simulation, id, keyPath, port) => {
@@ -549,9 +452,7 @@ const cancelSpotInstance = async (image) => {
 
 
 module.exports = { 
-  createTag,
   describeImages,
-  deleteTag,
   startInstance,
   stopInstance,
   rebootInstance, 

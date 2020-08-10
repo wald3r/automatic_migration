@@ -26,9 +26,6 @@ const trainModel = async (instance, product, region) => {
   const python = spawn('python3', [parameters.mlTrainFile, instance, product, region, 2])
   console.log(`Start training ml model ${instance} ${product}`)
   
-  python.stdout.on('data', (data) => {
-    console.log(data.toString())
-  })
   python.on('close', async () => {
     console.log(`Finished training model ${instance} ${product}`)
     let outcome = await databaseHelper.selectRowsByValues(parameters.modelTableValues, parameters.modelTableName, 'type = ? AND product = ? AND region = ?', [instance, product, region])  

@@ -20,7 +20,11 @@ const getPrediction = async (model, image, user) => {
 const deletePredictions = (image) => mlModel.deletePredictions(image)
 
 const stopInstance = async (image) => image.simulation === 0 ? await spotInstances.stopInstance(image.spotInstanceId, image.zone) : null
-const startInstance = async (image) => image.simulation === 0 ? await spotInstances.startInstance(image.spotInstanceId, image.zone) : null
+const startInstance = async (image) => {
+  if(image.simulation === 0){
+   await spotInstances.startInstance(image.spotInstanceId, image.zone)  
+  }
+}
 
 const rebootInstance = async (image) => image.simulation === 0 ? await spotInstances.rebootInstance(image.zone, image.spotInstanceId) : null
 
@@ -28,7 +32,6 @@ const terminateInstance = async (image) => {
   await new Promise(async (resolve) => {
     await spotInstances.deleteKeyPair(image.zone, image.key, image.rowid)
     await spotInstances.cancelSpotInstance(image)
-    await spotInstances.deleteTag(image.spotInstanceId, image.zone)
     setTimeout(() => {
       spotInstances.deleteSecurityGroup(image.zone, image.rowid)
     }, 50000)
@@ -44,10 +47,15 @@ const requestAndSetupInstance = async(model, image, zone) => {
   await databaseHelper.updateById(parameters.imageTableName, 'zone = ?', [zone, image.rowid])
   if(image.simulation === 0){
     const instanceIds = await spotInstances.getInstanceIds(requestId, image.rowid)
-    if(instanceIds.length === 0){
+    if(instanceIds[0] === undefined){
+      const newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
+      await spotInstances.deleteKeyPair(newImage.zone, newImage.key, newImage.rowid)
+      await spotInstances.deleteSecurityGroup(newImage.zone, newImage.rowid)
+      await databaseHelper.deleteRowById(parameters.imageTableName, newImage.rowid)
+      deletePredictions(newImage)
+      await fileHelper.deleteFolderRecursively(newImage.path)
       return false
     }
-    await spotInstances.createTag(instanceIds[0], zone)
     await spotInstances.getPublicIpFromRequest(instanceIds, image.rowid)
     console.log(`InstanceBootHelper: Waiting for instance ${instanceIds} to boot`)
     await spotInstances.waitForInstanceToBoot(instanceIds)
@@ -91,8 +99,11 @@ const newInstance = async (model, image, user) => {
   const zone = await getPrediction(model, image, user)
   if(zone !== image.zone){
     const flag = await requestAndSetupInstance(model, image, zone)
+    if(flag === false){
+      return false
+    }
     const newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
-    if(flag && image.zone !== null){
+    if(image.zone !== null){
       await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['migrating', Date.now(), newImage.rowid])
       await copyKey(image)
       await migrateFiles(image, newImage)
@@ -107,11 +118,14 @@ const newInstance = async (model, image, user) => {
       await migrationRows.map(async row => {
         await databaseHelper.updateById(parameters.migrationTableName, 'newZone = ?, updatedAt = ?', [zone, Date.now(), row.rowid])
       })
+      return true
+
     }else{
       await setupServer(newImage.ip, newImage)
       await startDocker(newImage.ip, newImage.key)
       await setScheduler(image, model, user, true)
       await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), image.rowid])
+      return true
     }
   }else{
     console.log(`MigrationHelper: No migration of ${image.rowid} needed`)
@@ -164,7 +178,8 @@ const migrateFiles = async (oldImage, newImage) => {
 }
 
 
-module.exports = { 
+module.exports = {
+  startDocker, 
   stopInstance,
   newInstance,
   rebootInstance, 

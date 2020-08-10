@@ -3,6 +3,9 @@ const spotPrices = require('./spotPrices')
 const databaseHelper = require('./databaseHelper')
 let parameters = require('../parameters')
 const mlModel = require('./mlModel')
+const spotInstances = require('./spotInstances')
+
+
 
 const scheduleCollectSpotPrices = schedule.scheduleJob('59 23 * * *', () => {
 
@@ -10,6 +13,27 @@ const scheduleCollectSpotPrices = schedule.scheduleJob('59 23 * * *', () => {
 
 })
 
+
+const checkInstances = schedule.scheduleJob(parameters.checkInstancesNumber, async () => {
+
+  console.log('CheckInstanceHelper: Start checking instances')
+  const imageRows = await databaseHelper.selectAllRows(parameters.imageTableValues, parameters.imageTableName)
+  imageRows.map(async image => {
+    const state =  await spotInstances.getInstanceState(image.zone, [image.spotInstanceId]) 
+    if(state === 'stopped' && image.status !== 'booting' && image.status !== 'migration' && image.status !== 'simulation' && image.manually === 0){
+      console.log(`CheckInstanceHelper: Reboot image ${image.rowid}`)
+      const migrationHelper = require('./migrationHelper')
+      parameters = require('../parameters')
+      await migrationHelper.startInstance(image)
+      await spotInstances.waitForInstanceToBoot([image.spotInstanceId])
+      await spotInstances.getPublicIpFromRequest([image.spotInstanceId], image.rowid)
+      const newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
+      await migrationHelper.startDocker(newImage.ip, image.key)
+      await databaseHelper.updateById(parameters.imageTableName, `status = ?, update = ?`, ['running', Date.now(), image.rowid])
+    }
+  })
+  
+})
 
 
 const trainModels = schedule.scheduleJob('59 23 3 * *', async () => {
@@ -61,4 +85,4 @@ const setMigrationScheduler = async (time, model, image, user) => {
 }
 
 
-module.exports =  { trainModels, cancelScheduler, scheduleCollectSpotPrices, setMigrationScheduler }
+module.exports =  { checkInstances, trainModels, cancelScheduler, scheduleCollectSpotPrices, setMigrationScheduler }

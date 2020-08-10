@@ -14,7 +14,6 @@ const setUpServer = async (ip, pathToKey, pathToDocker) => {
       host: ip,
       username: parameters.ec2Username,
       privateKey: pathToKey,
-      readyTimeout: 99999
     })
     .then(() => {
       ssh.putDirectory(pathToDocker, `/home/${parameters.ec2Username}/image`, {
@@ -46,10 +45,9 @@ const startDocker = async (ip, pathToKey) => {
       host: ip,
       username: parameters.ec2Username,
       privateKey: pathToKey,
-      readyTimeout: 99999
     })
     .then(() => {
-      ssh.execCommand(`cd /home/${parameters.ec2Username}/image/ && sudo docker-compose up -d && exit`).then((result) => {
+      ssh.execCommand(`sudo service docker restart && cd /home/${parameters.ec2Username}/image/ && sudo docker-compose up -d && exit`).then((result) => {
         console.log(`STDOUT of ${ip}: ${result.stdout}`)
         console.log(`STDERR of ${ip}: ${result.stderr}`)
         resolve(1)
@@ -71,7 +69,6 @@ const installSoftware = async (ip, pathToKey) => {
       host: ip,
       username: parameters.ec2Username,
       privateKey: pathToKey,
-      readyTimeout: 99999
     }).then(() => {
       ssh.execCommand(`chmod +xr /home/${parameters.ec2Username}/image/install.sh && cd /home/${parameters.ec2Username}/image/ && ./install.sh && exit`).then((result) => {
         console.log(`STDOUT of ${ip}: ${result.stdout}`)
@@ -94,7 +91,6 @@ const endDocker = async (ip, pathToKey) => {
       host: ip,
       username: parameters.ec2Username,
       privateKey: pathToKey,
-      readyTimeout: 99999
     })
     .then(() => {
       ssh.execCommand(`cd /home/${parameters.ec2Username}/image && sudo docker-compose down && exit`).then((result) => {
@@ -120,7 +116,6 @@ const executeMigration = async (fromIp, toIp, pathToKey, key) => {
       host: fromIp,
       username: parameters.ec2Username,
       privateKey: pathToKey,
-      readyTimeout: 99999
     })
     .then(() => {
       ssh.execCommand(`cd /home/${parameters.ec2Username}/image && sudo chmod +xr *.sh && ./migration.sh ${toIp} ${key}`).then((result) => {
@@ -148,7 +143,6 @@ const copyKey = async (ip, pathToKey1, pathToKey2) => {
       host: ip,
       username: parameters.ec2Username,
       privateKey: pathToKey1,
-      readyTimeout: 99999
     }).then(() => {
       ssh.putFile(pathToKey2, `/home/${parameters.ec2Username}/image/${keyName}`)
       .then(() => {
@@ -176,7 +170,6 @@ const deleteKey = async (ip, pathToKey) => {
       host: ip,
       username: parameters.ec2Username,
       privateKey: pathToKey,
-      readyTimeout: 99999
     }).then(() => {
       ssh.execCommand(`cd /home/${parameters.ec2Username}/image && rm ${keyName}`).then((result) => {
         console.log(`STDOUT of ${ip}: ${result.stdout}`)

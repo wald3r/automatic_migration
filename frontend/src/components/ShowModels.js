@@ -67,19 +67,23 @@ const ShowModels = ( props ) => {
 
   const runImage = async (obj, event) => {
     event.preventDefault()
-    let data = new FormData()
-    for(let x = 0; x<obj.files.length; x++) {
-      data.append('file', obj.files[x], `${modelToRunWithImage.rowid}___${createPathName(obj.files[x].webkitRelativePath)}___${obj.files[x].name}`)
-    }
-    let response = await imagesService.newImage(data)
-    response = await imagesService.newImageInformation({ simulation: obj.simulation, port: obj.port, bidprice: obj.bidprice, imageId: response.data.rowid })
-
-    if(response.status === 200){
+    try{
+      let data = new FormData()
+      for(let x = 0; x<obj.files.length; x++) {
+        data.append('file', obj.files[x], `${modelToRunWithImage.rowid}___${createPathName(obj.files[x].webkitRelativePath)}___${obj.files[x].name}`)
+      }
+      let response = await imagesService.newImage(data)
+      response = await imagesService.newImageInformation({ simulation: obj.simulation, port: obj.port, bidprice: obj.bidprice, imageId: response.data.rowid })
       addToast(`New Image added to ${modelToRunWithImage.type}`, {
         appearance: 'success',
         autoDismiss: true,
       })
       props.newImage(response.data)
+    }catch(exception){
+      addToast('Could not start image. Most likely because of bad parameters.', {
+        appearance: 'Error',
+        autoDismiss: true,
+      })
     }
   }
 

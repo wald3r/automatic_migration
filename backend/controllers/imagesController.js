@@ -68,12 +68,10 @@ imagesRouter.post('/startinformation/', async(request, response, next) => {
     }
     const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, imageId)
     const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
-    migrationHelper.newInstance(modelRow, imageRow, user)
-
-
-
-    return response.status(200).json(imageRow)
-
+    if(migrationHelper.newInstance(modelRow, imageRow, user))
+      return response.status(200).json(imageRow)
+    else
+      return response.status(500)
 
   }catch(exception){
     next(exception)
@@ -141,7 +139,7 @@ imagesRouter.get('/stop/instance/:rowid', async(request, response, next) => {
     }
     
     await spotInstances.stopInstance(imageRow.spotInstanceId, imageRow.zone)
-    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['stopped', Date.now(), imageRow.rowid])
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, manually = ?, updatedAt = ?', ['stopped', 1, Date.now(), imageRow.rowid])
     let newRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, imageRow.rowid)
     newRow.state = 'stopping'
 
@@ -176,12 +174,25 @@ imagesRouter.get('/start/instance/:rowid', async(request, response, next) => {
     scheduler.cancelScheduler(imageRow)
     await migrationHelper.setSchedulerAgain(imageRow, modelRow, user, migRow.updatedAt)
 
-    imageRow.state = 'pending'
-    return response.status(200).send(imageRow)
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, manually = ?, updatedAt = ?', ['booting', 0, Date.now(), imageRow.rowid])
+
+    let newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters. imageTableName, imageRow.rowid)
+    newImage.state = 'pending'
+
+    await response.status(200).send(newImage)
+
+    await spotInstances.waitForInstanceToBoot([imageRow.spotInstanceId])
+    await spotInstances.getPublicIpFromRequest([imageRow.spotInstanceId], imageRow.rowid)
+    newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters. imageTableName, imageRow.rowid)
+
+    await migrationHelper.startDocker(newImage.ip, newImage.key)
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), imageRow.rowid])
+
 
   
   }catch(exception){
-    return response.status(500).send('Can not start instance')
+    console.log(exception)
+    response.status(500).send('Can not start instance')
 
   }
 })
@@ -299,8 +310,8 @@ imagesRouter.post('/', async(request, response, next) => {
     })
   })
   
-  const params = [null, null, null, null, null, user.rowid, null, modelId, null, null, null, path, null, null, Date.now(), Date.now()]
-  const imageId = await databaseHelper.insertRow(parameters.imageTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+  const params = [0, null, null, null, null, null, user.rowid, null, modelId, null, null, null, path, null, null, Date.now(), Date.now()]
+  const imageId = await databaseHelper.insertRow(parameters.imageTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
