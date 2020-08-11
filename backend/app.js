@@ -17,6 +17,7 @@ const migrationHelper = require('./utils/migrationHelper')
 const parameters = require('./parameters')
 const computeEngine = require('./utils/computeEngine')
 const keyRouter = require('./controllers/keyController')
+const migrationRouter = require('./controllers/migrationController')
 
 const credentialsChecker = async () => {
   
@@ -64,6 +65,7 @@ app.use('/api/registration', registrationRouter)
 app.use('/api/billing', billingRouter)
 app.use('/api/user', userRouter)
 app.use('/api/key', keyRouter)
+app.use('/api/migration', migrationRouter)
 checkMigrationStatus()
 
 module.exports = app

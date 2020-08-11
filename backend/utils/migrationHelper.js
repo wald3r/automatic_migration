@@ -67,12 +67,12 @@ const requestAndSetupInstance = async(model, image, zone) => {
  
 }
 
-const setScheduler = async (image, model, user, flag) => {
+const setScheduler = async (image, model, user, flag, startZone) => {
 
   let newImage = null
   if(flag){
     newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
-    await databaseHelper.insertRow(parameters.migrationTableName, `(null, ?, ?, ?, ?, ?, ?,  ?)`, [newImage.zone, null, 1, newImage.spotInstanceId, newImage.rowid, Date.now(), Date.now()])
+    await databaseHelper.insertRow(parameters.migrationTableName, `(null, ?, ?, ?, ?, ?, ?, ?,  ?)`, [startZone, newImage.zone, null, 1, newImage.spotInstanceId, newImage.rowid, Date.now(), Date.now()])
   }
 
   const time = Date.now()+ (parameters.migrationHour * 3600 * 1000) + parameters.migrationMinutes * 60 * 1000
@@ -112,18 +112,28 @@ const newInstance = async (model, image, user) => {
       await installSoftware(newImage)
       await deleteKey(newImage)
       await startDocker(newImage.ip, newImage.key)
-      await setScheduler(newImage, model, user, true)
+
       await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), newImage.rowid])
-      const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', newImage.spotInstanceId)
+
+      const migRows = await databaseHelper.selectRowsByValues(parameters.migrationTableValues, parameters.migrationTableName, 'imageId = ?', [newImage.rowid])
+      const billingRows = await databaseHelper.selectIsNull(parameters.billingTableValues, parameters.billingTableName, 'actualCost')
+      const billingRow = billingRows.filter(b => b.imageId === newImage.rowid)[0]
+      await billingHelper.getCosts(model.type, model.product, image.zone, newImage.createdAt, billingRow.rowid, migRows[0].startZone)
+
+      const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', image.spotInstanceId)
+      console.log(image.spotInstanceId)
+      console.log(migrationRows)
       await migrationRows.map(async row => {
         await databaseHelper.updateById(parameters.migrationTableName, 'newZone = ?, updatedAt = ?', [zone, Date.now(), row.rowid])
       })
+      await setScheduler(newImage, model, user, true, migRows[0].startZone)
+
       return true
 
     }else{
       await setupServer(newImage.ip, newImage)
       await startDocker(newImage.ip, newImage.key)
-      await setScheduler(image, model, user, true)
+      await setScheduler(image, model, user, true, zone)
       await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), image.rowid])
       return true
     }
@@ -131,14 +141,15 @@ const newInstance = async (model, image, user) => {
     console.log(`MigrationHelper: No migration of ${image.rowid} needed`)
     const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
     const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', imageRow.spotInstanceId)
+    const migRows = await databaseHelper.selectRowsByValues(parameters.migrationTableValues, parameters.migrationTableName, 'imageId = ?', [imageRow.rowid])
+
     await migrationRows.map(async row => {
-      const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
       await databaseHelper.updateById(parameters.migrationTableName, 'count = ?, updatedAt = ?', [row.count+1, Date.now(), row.rowid])
       const billingRows = await databaseHelper.selectIsNull(parameters.billingTableValues, parameters.billingTableName, 'actualCost')
       const billingRow = billingRows.filter(b => b.imageId === imageRow.rowid)[0]
-      await billingHelper.getCosts(modelRow.type, modelRow.product, imageRow.zone, row.createdAt, billingRow.rowid)
+      await billingHelper.getCosts(model.type, model.product, imageRow.zone, imageRow.createdAt, billingRow.rowid, migRows[0].startZone)
     })
-    await setScheduler(image, model, user, false)
+    await setScheduler(image, model, user, false, migRows[0].startZone)
   }
 
 }

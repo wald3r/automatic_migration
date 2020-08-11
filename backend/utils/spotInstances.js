@@ -274,7 +274,6 @@ const getInstanceIds = async (id, rowid) => {
         console.log(`SpotInstanceHelper: ${err.message}`)
         resolve(undefined)
       }else{
-          console.log(data.SpotInstanceRequests)
           data.SpotInstanceRequests.map(instance => {
             instanceIds = instanceIds.concat(instance.InstanceId)
           })

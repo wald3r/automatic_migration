@@ -21,6 +21,7 @@ import { setZonesList } from './reducers/zonesListReducer'
 import { ToastProvider } from 'react-toast-notifications'
 import { setUser } from './reducers/userReducer'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
+import { getMigrations } from './reducers/migrationReducer'
 
 const App = ( props ) => {
 
@@ -31,6 +32,7 @@ const App = ( props ) => {
       props.setUser(newUser)
       props.getImages()
       props.getBilling()
+      props.getMigrations()
     }
     props.getModels()
     csv(instancesData, (err, data) => {
@@ -106,7 +108,8 @@ const mapDispatchToProps = {
   getImages,
   setUser,
   getBilling,
-  setRegionsList
+  setRegionsList,
+  getMigrations
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)
