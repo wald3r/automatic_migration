@@ -42,7 +42,7 @@ const redInstallFile = './red_install.sh'
 const migrationFile = './migration.sh'
 const imageFile = './images.csv'
 
-const checkInstancesNumber = '*/1 * * * *'
+const checkInstancesNumber = '*/10 * * * *'
 
 const workDir = __dirname
 
