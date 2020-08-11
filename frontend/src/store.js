@@ -7,9 +7,8 @@ import zonesListReducer from './reducers/zonesListReducer'
 import modelsReducer from './reducers/modelsReducer'
 import imagesReducer from './reducers/imagesReducer'
 import userReducer from './reducers/userReducer'
-import billingReducer from './reducers/billingReducer'
 import regionsListReducer from './reducers/regionsListReducer'
-import migrationReducer from './reducers/migrationReducer'
+
 
 const reducer = combineReducers({
   models: modelsReducer,
@@ -17,9 +16,8 @@ const reducer = combineReducers({
   instancesList: instancesListReducer,
   regionsList: regionsListReducer,
   images: imagesReducer,
-  user: userReducer,
-  billing: billingReducer,
-  migrations: migrationReducer,
+  user: userReducer
+
 })
 
 

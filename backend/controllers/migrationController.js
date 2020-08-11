@@ -3,7 +3,7 @@ const authenticationHelper = require('../utils/authenticationHelper')
 const parameters = require('../parameters')
 const databaseHelper = require('../utils/databaseHelper')
 
-migrationRouter.get('/', async(request, response, next) => {
+migrationRouter.get('/:rowid', async(request, response, next) => {
 
   try{
 
@@ -11,7 +11,7 @@ migrationRouter.get('/', async(request, response, next) => {
     if(user == undefined){
       return response.status(401).send('Not Authenticated')
     }
-    const migrationRows = await databaseHelper.selectAllRows(parameters.migrationTableValues, parameters.migrationTableName)
+    const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'imageId', [request.params.rowid])
     return response.status(200).json(migrationRows)
 
 

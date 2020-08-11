@@ -3,7 +3,6 @@ import './stylesheets/general.css'
 import ShowModels from './components/ShowModels'
 import { connect } from 'react-redux'
 import { getModels } from './reducers/modelsReducer'
-import { getBilling } from './reducers/billingReducer'
 import { getImages } from './reducers/imagesReducer'
 import Login from './components/Login'
 import Profile from './components/Profile'
@@ -21,7 +20,6 @@ import { setZonesList } from './reducers/zonesListReducer'
 import { ToastProvider } from 'react-toast-notifications'
 import { setUser } from './reducers/userReducer'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
-import { getMigrations } from './reducers/migrationReducer'
 
 const App = ( props ) => {
 
@@ -31,8 +29,7 @@ const App = ( props ) => {
       const newUser = JSON.parse(loggedUserJSON)
       props.setUser(newUser)
       props.getImages()
-      props.getBilling()
-      props.getMigrations()
+
     }
     props.getModels()
     csv(instancesData, (err, data) => {
@@ -107,9 +104,7 @@ const mapDispatchToProps = {
   setInstancesList,
   getImages,
   setUser,
-  getBilling,
   setRegionsList,
-  getMigrations
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)
