@@ -40,7 +40,7 @@ def main():
         exit(0)
 
 
-    start = datetime.datetime.fromtimestamp((int(sys.argv[4])-50400000)/1000.0)#utc.localize(datetime.datetime(2020, 8, 1, 2))
+    start = datetime.datetime.fromtimestamp((int(sys.argv[4])-90400000)/1000.0)#utc.localize(datetime.datetime(2020, 8, 1, 2))
     product = str(sys.argv[2])
     instance = str(sys.argv[1])
     zone = str(sys.argv[3])
@@ -70,7 +70,6 @@ def main():
 
     df_start = df_start.loc[(df_start.Timestamp >= utc.localize(start))]
     df_start = df_start.loc[(df_start.Timestamp <= utc.localize(datetime.datetime.today()))]
-
     sum_start = df_start.groupby('AvailabilityZone')['SpotPrice'].agg(['sum'])
 
     #current zone
@@ -80,7 +79,7 @@ def main():
 
     df_last_row = df.tail(1)
     df = df.append(
-        {'SpotPrice': df_last_row.SpotPrice.values[0], 'AvailabilityZone': df_last_row.AvailabilityZone.values[0], 'InstanceType': df_last_row.InstanceType.values[0],
+       {'SpotPrice': df_last_row.SpotPrice.values[0], 'AvailabilityZone': df_last_row.AvailabilityZone.values[0], 'InstanceType': df_last_row.InstanceType.values[0],
          'ProductDescription': df_last_row.ProductDescription.values[0], 'Timestamp': datetime.datetime.now(), 'Training': 0}, ignore_index=True)
 
     df['Timestamp'] = pd.to_datetime(df['Timestamp'])
@@ -92,10 +91,15 @@ def main():
 
     df = df.loc[(df.Timestamp >= utc.localize(start))]
     df = df.loc[(df.Timestamp <= utc.localize(datetime.datetime.today()))]
+    print(df)
+    sum = df.groupby('AvailabilityZone')['SpotPrice'].agg(['sum'])
 
     sum = df.groupby('AvailabilityZone')['SpotPrice'].agg(['sum'])
     database = path + '/backend/devsqlite.db'
     conn = create_connection(database)
+    print(round(sum_start.values[0][0], 4), startzone, len(df_start), start, datetime.datetime.today())
+    print(round(sum.values[0][0], 4), zone, len(df), start, datetime.datetime.today())
+
     with conn:
         update_task(conn, (round(sum.values[0][0], 4), round(sum_start.values[0][0], 4),int(round(time.time() * 1000)), rowid))
 

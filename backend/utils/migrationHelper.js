@@ -105,51 +105,58 @@ const newInstance = async (model, image, user) => {
     const newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
     if(image.zone !== null){
       await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['migrating', Date.now(), newImage.rowid])
-      await copyKey(image)
-      await migrateFiles(image, newImage)
-      if(image.simulation === 0) await terminateInstance(image)
-      await fileHelper.renameFile(image.key.replace('.pem', '_1.pem'), image.key)
-      await installSoftware(newImage)
-      await deleteKey(newImage)
-      await startDocker(newImage.ip, newImage.key)
+    
+      if(image.simulation === 0){
+        await terminateInstance(image)
+        await copyKey(image)
+        await migrateFiles(image, newImage)
+        await fileHelper.renameFile(image.key.replace('.pem', '_1.pem'), image.key)
+        await installSoftware(newImage)
+        await deleteKey(newImage)
+        await startDocker(newImage.ip, newImage.key)
+      } 
+   
+      await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', [newImage.simulation === 0 ? 'running' : 'simulation', Date.now(), newImage.rowid])
 
-      await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), newImage.rowid])
-
-      const migRows = await databaseHelper.selectRowsByValues(parameters.migrationTableValues, parameters.migrationTableName, 'imageId = ?', [newImage.rowid])
+      const migrationRows = await databaseHelper.selectRowsByValues(parameters.migrationTableValues, parameters.migrationTableName, 'imageId = ?', [newImage.rowid])
       const billingRows = await databaseHelper.selectIsNull(parameters.billingTableValues, parameters.billingTableName, 'actualCost')
       const billingRow = billingRows.filter(b => b.imageId === newImage.rowid)[0]
-      await billingHelper.getCosts(model.type, model.product, image.zone, newImage.createdAt, billingRow.rowid, migRows[0].startZone)
 
-      const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', image.spotInstanceId)
-      console.log(image.spotInstanceId)
-      console.log(migrationRows)
-      await migrationRows.map(async row => {
+      const filteredRows = migrationRows.filter(row => row.newZone === null)
+
+   
+      await filteredRows.map(async row => {
         await databaseHelper.updateById(parameters.migrationTableName, 'newZone = ?, updatedAt = ?', [zone, Date.now(), row.rowid])
+        await billingHelper.getCosts(model.type, model.product, image.zone, row.updatedAt, billingRow.rowid, migrationRows[0].startZone)
+
       })
-      await setScheduler(newImage, model, user, true, migRows[0].startZone)
+      await setScheduler(newImage, model, user, true, migrationRows[0].startZone)
 
       return true
 
     }else{
-      await setupServer(newImage.ip, newImage)
-      await startDocker(newImage.ip, newImage.key)
+      if(image.zone === 0){
+        await setupServer(newImage.ip, newImage)
+        await startDocker(newImage.ip, newImage.key)
+        await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), image.rowid])
+      }
       await setScheduler(image, model, user, true, zone)
-      await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), image.rowid])
+
       return true
     }
   }else{
     console.log(`MigrationHelper: No migration of ${image.rowid} needed`)
     const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
-    const migrationRows = await databaseHelper.selectByValue(parameters.migrationTableValues, parameters.migrationTableName, 'oldSpotInstanceId', imageRow.spotInstanceId)
-    const migRows = await databaseHelper.selectRowsByValues(parameters.migrationTableValues, parameters.migrationTableName, 'imageId = ?', [imageRow.rowid])
-
-    await migrationRows.map(async row => {
+    const migrationRows = await databaseHelper.selectRowsByValues(parameters.migrationTableValues, parameters.migrationTableName, 'imageId = ?', [imageRow.rowid])
+    const filteredRows = migrationRows.filter(row => row.newZone === null)
+    await filteredRows.map(async row => {
       await databaseHelper.updateById(parameters.migrationTableName, 'count = ?, updatedAt = ?', [row.count+1, Date.now(), row.rowid])
       const billingRows = await databaseHelper.selectIsNull(parameters.billingTableValues, parameters.billingTableName, 'actualCost')
       const billingRow = billingRows.filter(b => b.imageId === imageRow.rowid)[0]
-      await billingHelper.getCosts(model.type, model.product, imageRow.zone, imageRow.createdAt, billingRow.rowid, migRows[0].startZone)
+      console.log(migrationRows[0].startZone, imageRow.zone)
+      await billingHelper.getCosts(model.type, model.product, imageRow.zone, row.updatedAt, billingRow.rowid, migrationRows[0].startZone)
     })
-    await setScheduler(image, model, user, false, migRows[0].startZone)
+    await setScheduler(image, model, user, false, migrationRows[0].startZone)
   }
 
 }

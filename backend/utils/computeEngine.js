@@ -1,5 +1,6 @@
 const Compute = require('@google-cloud/compute')
 
+
 const projectId = 'automaticmigration'
 const keyFile = '/home/walder/Downloads/automaticMigration-65e56cf0b2a0.json'
 const http = require('http')
@@ -24,7 +25,20 @@ const config = {
       {
         key: 'startup-script',
         value: `#! /bin/bash
-        sudo apt install -y docker &&
+        cd /home/walder90/ mkdir test
+        sudo apt-get install \
+          apt-transport-https \
+          ca-certificates \
+          curl \
+          gnupg-agent \
+          software-properties-common &&
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - &&
+        sudo apt-key fingerprint 0EBFCD88 &&
+        sudo add-apt-repository \
+          "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+          $(lsb_release -cs) \
+          stable" &&
+        sudo apt-get install docker-ce docker-ce-cli containerd.io &&
         sudo curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose &&
         sudo chmod +x /usr/local/bin/docker-compose &&
         sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose &&
@@ -36,6 +50,12 @@ const config = {
   }
 }
 
+
+const pricingInfo = async() => {
+
+  const version = require('@google-cloud/billing')
+  const billing = version.v1
+}
 
 const startVM = async(name) => {
 
@@ -52,28 +72,25 @@ const startVM = async(name) => {
   const metadata = await vm.getMetadata()
   const ip = metadata[0].networkInterfaces[0].accessConfigs[0].natIP
   console.log(ip)
-  let waiting = true;
+  let waiting = true
     const timer = setInterval(
-      ip => {
-        http
-          .get('http://' + ip, res => {
-            const statusCode = res.statusCode;
-            if (statusCode === 200 && waiting) {
-              waiting = false
-              clearTimeout(timer)
-              // HTTP server is ready.
-              console.log('Ready!')
-              console.log(ip)
-            }
-          })
-          .on('error', () => {
-            // HTTP server is not ready yet.
-            process.stdout.write('.')
-          })
+      ip => { http
+        .get('http://' + ip, res => {
+          const statusCode = res.statusCode
+          console.log(statusCode)
+          if (statusCode === 200 && waiting) {
+            waiting = false
+            clearTimeout(timer)
+            console.log('Ready!')
+            console.log(ip)
+          }
+        })
+        .on('error', () => {
+          process.stdout.write('.')
+        })
       },
-      2000,
-      ip
-    )
+      2000
+      )
   console.log('Virtual machine created!')
 }
 
@@ -95,4 +112,4 @@ const deleteVM = async (name) => {
 
 
 
-module.exports = { startVM, deleteVM, getZones }
+module.exports = { startVM, deleteVM, getZones, pricingInfo }

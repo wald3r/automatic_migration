@@ -80,9 +80,8 @@ const predictModel = async (instance, product, image, user, region) => {
         .pipe(csv())
         .on('data', (data) => results.push(data))
         .on('end', async () => {
-          console.log(results)
           results = results.sort(sortFunction)
-          let zone = 'ap-northeast-1a'//results[0][1]
+          let zone = results[0][1]
           await databaseHelper.insertRow(parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?, ?)', [null, results[0][0], null, image.rowid, user.rowid, Date.now(), Date.now()])
           await databaseHelper.updateById(parameters.imageTableName, 'predictionFile = ?, zone = ?, updatedAt = ?', [path, zone, Date.now(), image.rowid])
 

@@ -49,7 +49,7 @@ const workDir = __dirname
 const waitForInstanceId = 10
 
 const migrationHour = 0
-const migrationMinutes = 3
+const migrationMinutes = 2
 
 module.exports = { 
     checkInstancesNumber,

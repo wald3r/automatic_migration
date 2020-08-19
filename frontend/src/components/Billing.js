@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
-import { XYPlot, VerticalGridLines, HorizontalGridLines, LineSeries, XAxis, YAxis } from 'react-vis'
+import { XYPlot, VerticalGridLines, HorizontalGridLines, LineSeries, XAxis, YAxis, Crosshair } from 'react-vis'
 import { Badge } from 'react-bootstrap'
 import '../stylesheets/general.css'
 import billingService from '../services/billingService'
@@ -8,10 +8,55 @@ import migrationService from '../services/migrationService'
 import { Spinner } from 'react-bootstrap'
 const Billing = (props) => {
 
-  const [billing, setBilling] = useState(null)
+  const [billing, setBilling] = useState([null])
   const [image, setImage] = useState(null)
-  const [migrations, setMigrations] = useState(null)
+  const [migrations, setMigrations] = useState([null])
   const [spinner, setSpinner] = useState(false)
+
+  const [crosshair1, setCrosshair1] = useState([])
+  const [crosshair2, setCrosshair2] = useState([])
+  const [crosshair3, setCrosshair3] = useState([])
+
+  const [day, setDay] = useState('')
+
+  const handleDomain = () => {
+    let max = 0
+
+    billing.map(object => {
+      if(object.actualCost > max) max = object.actualCost
+      if(object.predictedCost > max) max = object.predictedCost
+      if(object.costNoMigration > max) max = object.costNoMigration
+    })
+    return max
+  }
+
+  const handleCrosshair = (datapoint, event, elem) => {
+    let arr = []
+    console.log(datapoint)
+    if(elem === 1){
+      arr.push({ x: datapoint.x, y: datapoint.y })
+      setCrosshair1(arr)
+    }
+    else if(elem === 2){
+      arr.push({ x: datapoint.x, y: datapoint.y })
+      setCrosshair2(arr)
+    }
+    else if(elem === 3){
+      arr.push({ x: datapoint.x, y: datapoint.y })
+      setCrosshair3(arr)
+    }
+
+    setDay(datapoint.x)
+  }
+
+
+
+  const removeCrosshair = () => {
+    setCrosshair1([])
+    setCrosshair2([])
+    setCrosshair3([])
+    setDay('')
+  }
 
   const prepareData = () => {
     let data = []
@@ -46,9 +91,9 @@ const Billing = (props) => {
 
   const handleImage = async (imageid) => {
     if(imageid === null){
-      setBilling(null)
+      setBilling([null])
       setImage(null)
-      setMigrations(null)
+      setMigrations([null])
       setSpinner(false)
     }else{
       setSpinner(true)
@@ -61,7 +106,7 @@ const Billing = (props) => {
     }
   }
 
-  if(billing === null || migrations === null){
+  if(billing[0] === null || migrations[0] === null){
     return(
       <div>
         <div className='tableContainer'>
@@ -105,28 +150,47 @@ const Billing = (props) => {
                     <Badge variant='success'>Costs withouth Migrations</Badge>
                   </div>
                   <XYPlot
+                    onMouseLeave={() => removeCrosshair()}
                     margin={{ left: 70 }}
                     color='red'
                     height={500}
                     width= {800}
                     xType='ordinal'
+                    yDomain={[0, handleDomain()]}
                   >
                     <VerticalGridLines />
                     <HorizontalGridLines />
-                    <XAxis />
-                    <YAxis />
+                    <XAxis title={'Days'} hideTicks />
+                    <YAxis title={'Dollar'} />
                     <LineSeries
                       data={prepareData()[0]}
                       color='red'
+                      onNearestX={(datapoint, event) => {
+                        handleCrosshair(datapoint, event, 1)
+                      }}
                     />
                     <LineSeries
                       data={prepareData()[1]}
                       color='blue'
+                      onNearestX={(datapoint, event) => {
+                        handleCrosshair(datapoint, event, 2)
+                      }}
                     />
                     <LineSeries
                       data={prepareData()[2]}
                       color='green'
+                      onNearestX={(datapoint, event) => {
+                        handleCrosshair(datapoint, event, 3)
+                      }}
                     />
+                    <Crosshair values={[crosshair1[0], crosshair2[0], crosshair3[0]]}>
+                      <div style={{ color: '#000000' }}>
+                        <div>{day === undefined ? '' : `Day:${day}`}</div>
+                        <div>{crosshair1[0] === undefined ? '' : `Actual:${crosshair1[0].y}`}</div>
+                        <div>{crosshair2[0] === undefined ? '' : `Predicted:${crosshair2[0].y}`}</div>
+                        <div>{crosshair3[0] === undefined ? '' : `Without:${crosshair3[0].y}`}</div>
+                      </div>
+                    </Crosshair>
                   </XYPlot>
                 </div>
                 <div style={{ textAlign: 'center' }} className='numbers-grid grid-general'>

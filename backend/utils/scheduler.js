@@ -19,7 +19,8 @@ const checkInstances = schedule.scheduleJob(parameters.checkInstancesNumber, asy
   console.log('CheckInstanceHelper: Start checking instances')
   const imageRows = await databaseHelper.selectAllRows(parameters.imageTableValues, parameters.imageTableName)
   imageRows.map(async image => {
-    const state =  await spotInstances.getInstanceState(image.zone, [image.spotInstanceId]) 
+
+    const state = image.simulation === 1 ? 'simulation' : await spotInstances.getInstanceState(image.zone, [image.spotInstanceId]) 
     if(state === 'stopped' && image.status !== 'booting' && image.status !== 'migration' && image.status !== 'simulation' && image.manually === 0){
       console.log(`CheckInstanceHelper: Reboot image ${image.rowid}`)
       const migrationHelper = require('./migrationHelper')
@@ -72,8 +73,8 @@ const setMigrationScheduler = async (time, model, image, user) => {
     }
     console.log(`MigrationSchedulerHelper: Start with evaluation of image ${imageRow.rowid}`)
 
-    const state = await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) 
-    if(state === 'running'){
+    const state = image.simulation === 1 ? 'simulation' : await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) 
+    if(state === 'running' || state === 'simulation'){
       await migrationHelper.newInstance(model, imageRow, user)
     }else{
       console.log(`MigrationSchedulerHelper: Image ${imageRow.rowid} is currently not active`)

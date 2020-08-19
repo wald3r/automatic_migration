@@ -1,0 +1,9 @@
+/backend/node_modules/*
+/frontend/node_modules/*
+/backend/*.db
+/backend/spot_pricing/aws_spot_pricing.csv
+/backend/spot_pricing/pricing_history/*
+/backend/ml_model/models/*
+/backend/spot_pricing/venv/*
+/backend/images/all/*
+

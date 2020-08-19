@@ -47,7 +47,8 @@ const checkMigrationStatus = async () => {
   console.log(`MigrationStatusHelper: Set ${migrationRows.length} open schedulers`)
 }
 
-//computeEngine.startVM('elmit')
+computeEngine.startVM('elmit')
+//computeEngine.pricingInfo()
 credentialsChecker()
 databaseHelper.checkDatabase()
 scheduler.checkInstances

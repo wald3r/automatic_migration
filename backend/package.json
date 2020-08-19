@@ -23,6 +23,7 @@
     "supertest": "^4.0.2"
   },
   "dependencies": {
+    "@google-cloud/billing": "^2.1.2",
     "@google-cloud/compute": "^2.0.3",
     "aws-sdk": "^2.710.0",
     "bcrypt": "^5.0.0",
