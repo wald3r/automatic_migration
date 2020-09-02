@@ -6,4 +6,4 @@
 /backend/ml_model/models/*
 /backend/spot_pricing/venv/*
 /backend/images/all/*
-
+/python_analysis/aws_spot_pricing.csv
