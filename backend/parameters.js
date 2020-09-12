@@ -19,7 +19,7 @@ const migrationTableName = 'migration'
 const billingTableName = 'billing'
 
 const modelTableValues = 'rowid, type, product, region, status, createdAt, updatedAt'
-<<<<<<< HEAD
+
 const imageTableValues = 'rowid, provider, manually, schedulerName, bidprice, simulation, port, predictionFile, userId, status, modelId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
 const userTableValues = 'rowid, username, password, createdAt, updatedAt'
 const billingTableValues = 'rowid, costNoMigration, predictedCost, actualCost, imageId, userid, createdAt, updatedAt'
@@ -30,18 +30,7 @@ const mlDeleteFile = __dirname+'/ml_model/delete_ml_model.py'
 const mlPredictFile = __dirname+'/ml_model/predict_ml_model.py'
 const mlPredictions = __dirname+'/predictions/'
 
-=======
-const imageTableValues = 'rowid, manually, schedulerName, bidprice, simulation, port, predictionFile, userId, status, modelId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
-const userTableValues = 'rowid, username, password, createdAt, updatedAt'
-const billingTableValues = 'rowid, costNoMigration, predictedCost, actualCost, imageId, userid, createdAt, updatedAt'
-const migrationTableValues = 'rowid, startZone, oldZone, newZone, count, oldSpotInstanceId, imageId, createdAt, updatedAt'
 
-const mlTrainFile = __dirname+'/ml_model/train_ml_model.py'
-const mlDeleteFile = __dirname+'/ml_model/delete_ml_model.py'
-const mlPredictFile = __dirname+'/ml_model/predict_ml_model.py'
-const mlPredictions = __dirname+'/predictions/'
-
->>>>>>> 6b6d807dccd47a389cab6440846be89cb295d742
 const collectSpotPricesFile = __dirname+'/spot_pricing/collect_spot_prices.py'
 const billingFile = __dirname+'/spot_pricing/calculate_billing.py'
 
@@ -54,12 +43,9 @@ const securityGroupDescription = 'elmit'
 const linuxInstallFile = './linux_install.sh'
 const suseInstallFile = './suse_install.sh'
 const redInstallFile = './red_install.sh'
-<<<<<<< HEAD
-const engineInstallFile = './google_install.sh'
 
+const engineInstallFile = './google_install.sh'
 const engineUsername = 'walder'
-=======
->>>>>>> 6b6d807dccd47a389cab6440846be89cb295d742
 
 const migrationFile = './migration.sh'
 const imageFile = './images.csv'
@@ -74,13 +60,10 @@ const migrationHour = 0
 const migrationMinutes = 2
 
 module.exports = { 
-<<<<<<< HEAD
     engine_regions,
     engineMachineTypes,
     engineInstallFile,
     engineUsername,
-=======
->>>>>>> 6b6d807dccd47a389cab6440846be89cb295d742
     checkInstancesNumber,
     billingFile,
     redInstallFile,
