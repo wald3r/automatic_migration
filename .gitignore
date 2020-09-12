@@ -1,0 +1,17 @@
+/backend/node_modules/*
+/backend/*.db
+/backend/spot_pricing/aws_spot_pricing.csv
+/backend/spot_pricing/pricing_history/*
+/backend/spot_pricing/venv/*
+/backend/ml_model/venv/*
+/backend/ml_model/models/*
+/backend/trainging_data_v2.csv
+/backend/trainging_data_v3.csv
+
+/frontend/node_modules/*
+
+/backend/images/all/*
+
+/python_analysis/aws_spot_pricing.csv
+/python_analysis/venv/*
+

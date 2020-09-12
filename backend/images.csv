@@ -1,0 +1,65 @@
+region,os,id
+us-west-1,Linux/UNIX,ami-07d9160fa81ccffb5
+us-east-2,Linux/UNIX,ami-07c8bc5c1ce9598c3
+us-east-1,Linux/UNIX,ami-02354e95b39ca8dec
+ap-southeast-1,Linux/UNIX,ami-0cd31be676780afa7
+ca-central-1,Linux/UNIX,ami-013d1df4bcea6ba95
+eu-west-1,Linux/UNIX,ami-07d9160fa81ccffb5
+sa-east-1,Linux/UNIX,ami-018ccfb6b4745882a
+eu-central-1,Linux/UNIX,ami-0c115dbd34c69a004
+ap-southeast-2,Linux/UNIX,ami-0ded330691a314693
+ap-northeast-1,Linux/UNIX,ami-0cc75a8978fbbc969
+eu-west-3,Linux/UNIX,ami-093fa4c538885becf
+us-west-2,Linux/UNIX,ami-0a13d44dccf1f5cf6
+ap-northeast-2,Linux/UNIX,ami-05a4cce8936a89f06
+ap-south-1,Linux/UNIX,ami-0ebc1ac48dfd14136
+eu-north-1,Linux/UNIX,ami-039609244d2810a6b
+eu-west-2,Linux/UNIX,ami-0a13d44dccf1f5cf6
+us-west-1,SUSE Linux,ami-0ab507a86aac96b91
+us-east-2,SUSE Linux,ami-054462c52d9c225ce
+us-east-1,SUSE Linux,ami-0e0fcf63653340b66
+ap-southeast-1,SUSE Linux,ami-01c272c9d95438039
+ca-central-1,SUSE Linux,ami-01b8afc3676031bc7
+eu-west-1,SUSE Linux,ami-0ab507a86aac96b91
+sa-east-1,SUSE Linux,ami-03f86014a2e5c11fd
+eu-central-1,SUSE Linux,ami-0044ae6906d786f4b
+ap-southeast-2,SUSE Linux,ami-0e729696b8705907b
+ap-northeast-1,SUSE Linux,ami-03a50deb52dc85f6f 
+eu-west-3,SUSE Linux,ami-02752a8e80a726bf0
+us-west-2,SUSE Linux,ami-092e26abbc42e948b
+ap-northeast-2,SUSE Linux,ami-04b0a659eb85132ef
+ap-south-1,SUSE Linux,ami-026e9920feda96473
+eu-north-1,SUSE Linux,ami-07adafad3d1a31c72
+eu-west-2,SUSE Linux,ami-092e26abbc42e948b
+us-west-1,Windows,ami-0753ddff1a67fca78
+us-east-2,Windows,ami-066a1a3fa81bfbd00
+us-east-1,Windows,ami-0f38562b9d4de0dfe
+ap-southeast-1,Windows,ami-003ad59a0b2b3c98f
+ca-central-1,Windows,ami-0df364e027762ec43
+eu-west-1,Windows,ami-0753ddff1a67fca78
+sa-east-1,Windows,ami-066d7f29fb6c7b3bb
+eu-central-1,Windows,ami-0075ac87f3bb991bc
+ap-southeast-2,Windows,ami-09a17b63e7283d6a2
+ap-northeast-1,Windows,ami-0f1d9d91c16265769
+eu-west-3,Windows,ami-0ace5ff23b1a4725d
+us-west-2,Windows,ami-0c80f4021417f8488
+ap-northeast-2,Windows,ami-049e67b9661b9ee3e
+ap-south-1,Windows,ami-03dbf9550d4620230
+eu-north-1,Windows,ami-092287cf5a11bfb9e
+eu-west-2,Windows,ami-0c80f4021417f8488
+us-west-1,Red Hat Enterprise Linux,ami-08f4717d06813bf00
+us-east-2,Red Hat Enterprise Linux,ami-0a54aef4ef3b5f881
+us-east-1,Red Hat Enterprise Linux,ami-098f16afa9edf40be
+ap-southeast-1,Red Hat Enterprise Linux,ami-02b6d9703a69265e9
+ca-central-1,Red Hat Enterprise Linux,ami-04312317b9c8c4b51
+eu-west-1,Red Hat Enterprise Linux,ami-08f4717d06813bf00
+sa-east-1,Red Hat Enterprise Linux,ami-00e63b4959e1a98b7
+eu-central-1,Red Hat Enterprise Linux,ami-07dfba995513840b5
+ap-southeast-2,Red Hat Enterprise Linux,ami-0810abbfb78d37cdf
+ap-northeast-1,Red Hat Enterprise Linux,ami-07dd14faa8a17fb3e
+eu-west-3,Red Hat Enterprise Linux,ami-09e973def6bd1ad96
+us-west-2,Red Hat Enterprise Linux,ami-0fc841be1f929d7d1
+ap-northeast-2,Red Hat Enterprise Linux,ami-0f8dedf5ec103d6a5
+ap-south-1,Red Hat Enterprise Linux,ami-052c08d70def0ac62
+eu-north-1,Red Hat Enterprise Linux,ami-0b149b24810ebb323
+eu-west-2,Red Hat Enterprise Linux,ami-0fc841be1f929d7d1

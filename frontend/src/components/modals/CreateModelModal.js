@@ -4,21 +4,25 @@ import { connect } from 'react-redux'
 
 const CreateModelModal = ( { showCreateModelModal, setCreateModelModal, handleCreation, ...props } ) => {
 
-  const productList = ['Linux/UNIX', 'Windows', 'Red Hat Enterprise Linux', 'SUSE Linux']
+  const productList = ['Linux/UNIX', 'Red Hat Enterprise Linux', 'SUSE Linux']
   const [type, setType] = useState('r5.4xlarge')
   const [product, setProduct] = useState(productList[0])
-  const [region, setRegion] = useState(null)
+  const [region, setRegion] = useState('worldwide')
   const [filter, setFilter] = useState('')
 
   const filteredList = filter === '' ? props.instancesList : props.instancesList.filter(i => i.instances.includes(filter))
 
-  if(props.instancesList.length === 0){
+  if(props.instancesList.length === 0 || props.regionsList.length === 0){
     return null
   }
 
   const createModel = (event) => {
     setCreateModelModal(false)
+    console.log(region)
     handleCreation({ type, product, region }, event)
+    setType('r5.4xlarge')
+    setRegion('worldwide')
+    setProduct(productList[0])
   }
 
   const noChanges = () => {
@@ -65,7 +69,11 @@ const CreateModelModal = ( { showCreateModelModal, setCreateModelModal, handleCr
                     Region:
                   </td>
                   <td>
-                    <input id='modelRegion' autoComplete='off' type='text' />
+                    <select value={region} onChange={({ target }) => setRegion(target.value)} name='regions' id='regions'>
+                      {props.regionsList.map(i =>
+                        <option value={i.regions} key={i.regions}>{i.regions}</option>
+                      )}
+                    </select>
                   </td>
                 </tr>
               </tbody>
@@ -88,7 +96,8 @@ const CreateModelModal = ( { showCreateModelModal, setCreateModelModal, handleCr
 const mapStateToProps = (state) => {
   return {
     zonesList: state.zonesList,
-    instancesList: state.instancesList
+    instancesList: state.instancesList,
+    regionsList: state.regionsList
   }
 }
 

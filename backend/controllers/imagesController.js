@@ -3,24 +3,21 @@ const databaseHelper = require('../utils/databaseHelper')
 const parameters = require('../parameters')
 const spotInstances = require('../utils/spotInstances')
 const migrationHelper = require('../utils/migrationHelper')
-const fs = require('fs')
-const uuidv4 = require('uuid/v4')
-const fileHelper = require('../utils/fileHelper')
+const {v4: uuidv4 } = require('uuid')
 const authenticationHelper = require('../utils/authenticationHelper')
-const sshConnection = require('../utils/sshConnection')
-
+const sshConnection = require('../utils/sshConnectionEC2')
+const scheduler = require('../utils/scheduler')
+const fileHelper = require('../utils/fileHelper')
 
 imagesRouter.get('/', async(request, response, next) => {
 
   try{
-
     const user = await authenticationHelper.isLoggedIn(request.token)
     if(user == undefined){
       return response.status(401).send('Not Authenticated')
     }
 
     let responseArray = await databaseHelper.selectByUserId(parameters.imageTableValues, parameters.imageTableName, user.rowid)
-    
     await new Promise(async (resolve) => {
       for(let a = 0; a < responseArray.length; a++){
         if(responseArray[a].spotInstanceId !== null){
@@ -28,12 +25,18 @@ imagesRouter.get('/', async(request, response, next) => {
         }else{
           responseArray[a].state = responseArray[a].simulation === 0 ? 'pending' : 'simulation'
         }
+        if(responseArray[a].state === 'stopped' || responseArray[a].state === 'stopping'){
+          await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['stopped', Date.now(), responseArray[a].rowid])
+          responseArray[a].status = 'stopped'
+        }
         if(a + 1 === responseArray.length){
           resolve()
         }
       }
+      if(responseArray.length === 0){
+        resolve()
+      }
     })
-    console.log(responseArray)
     return response.status(200).json(responseArray)
 
 
@@ -64,12 +67,10 @@ imagesRouter.post('/startinformation/', async(request, response, next) => {
     }
     const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, imageId)
     const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
-    migrationHelper.newInstance(modelRow, imageRow, user)
-
-
-
-    return response.status(200).json(imageRow)
-
+    if(migrationHelper.newInstance(modelRow, imageRow, user))
+      return response.status(200).json(imageRow)
+    else
+      return response.status(500)
 
   }catch(exception){
     next(exception)
@@ -137,12 +138,13 @@ imagesRouter.get('/stop/instance/:rowid', async(request, response, next) => {
     }
     
     await spotInstances.stopInstance(imageRow.spotInstanceId, imageRow.zone)
-    const params = ['stopped', Date.now(), imageRow.rowid]
-    const values = 'status = ?, updatedAt = ?'
-    await databaseHelper.updateById(parameters.imageTableName, values, params)
-      
-    imageRow.state = 'stopping'
-    return response.status(200).json(imageRow)
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, manually = ?, updatedAt = ?', ['stopped', 1, Date.now(), imageRow.rowid])
+    let newRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, imageRow.rowid)
+    newRow.state = 'stopping'
+
+    scheduler.cancelScheduler(newRow)
+
+    return response.status(200).json(newRow)
 
 
   }catch(exception){
@@ -164,14 +166,32 @@ imagesRouter.get('/start/instance/:rowid', async(request, response, next) => {
       return response.status(500).send('Image does not exist')
     }
 
-    
+    const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, imageRow.modelId)
+    const migrationRows = await databaseHelper.selectIsNull(parameters.migrationTableValues, parameters.migrationTableName, 'newZone')
+    const migRow = migrationRows.filter(row => row.imageId === imageRow.rowid)[0]
     await spotInstances.startInstance(imageRow.spotInstanceId, imageRow.zone)
-    imageRow.state = 'pending'
-    return response.status(200).send(imageRow)
+    scheduler.cancelScheduler(imageRow)
+    await migrationHelper.setSchedulerAgain(imageRow, modelRow, user, migRow.updatedAt)
+
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, manually = ?, updatedAt = ?', ['booting', 0, Date.now(), imageRow.rowid])
+
+    let newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters. imageTableName, imageRow.rowid)
+    newImage.state = 'pending'
+
+    await response.status(200).send(newImage)
+
+    await spotInstances.waitForInstanceToBoot([imageRow.spotInstanceId])
+    await spotInstances.getPublicIpFromRequest([imageRow.spotInstanceId], imageRow.rowid)
+    newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters. imageTableName, imageRow.rowid)
+
+    await migrationHelper.startDocker(newImage.ip, newImage.key)
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), imageRow.rowid])
+
 
   
   }catch(exception){
-    return response.status(500).send('Can not start instance')
+    console.log(exception)
+    response.status(500).send('Can not start instance')
 
   }
 })
@@ -270,13 +290,10 @@ imagesRouter.post('/', async(request, response, next) => {
 
   const path = `${parameters.workDir}/images/all/${uuidv4()}`
 
-  if (!fs.existsSync(path)){
-    fs.mkdirSync(path, { recursive: true })
-  } 
+  fileHelper.createPath(path)
 
   const modelId = files[0].name.split('_')[0]
   
-
   await new Promise((resolve) => {
     files.map(async file => {
       let answer = await fileHelper.createDirectory(path, file)
@@ -289,8 +306,8 @@ imagesRouter.post('/', async(request, response, next) => {
     })
   })
   
-  const params = [null, null, null, null, user.rowid, null, modelId, null, null, null, path, null, null, Date.now(), Date.now()]
-  const imageId = await databaseHelper.insertRow(parameters.imageTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
+  const params = [0, null, null, null, null, null, null, user.rowid, null, modelId, null, null, null, path, null, null, Date.now(), Date.now()]
+  const imageId = await databaseHelper.insertRow(parameters.imageTableName, '(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', params)
   if(imageId === -1){
     response.status(500).send(`${parameters.imageTableName}: Could not insert row`)
   }
@@ -300,14 +317,19 @@ imagesRouter.post('/', async(request, response, next) => {
 
   const modelRow = await databaseHelper.selectById(parameters.modelTableValues, parameters.modelTableName, modelId)
   const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, imageId)
-
+  
+  let installFile = null
   if(modelRow.product === 'Linux/UNIX'){
-    fs.copyFile(parameters.linuxInstallFile, path+'/install.sh', (err) => {
-      if(err) console.log(`InstallScriptHelper: Could not copy file to ${path+'/install.sh'}`)
-      else console.log(`InstallScriptHelper: Copied file to ${path+'/install.sh'}`)
-    })
+    installFile = parameters.linuxInstallFile
+  }else if(modelRow.product === 'SUSE Linux'){
+    installFile = parameters.suseInstallFile
+  }else if(modelRow.product === 'Red Hat Enterprise Linux'){
+    installFile = parameters.redInstallFile
   }
 
+  fileHelper.copyFile(installFile, path, '/install.sh')
+  fileHelper.copyFile(parameters.migrationFile, path, '/migration.sh')
+  fileHelper.copyFile(parameters.engineInstallFile, path, '/engine_install.sh')
 
   if(imageRow === null){
     response.status(500).send(`${parameters.imageTableName}: Could not prepare message for sending`)
@@ -326,7 +348,7 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)  
-  if(imageRow.simulation === 0){
+  if(imageRow.simulation === 0 && imageRow.zone !== null){
     migrationHelper.terminateInstance(imageRow)
   }
   await databaseHelper.deleteRowsByValue(parameters.billingTableName, imageRow.rowid, 'imageId')
@@ -334,6 +356,9 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
   await databaseHelper.deleteRowById(parameters.imageTableName, rowid)  
   migrationHelper.deletePredictions(imageRow)
   await fileHelper.deleteFolderRecursively(imageRow.path)
+  if(imageRow.schedulerName !== null){
+    scheduler.cancelScheduler(imageRow)
+  }
   response.status(200).send('Successfully deleted')
 
 })

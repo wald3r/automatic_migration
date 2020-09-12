@@ -48,7 +48,7 @@ class GenerateTrainingData(object):
     def first(self, df):
         return df.iloc[1:]
 
-    def generate(self, instance_type, product_description, flag):
+    def generate(self, instance_type, product_description):
 
         try:
             start = time.time()
@@ -66,8 +66,6 @@ class GenerateTrainingData(object):
                     raise Exception()
                 df = df.drop(['InstanceType'], axis=1)
                 df = df.drop(['ProductDescription'], axis=1)
-                #if(flag == 0):
-                #    df = df[df['Training'] == 0]
 
                 df_start = pd.concat([df_start, df])
 

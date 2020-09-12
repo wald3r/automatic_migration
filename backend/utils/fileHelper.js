@@ -61,27 +61,53 @@ const createDirectory = async (path, file) => {
 
 }
 
-const deleteFile = (path) => {
+const deleteFile = async (path) => {
 
-  fs.unlink(path, (err) => {
-    if (err) console.log(`FileDeleteHelper: ${err.message}`)
+  return await new Promise((resolve) => {
+    fs.unlink(path, (err) => {
+      if (err) console.log(`FileDeleteHelper: ${err.message}`)
+      resolve()
+    })
+  })
+ 
+}
+
+const renameFile = (oldFile, newFile) => {
+  fs.rename(oldFile, newFile, (err) => {
+    if (err) console.log(`FileRenameHelper: ${err.message}`)
+  })
+}
+
+const createPath = (path) => {
+  if (!fs.existsSync(path)){
+    fs.mkdirSync(path, { recursive: true })
+  } 
+}
+
+const copyFile = (filepath1, filepath2, filename) => {
+  fs.copyFile(filepath1, filepath2+filename, (err) => {
+    if(err) console.log(`CopyFileHelper: Could not copy file to ${filepath2+filename}`)
+    else console.log(`CopyFileHelper: Copied file to ${filepath2+filename}`)
+  })
+}
+
+const createKeyFile = async (key, path) => {
+  
+  let finalPath = path
+  await new Promise((resolve) => {
+    if (fs.existsSync(finalPath)) {
+      finalPath = finalPath.replace('.pem', '_1.pem')
+    }
+    fs.writeFile(finalPath, key.KeyMaterial, (err) => {
+      if (err) console.log(`KeyCreatorHelper: ${err.message}`)
+      resolve()  
+    })
+  })
+  
+  fs.chmod(finalPath, 0o400, (err) => {
+    if (err) console.log(`KeyCreatorHelper: ${err.message}`)
   })
   
 }
 
-const createKeyFile = (key, path) => {
-
-  fs.writeFile(path, key.KeyMaterial, (err) => {
-    if (err) console.log(`KeyCreatorHelper: ${err.message}`)
-    
-  })
-  
-  fs.chmod(path, 0o400, (err) => {
-    if (err) console.log(`KeyCreatorHelper: ${err.message}`)
-    console.log(path)
-
-  })
-  
-}
-
-module.exports = { deleteFile, createKeyFile, createDirectory, deleteFolderRecursively }
+module.exports = { createPath, copyFile, deleteFile, createKeyFile, createDirectory, deleteFolderRecursively, renameFile }

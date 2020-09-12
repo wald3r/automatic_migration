@@ -9,6 +9,9 @@ const dbFileName = () => {
     }
 }
 
+const engineMachineTypes = ['E2', 'N2D', 'N1', 'C2', 'M2', 'M1', 'N2']
+const engine_regions = './engine_regions.csv'
+
 const modelTableName = 'model'
 const imageTableName = 'image'
 const userTableName = 'user'
@@ -16,17 +19,32 @@ const migrationTableName = 'migration'
 const billingTableName = 'billing'
 
 const modelTableValues = 'rowid, type, product, region, status, createdAt, updatedAt'
-const imageTableValues = 'rowid, bidprice, simulation, port, predictionFile, userId, status, modelId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
+<<<<<<< HEAD
+const imageTableValues = 'rowid, provider, manually, schedulerName, bidprice, simulation, port, predictionFile, userId, status, modelId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
 const userTableValues = 'rowid, username, password, createdAt, updatedAt'
-const billingTableValues = 'rowid, predictedCost, actualCost, imageId, userid, createdAt, updatedAt'
-const migrationTableValues = 'rowid, oldZone, newZone, count, oldSpotInstanceId, imageId, createdAt, updatedAt'
+const billingTableValues = 'rowid, costNoMigration, predictedCost, actualCost, imageId, userid, createdAt, updatedAt'
+const migrationTableValues = 'rowid, startZone, oldZone, newZone, count, oldSpotInstanceId, imageId, createdAt, updatedAt'
 
-const mlTrainFile = '/home/walder/workspace/automatic_migration/backend/ml_model/train_ml_model.py'
-const mlDeleteFile = '/home/walder/workspace/automatic_migration/backend/ml_model/delete_ml_model.py'
-const mlPredictFile = '/home/walder/workspace/automatic_migration/backend/ml_model/predict_ml_model.py'
-const mlPredictions = '/home/walder/workspace/automatic_migration/backend/predictions/'
+const mlTrainFile = __dirname+'/ml_model/train_ml_model.py'
+const mlDeleteFile = __dirname+'/ml_model/delete_ml_model.py'
+const mlPredictFile = __dirname+'/ml_model/predict_ml_model.py'
+const mlPredictions = __dirname+'/predictions/'
 
-const collectSpotPricesFile = '/home/walder/workspace/automatic_migration/backend/spot_pricing/collect_spot_prices.py'
+=======
+const imageTableValues = 'rowid, manually, schedulerName, bidprice, simulation, port, predictionFile, userId, status, modelId, spotInstanceId, requestId, zone, path, ip, key, createdAt, updatedAt'
+const userTableValues = 'rowid, username, password, createdAt, updatedAt'
+const billingTableValues = 'rowid, costNoMigration, predictedCost, actualCost, imageId, userid, createdAt, updatedAt'
+const migrationTableValues = 'rowid, startZone, oldZone, newZone, count, oldSpotInstanceId, imageId, createdAt, updatedAt'
+
+const mlTrainFile = __dirname+'/ml_model/train_ml_model.py'
+const mlDeleteFile = __dirname+'/ml_model/delete_ml_model.py'
+const mlPredictFile = __dirname+'/ml_model/predict_ml_model.py'
+const mlPredictions = __dirname+'/predictions/'
+
+>>>>>>> 6b6d807dccd47a389cab6440846be89cb295d742
+const collectSpotPricesFile = __dirname+'/spot_pricing/collect_spot_prices.py'
+const billingFile = __dirname+'/spot_pricing/calculate_billing.py'
+
 
 const keyFileName = 'elmit.pem'
 const keyName = 'elmit'
@@ -34,15 +52,41 @@ const ec2Username = 'ec2-user'
 const securityGroupName = 'elmit-group'
 const securityGroupDescription = 'elmit'
 const linuxInstallFile = './linux_install.sh'
+const suseInstallFile = './suse_install.sh'
+const redInstallFile = './red_install.sh'
+<<<<<<< HEAD
+const engineInstallFile = './google_install.sh'
+
+const engineUsername = 'walder'
+=======
+>>>>>>> 6b6d807dccd47a389cab6440846be89cb295d742
+
+const migrationFile = './migration.sh'
+const imageFile = './images.csv'
+
+const checkInstancesNumber = '*/10 * * * *'
 
 const workDir = __dirname
 
 const waitForInstanceId = 10
 
 const migrationHour = 0
-const migrationMinutes = 3
+const migrationMinutes = 2
 
 module.exports = { 
+<<<<<<< HEAD
+    engine_regions,
+    engineMachineTypes,
+    engineInstallFile,
+    engineUsername,
+=======
+>>>>>>> 6b6d807dccd47a389cab6440846be89cb295d742
+    checkInstancesNumber,
+    billingFile,
+    redInstallFile,
+    imageFile,
+    migrationFile,
+    suseInstallFile,
     migrationMinutes,
     migrationHour,
     migrationTableValues,

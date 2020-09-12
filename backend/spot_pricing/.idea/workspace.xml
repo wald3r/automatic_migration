@@ -2,20 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8783ea1b-e104-45a3-8116-df50e1f00aae" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../ml_model/championship.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ml_model/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../ml_model/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ml_model/generate_training_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ml_model/generate_training_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ml_model/ml_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ml_model/ml_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ml_model/model_architecture_multivariate.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ml_model/model_weights_multivariate_multivariate.h5" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ml_model/predict_ml_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ml_model/predict_ml_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ml_model/train_ml_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ml_model/train_ml_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ml_model/training_data_v2.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../ml_model/training_data_v2.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../nohup.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../possible_migrations_all_1.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../2do.odt" beforeDir="false" afterPath="$PROJECT_DIR$/../../2do.odt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/collect_spot_prices.py" beforeDir="false" afterPath="$PROJECT_DIR$/collect_spot_prices.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/collection_history.csv" beforeDir="false" afterPath="$PROJECT_DIR$/collection_history.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../trained.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../utils/computeEngine.js" beforeDir="false" afterPath="$PROJECT_DIR$/../utils/computeEngine.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../utils/spotInstances.js" beforeDir="false" afterPath="$PROJECT_DIR$/../utils/spotInstances.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/src/components/modals/CreateModelModal.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/src/components/modals/CreateModelModal.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -24,14 +20,38 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file pinned="false" current-in-tab="true">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/collect_spot_prices.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="622">
-              <caret line="65" column="38" selection-start-line="65" selection-start-column="38" selection-end-line="65" selection-end-column="38" />
+              <caret line="65" column="30" selection-start-line="65" selection-start-column="30" selection-end-line="65" selection-end-column="30" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/concatFiles.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="217">
+              <caret line="24" column="29" selection-start-line="24" selection-start-column="29" selection-end-line="24" selection-end-column="29" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/split_price_history.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="5" column="38" selection-start-line="5" selection-start-column="38" selection-end-line="5" selection-end-column="38" />
+              <folding>
+                <element signature="e#0#19#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -53,24 +73,25 @@
     </findStrings>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/test.py" />
-        <option value="$PROJECT_DIR$/split_price_history.py" />
         <option value="$PROJECT_DIR$/filter_names.py" />
         <option value="$PROJECT_DIR$/collection_history.csv" />
         <option value="$PROJECT_DIR$/collect_spot_prices.py" />
+        <option value="$PROJECT_DIR$/concatFiles.py" />
+        <option value="$PROJECT_DIR$/split_price_history.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="851" />
-    <option name="y" value="80" />
-    <option name="width" value="914" />
-    <option name="height" value="1015" />
+    <option name="x" value="928" />
+    <option name="y" value="27" />
+    <option name="width" value="988" />
+    <option name="height" value="1041" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -94,6 +115,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -107,7 +129,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.collect_spot_prices">
+  <component name="RunManager" selected="Python.split_price_history">
     <configuration name="collect_spot_prices" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="spot_pricing" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -121,6 +143,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/collect_spot_prices.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="concatFiles" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="spot_pricing" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/concatFiles.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -194,8 +237,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.collect_spot_prices" />
         <item itemvalue="Python.split_price_history" />
+        <item itemvalue="Python.concatFiles" />
+        <item itemvalue="Python.collect_spot_prices" />
         <item itemvalue="Python.filter_names" />
         <item itemvalue="Python.test" />
       </list>
@@ -215,15 +259,14 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="851" y="80" width="914" height="1015" extended-state="0" />
-    <editor active="true" />
+    <frame x="928" y="27" width="988" height="1041" extended-state="0" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.3030303" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.27979276" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32937366" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.49774265" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.63596493" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.47300217" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -310,16 +353,6 @@
         <state relative-caret-position="-2283944" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/split_price_history.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="12" column="46" selection-start-line="12" selection-start-column="46" selection-end-line="12" selection-end-column="46" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/collection_history.csv">
       <provider editor-type-id="csv-table-editor">
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
@@ -333,9 +366,29 @@
     <entry file="file://$PROJECT_DIR$/collect_spot_prices.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="622">
-          <caret line="65" column="38" selection-start-line="65" selection-start-column="38" selection-end-line="65" selection-end-column="38" />
+          <caret line="65" column="30" selection-start-line="65" selection-start-column="30" selection-end-line="65" selection-end-column="30" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/concatFiles.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="217">
+          <caret line="24" column="29" selection-start-line="24" selection-start-column="29" selection-end-line="24" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/split_price_history.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="38" selection-start-line="5" selection-start-column="38" selection-end-line="5" selection-end-column="38" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
           </folding>
         </state>
       </provider>

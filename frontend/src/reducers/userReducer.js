@@ -2,6 +2,8 @@ import imagesService from '../services/imagesService'
 import modelsService from '../services/modelsService'
 import billingService from '../services/billingService'
 import userService from '../services/userService'
+import keyService from '../services/keyService'
+import migrationService from '../services/migrationService'
 
 export const setUser = (user) => {
   return async dispatch => {
@@ -10,6 +12,8 @@ export const setUser = (user) => {
     modelsService.setToken(user.token)
     billingService.setToken(user.token)
     userService.setToken(user.token)
+    keyService.setToken(user.token)
+    migrationService.setToken(user.token)
     dispatch({
       type:'SETUSER',
       user

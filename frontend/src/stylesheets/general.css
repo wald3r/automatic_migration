@@ -1,3 +1,4 @@
+@import '../../node_modules/react-vis/dist/style.css';
 
 
 .header{
@@ -11,6 +12,55 @@
 
 .thead{
   color: black;
+}
+
+.grid-general{
+  display: grid;
+  grid-gap: 10px;
+  padding: 10px;
+}
+
+
+
+@media (min-width: 1601px) {
+  .display-grid{
+    grid-template-columns: auto auto;
+    padding: 20px;
+  }
+
+  .graph{
+    border-style: solid;
+    border-width: 1px;
+    padding: 20px;
+  }
+
+  .numbers-grid{
+    grid-template-columns: auto;
+    border-style: solid;
+    border-width: 1px;
+    padding: 20px;
+
+  }
+
+}
+
+
+@media (max-width: 1600px) {
+  .display-grid{
+    grid-template-columns: auto;
+    padding: 20px;
+  }
+
+  .graph{
+    display: none;
+  }
+
+  .numbers-grid{
+    grid-template-columns: auto auto;
+    border-style: solid;
+    border-width: 1px;
+    padding: 20px;
+  }
 }
 
 .container1{

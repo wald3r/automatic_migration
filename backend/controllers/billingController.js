@@ -3,7 +3,7 @@ const authenticationHelper = require('../utils/authenticationHelper')
 const parameters = require('../parameters')
 const databaseHelper = require('../utils/databaseHelper')
 
-billingRouter.get('/', async(request, response, next) => {
+billingRouter.get('/:rowid', async(request, response, next) => {
 
   try{
 
@@ -11,7 +11,7 @@ billingRouter.get('/', async(request, response, next) => {
     if(user == undefined){
       return response.status(401).send('Not Authenticated')
     }
-    const billingRows = await databaseHelper.selectByUserId(parameters.billingTableValues, parameters.billingTableName, user.rowid)
+    const billingRows = await databaseHelper.selectByValue(parameters.billingTableValues, parameters.billingTableName, 'imageId', [request.params.rowid])
     response.status(200).json(billingRows)
 
 

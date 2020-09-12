@@ -22,7 +22,7 @@ const convertHours = (hours) => {
 
 const convertMinutes = (minutes) => {
   if(minutes > 60){
-    return minutes -  60
+    return minutes -  61
   }
   return minutes
 }

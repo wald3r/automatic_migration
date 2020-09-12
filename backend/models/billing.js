@@ -2,6 +2,7 @@ const parameters = require('../parameters')
 
   const billingModel = `
     rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+    costNoMigration INTEGER,
     predictedCost FLOAT, 
     actualCost FLOAT , 
     imageId INTEGER NOT NULL,

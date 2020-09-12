@@ -36,4 +36,7 @@ const collectSpecificSpotPrices = async (instance) => {
 }
 
 
+
+
+
 module.exports = { collectSpotPrices, collectSpecificSpotPrices }

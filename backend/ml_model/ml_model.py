@@ -12,7 +12,8 @@ import datetime
 import pandas as pd
 class MLModel(object):
 
-    def __init__(self, weights_name, architecture_name, instance, product):
+    def __init__(self, weights_name, architecture_name, instance, product, region):
+        self.region = region
         self.weights_name = weights_name
         self.architecture_name = architecture_name
         self.input_shape_1 = 1
@@ -27,7 +28,7 @@ class MLModel(object):
 
     def load_model(self):
 
-        folder_name = self.instance+'_'+self.product
+        folder_name = self.instance+'_'+self.product+'_'+self.region
         path = os.getcwd()+'/ml_model/models/'+folder_name+'/'
         try:
             with open(path+self.architecture_name, 'r') as f:
@@ -45,7 +46,7 @@ class MLModel(object):
     def save_model(self, model):
 
 
-        folder_name = self.instance+'_'+self.product
+        folder_name = self.instance+'_'+self.product+'_'+self.region
         path = os.getcwd()+'/ml_model/models/'+folder_name+'/'
         if not os.path.exists(path):
             os.mkdir(path)
@@ -57,7 +58,7 @@ class MLModel(object):
 
     def delete_model(self):
 
-        path = os.getcwd()+'/ml_model/models/'+self.instance+'_'+self.product
+        path = os.getcwd()+'/ml_model/models/'+self.instance+'_'+self.product+'_'+self.region
         try:
             shutil.rmtree(path)
 
@@ -102,13 +103,21 @@ class MLModel(object):
         return(mse_outcome, mae_outcome, mape_outcome)
 
 
-    def generate_training_data(self, df, availability_zone, version):
+    def generate_training_data(self, df, availability_zone, version, flag):
 
         df_tmp = df[df['AvailabilityZone'] == availability_zone]
         df_tmp = df_tmp.drop(['Unnamed: 0'], axis=1)
+        df_0 = df_tmp[df_tmp['Training'] == 0]
+        df_1 = df_tmp[df_tmp['Training'] == 1]
+        if(flag == 1):
+            if(df_1.empty):
+               pass
+            else:
+                df_1 = df_1.tail(self.ticks)
+                df_tmp = df_1.append(df_0)
 
+        print(df_tmp)
         df_tmp = df_tmp[['SpotPrice']]
-
         if(version == 1):
             df_tmp = df_tmp.head(len(df_tmp)-self.test_size) #important for testing
         else:

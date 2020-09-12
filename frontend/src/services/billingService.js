@@ -10,13 +10,12 @@ const setToken = newToken => {
   token = `bearer ${newToken}`
 }
 
-const getBilling = async () => {
+const getBilling = async (imageid) => {
 
   const config = {
     headers: { Authorization: token },
   }
-
-  const response = await axios.get(baseUrl, config)
+  const response = await axios.get(`${baseUrl}/${imageid}`, config)
   return response
 }
 

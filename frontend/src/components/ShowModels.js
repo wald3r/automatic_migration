@@ -35,15 +35,22 @@ const ShowModels = ( props ) => {
 
   const createModel = async (obj, event) => {
     event.preventDefault()
-    const response = await modelsService.newModel(obj)
-    if(response.status === 200){
-      await props.newModel(response.data)
-      addToast('test', {
-        appearance: 'success',
+    try{
+      const response = await modelsService.newModel(obj)
+      if(response.status === 200){
+        await props.newModel(response.data)
+        addToast('New model added', {
+          appearance: 'success',
+          autoDismiss: true,
+        })
+      }
+      window.location.reload()
+    }catch(exception){
+      addToast('Creation failed', {
+        appearance: 'error',
         autoDismiss: true,
       })
     }
-    window.location.reload()
   }
 
 
@@ -56,46 +63,25 @@ const ShowModels = ( props ) => {
     setShowCreateModelModal(true)
   }
 
-  const createPathName = (path) => path.replaceAll('/', '__')
-
-
-  const checkFiles = (files) => {
-
-    let docker = false
-    for(var x = 0; x<files.length; x++) {
-      let parts = files[x].name.split('.')
-      if(parts.length > 1){
-        if('yml' === parts[1]){
-          docker = true
-        }
-      }
-    }
-
-    if(docker) return true
-    else return false
-  }
+  const createPathName = (path) => path.split('/').join('__')
 
   const runImage = async (obj, event) => {
     event.preventDefault()
-    let data = new FormData()
-    if(checkFiles(obj.files)){
+    try{
+      let data = new FormData()
       for(let x = 0; x<obj.files.length; x++) {
         data.append('file', obj.files[x], `${modelToRunWithImage.rowid}___${createPathName(obj.files[x].webkitRelativePath)}___${obj.files[x].name}`)
       }
       let response = await imagesService.newImage(data)
-      console.log(response.data)
       response = await imagesService.newImageInformation({ simulation: obj.simulation, port: obj.port, bidprice: obj.bidprice, imageId: response.data.rowid })
-
-      if(response.status === 200){
-        addToast(`New Image added to ${modelToRunWithImage.type}`, {
-          appearance: 'success',
-          autoDismiss: true,
-        })
-        props.newImage(response.data)
-      }
-    }else{
-      addToast('An important file is missing', {
-        appearance: 'error',
+      addToast(`New Image added to ${modelToRunWithImage.type}`, {
+        appearance: 'success',
+        autoDismiss: true,
+      })
+      props.newImage(response.data)
+    }catch(exception){
+      addToast('Could not start image. Most likely because of bad parameters.', {
+        appearance: 'Error',
         autoDismiss: true,
       })
     }
@@ -144,7 +130,10 @@ const ShowModels = ( props ) => {
               <th>Status</th>
               <th>Created</th>
               <th>Updated</th>
-              <th id='idAdd'><Button onClick={handleCreation} className="fa fa-plus"></Button></th>
+              <th id='idButtons'>
+                <Button  data-toggle='tooltip' data-placement='top' title='New Model' onClick={handleCreation} className="fa fa-plus"></Button>
+                <Button size="sm" id='idRefreshPage'  data-toggle='tooltip' data-placement='top' title='Refresh' onClick={() => window.location.reload()}><i className="fa fa-refresh" /></Button>
+              </th>
 
               <th></th>
             </tr>

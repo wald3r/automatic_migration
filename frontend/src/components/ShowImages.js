@@ -6,7 +6,9 @@ import ConfirmationModal from './modals/ConfirmationModal'
 import { deleteImage, exchangeImage } from '../reducers/imagesReducer'
 import '../stylesheets/general.css'
 import imagesService from '../services/imagesService'
+import keyService from '../services/keyService'
 import {  convertTime } from '../utils/helperClass'
+import fileDownload from 'js-file-download'
 
 const ShowImages = (props) => {
 
@@ -17,6 +19,8 @@ const ShowImages = (props) => {
   const [imageToStop, setImageToStop] = useState(null)
   const [imageToStartDocker, setImageToStartDocker] = useState(null)
   const [imageToStopDocker, setImageToStopDocker] = useState(null)
+  const [keyToDownload, setKeyToDownload] =useState(null)
+  const [showKeyToDownloadModal, setShowKeyToDownloadModal] =useState(false)
   const [showStartConfirmationModal, setShowStartConfirmationModal] = useState(false)
   const [showStopConfirmationModal, setShowStopConfirmationModal] = useState(false)
   const [showStartDockerConfirmationModal, setShowStartDockerConfirmationModal] = useState(false)
@@ -28,6 +32,11 @@ const ShowImages = (props) => {
   const handleImageDeletion = (image) => {
     setImageToDelete(image)
     setShowDeleteConfirmationModal(true)
+  }
+
+  const handleKeyDownload = (image) => {
+    setKeyToDownload(image)
+    setShowKeyToDownloadModal(true)
   }
 
   const handleReboot = (image) => {
@@ -53,6 +62,25 @@ const ShowImages = (props) => {
   const handleStop = (image) => {
     setImageToStop(image)
     setShowStopConfirmationModal(true)
+  }
+
+  const downloadKey = async () => {
+    try{
+      const response = await keyService.downloadKey(keyToDownload)
+      fileDownload(response.data, 'key.pem')
+      addToast(`Downloaded key of image ${keyToDownload.rowid}`, {
+        appearance: 'success',
+        autoDismiss: true,
+      })
+      setKeyToDownload(null)
+
+    }catch(exception){
+      addToast('Downloading of key failed', {
+        appearance: 'error',
+        autoDismiss: true,
+      })
+      setKeyToDownload(null)
+    }
   }
 
   const startImage = async () => {
@@ -172,6 +200,9 @@ const ShowImages = (props) => {
     else if(status === 'stopping'){
       return   <Badge variant="warning">Stopping</Badge>
     }
+    else if(status === 'migrating'){
+      return   <Badge variant="warning">Migrating</Badge>
+    }
     else if(status === 'booting'){
       return   <Badge variant="info">Instance is booting</Badge>
     }
@@ -187,6 +218,11 @@ const ShowImages = (props) => {
         showConfirmationModal={showStopDockerConfirmationModal}
         setConfirmation={setShowStopDockerConfirmationModal}
         handleConfirmation={stopDocker}
+      />
+      <ConfirmationModal
+        showConfirmationModal={showKeyToDownloadModal}
+        setConfirmation={setShowKeyToDownloadModal}
+        handleConfirmation={downloadKey}
       />
       <ConfirmationModal
         showConfirmationModal={showStartDockerConfirmationModal}
@@ -219,6 +255,7 @@ const ShowImages = (props) => {
             <tr>
               <th>ID</th>
               <th>Model ID</th>
+              <th>Provider</th>
               <th>Zone</th>
               <th>IP</th>
               <th>Status</th>
@@ -227,7 +264,9 @@ const ShowImages = (props) => {
               <th>Bidprice</th>
               <th>Created At</th>
               <th>Updated At</th>
-              <th></th>
+              <th>Key</th>
+
+              <th id='idRefresh'><Button variant='primary' size="sm" id='idRefreshPage'  data-toggle='tooltip' data-placement='top' title='Refresh' onClick={() => window.location.reload()}><i className="fa fa-refresh" /></Button></th>
             </tr>
           </thead>
           {props.images.map(image => (
@@ -235,6 +274,7 @@ const ShowImages = (props) => {
               <tr id='idImageRow'>
                 <td id='idImageId'>{image.rowid}</td>
                 <td id='idImageModelId'>{image.modelId}</td>
+                <td id='idImageModelID'>{image.provider}</td>
                 <td id='idImageZone'>{image.zone}</td>
                 <td id='idImageIp'>{image.ip}</td>
                 <td id='idImageStatus'>{badgeStatus(image.status)}</td>
@@ -243,6 +283,9 @@ const ShowImages = (props) => {
                 <td id='idImageBidprice'>{image.bidprice}</td>
                 <td id='idImageCreatedAt'>{convertTime(image.createdAt)}</td>
                 <td id='idImageUpdatedAt'>{convertTime(image.updatedAt)}</td>
+                <td id='idImageKey'>
+                  <Button style={{ display: (image.simulation === 1 || image.provider === 'Google' ) ? 'none' : '' }} variant='primary' id='idImagesDownloadKey'  data-toggle='tooltip' data-placement='top' title='Download Key' onClick={() => handleKeyDownload(image)}><i className="fa fa-key" /></Button>
+                </td>
                 <td>
                   <Button variant='primary' id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
                   <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? '' : 'none' }} variant='primary' id='idImagesStart'  data-toggle='tooltip' data-placement='top' title='Start State' onClick={() => handleStart(image)}><i className="fa fa-sort-up" /></Button>
