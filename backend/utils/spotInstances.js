@@ -49,11 +49,11 @@ const getInstanceInformation = async (instance) => {
     .pipe(csv())
     .on('data', (data) => results.push(data))
     .on('end', async () => {
-      resolve(results.filter(i => i.instance === instance)) 
+      resolve(results.filter(i => i[0] === instance)) 
     })
   })
  
-  return result
+  return result[0]
 }
 
 const describeImages = async (product, zone) => {

@@ -3,6 +3,8 @@ const parameters = require('../parameters')
 const databaseHelper = require('../utils/databaseHelper')
 const fs = require('fs')
 const csv = require('csv-parse')
+const billingHelper = require('./billingHelper')
+const computeEngine = require('./computeEngine')
 
 const replace_name = (name) => {
 
@@ -66,7 +68,9 @@ function sortFunction(a, b) {
 }
 
 
-const predictModel = async (instance, product, image, user, region) => {
+
+
+const predictModel = async (instance, product, image, user, region, engineCost) => {
   const python = spawn('python3', [parameters.mlPredictFile, instance, product, image.rowid, region, 2])
   console.log(`Started prediction of ml model ${instance} ${product}`)
 
@@ -81,11 +85,18 @@ const predictModel = async (instance, product, image, user, region) => {
         .on('data', (data) => results.push(data))
         .on('end', async () => {
           results = results.sort(sortFunction)
-          let zone = results[0][1]
-          await databaseHelper.insertRow(parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?, ?)', [null, results[0][0], null, image.rowid, user.rowid, Date.now(), Date.now()])
-          await databaseHelper.updateById(parameters.imageTableName, 'predictionFile = ?, zone = ?, updatedAt = ?', [path, zone, Date.now(), image.rowid])
+          const zone = results[0][1]
+          const cost = results[0][0]
+          if(Number(cost) <= engineCost.cost || engineCost.cost === 0 || engineCost.cost === null){
+            await databaseHelper.insertRow(parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?, ?)', [null, results[0][0], null, image.rowid, user.rowid, Date.now(), Date.now()])
+            await databaseHelper.updateById(parameters.imageTableName, 'predictionFile = ?, zone = ?, updatedAt = ?', [path, zone, Date.now(), image.rowid])
 
-          resolve(zone)
+            resolve(zone)
+          }else{
+            await databaseHelper.insertRow(parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?, ?)', [null, engineCost.cost, null, image.rowid, user.rowid, Date.now(), Date.now()])
+            await databaseHelper.updateById(parameters.imageTableName, 'predictionFile = ?, zone = ?, updatedAt = ?', [path, engineCost.region, Date.now(), image.rowid])
+            resolve(engineCost.region)
+          }
         })
       })
   })

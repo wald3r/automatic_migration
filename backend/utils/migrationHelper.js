@@ -10,11 +10,11 @@ const billingHelper = require('./billingHelper')
 const fileHelper = require('./fileHelper')
 const computeEngine = require ('./computeEngine')
 
-const getPrediction = async (model, image, user) => {
+const getPrediction = async (model, image, user, engineCost) => {
   
   return await new Promise (async (resolve) => {
     await spotPrices.collectSpecificSpotPrices(model.type)
-    const zone = await mlModel.predictModel(model.type, model.product, image, user, model.region)
+    const zone = await mlModel.predictModel(model.type, model.product, image, user, model.region, engineCost)
     resolve(zone)
   })
 }
@@ -69,15 +69,15 @@ const requestEC2Instance = async(model, image, zone) => {
  
 }
 
-const requestEngineInstance = async(image, zone) => {
+const requestEngineInstance = async(image, engineCost, machineType) => {
   
   if(image.simulation !== 1){
-    computeEngine.startVM(image.rowid, null, image.port)
-    await databaseHelper.updateById(parameters.imageTableName, 'provider = ?, zone = ?', ['Google', zone, image.rowid])
+    computeEngine.startVM(image.rowid, machineType.metadata.name, image.port, engineCost.region)
+    await databaseHelper.updateById(parameters.imageTableName, 'provider = ?, zone = ?', ['Google', engineCost.region, image.rowid])
 
     return true
   }else{
-    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, provider = ?, zone = ?', ['simulation', 'Google', zone, image.rowid])
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, provider = ?, zone = ?', ['simulation', 'Google', engineCost.region, image.rowid])
     return true
   }
    
@@ -113,7 +113,14 @@ const setSchedulerAgain = async (image, model, user, time) => {
 }
 
 const newInstance = async (model, image, user) => {
-  const zone = await getPrediction(model, image, user)
+
+  const instance_information = await spotInstances.getInstanceInformation(model.type)
+  const machineType = await computeEngine.findMachineType(instance_information[1], instance_information[2])
+  const engineCost = await billingHelper.getEnginePrice(machineType.metadata.name.substring(0,2).toUpperCase(), machineType.metadata.guestCpus, machineType.metadata.memoryMb / 1024)
+  const zone = await getPrediction(model, image, user, engineCost)
+  console.log(`MigrationHelper: Instance will boot in ${zone}`)
+  requestEngineInstance(image, engineCost, machineType)
+  /*
   if(zone !== image.zone){
     const flag = await requestEC2Instance(model, image, zone)
     if(flag === false){
@@ -175,7 +182,7 @@ const newInstance = async (model, image, user) => {
     })
     await setScheduler(image, model, user, false, migrationRows[0].startZone)
   }
-
+*/
 }
 
 const setupServer = async (ip, image) => {

@@ -44,7 +44,7 @@ const linuxInstallFile = './linux_install.sh'
 const suseInstallFile = './suse_install.sh'
 const redInstallFile = './red_install.sh'
 
-const engineInstallFile = './google_install.sh'
+const engineInstallFile = './install_google.sh'
 const engineUsername = 'walder'
 
 const migrationFile = './migration.sh'

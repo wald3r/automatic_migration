@@ -111,10 +111,9 @@ const getEnginePrice = async (machineName, cores, memory) => {
         }
       }
     }
-    console.log(totalPrice, region)
     
   })
-  console.log(min, chosenRegion)
+  return {cost: Number((min).toFixed(4)), region: chosenRegion}
 }
 
 

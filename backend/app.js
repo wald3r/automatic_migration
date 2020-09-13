@@ -49,7 +49,7 @@ const checkMigrationStatus = async () => {
   console.log(`MigrationStatusHelper: Set ${migrationRows.length} open schedulers`)
 }
 
-billingHelper.getEnginePrice('N2', 2, 8)
+//billingHelper.getEnginePrice('N2', 2, 8)
 //computeEngine.findMachineType(2, 8)
 credentialsChecker()
 databaseHelper.checkDatabase()

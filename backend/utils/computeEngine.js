@@ -47,7 +47,6 @@ const createSecurityConfig = async (port) => {
 const findMachineType = async (cpu, memory) => {
   let amemorylow = memory * 0.6
   let amemoryhigh = memory * 1.4
-  
   let list = []
   await new Promise((resolve) => {
     compute.getMachineTypes((err, machineTypes) => {
@@ -56,7 +55,7 @@ const findMachineType = async (cpu, memory) => {
         machineTypes.filter(type => {
           let gcpu = type.metadata.guestCpus
           let gmemory = Number(Math.round((type.metadata.memoryMb / 1024)+'e1')+'e-1')
-          if(gcpu === cpu && (amemorylow <= gmemory && amemoryhigh >= gmemory)){
+          if(gcpu === Number(cpu) && (amemorylow <= gmemory && amemoryhigh >= gmemory)){
             list = list.concat(type)
           }
         })
@@ -64,7 +63,6 @@ const findMachineType = async (cpu, memory) => {
       }
     })
   })
-  
   let type = null
   let max = 0
   list.map(t => {
@@ -73,17 +71,25 @@ const findMachineType = async (cpu, memory) => {
       type = t
     }
   })
-
-  console.log(type)
   return type
 }
 
 
-const startVM = async(id, machine, port) => {
+const startVM = async(id, machine, port, chosenRegion) => {
 
-  const zones = await getZones()
-  const zone = compute.zone(zones[0].metadata.name)
-  await createSecurityConfig(port)
+  let regions = []
+  await new Promise((resolve) => {
+    compute.getZones((err, zones, apiResponse) => {
+      if(err) console.log(`EngineHelper: Problems with collecting Zones`)
+      else{
+        regions = zones.filter(z => z.metadata.name.includes(chosenRegion[0]))
+        resolve(regions)
+      }
+    })
+  })
+  
+  const zone = await compute.zone(regions[0].metadata.name)
+  /*await createSecurityConfig(port)
   const vm = zone.vm(`elmit_${id}`)
 
   const generalConfig = {
@@ -106,7 +112,7 @@ const startVM = async(id, machine, port) => {
   const metadata = await vm.getMetadata()
   const ip = metadata[0].networkInterfaces[0].accessConfigs[0].natIP
   await databaseHelper.updateById(parameters.imageTableName, 'ip = ?', [ip, id])
-
+*/
 }
 
 
