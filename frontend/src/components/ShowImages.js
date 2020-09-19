@@ -284,7 +284,7 @@ const ShowImages = (props) => {
                 <td id='idImageCreatedAt'>{convertTime(image.createdAt)}</td>
                 <td id='idImageUpdatedAt'>{convertTime(image.updatedAt)}</td>
                 <td id='idImageKey'>
-                  <Button style={{ display: (image.simulation === 1 || image.provider === 'Google' ) ? 'none' : '' }} variant='primary' id='idImagesDownloadKey'  data-toggle='tooltip' data-placement='top' title='Download Key' onClick={() => handleKeyDownload(image)}><i className="fa fa-key" /></Button>
+                  <Button style={{ display: (image.simulation === 1 || image.provider === 'Google' || image.status === 'booting' ) ? 'none' : '' }} variant='primary' id='idImagesDownloadKey'  data-toggle='tooltip' data-placement='top' title='Download Key' onClick={() => handleKeyDownload(image)}><i className="fa fa-key" /></Button>
                 </td>
                 <td>
                   <Button variant='primary' id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>

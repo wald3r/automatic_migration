@@ -85,17 +85,19 @@ const predictModel = async (instance, product, image, user, region, engineCost) 
         .on('data', (data) => results.push(data))
         .on('end', async () => {
           results = results.sort(sortFunction)
-          const zone = results[0][1]
-          const cost = results[0][0]
+          let zone = results[0][1]
+          const cost = 1000000 //results[0][0]
+
           if(Number(cost) <= engineCost.cost || engineCost.cost === 0 || engineCost.cost === null){
             await databaseHelper.insertRow(parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?, ?)', [null, results[0][0], null, image.rowid, user.rowid, Date.now(), Date.now()])
             await databaseHelper.updateById(parameters.imageTableName, 'predictionFile = ?, zone = ?, updatedAt = ?', [path, zone, Date.now(), image.rowid])
-
-            resolve(zone)
+            resolve({zone, provider: 'aws'})
           }else{
+            zone = String(engineCost.region[0])
+            console.log(zone)
             await databaseHelper.insertRow(parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?, ?)', [null, engineCost.cost, null, image.rowid, user.rowid, Date.now(), Date.now()])
-            await databaseHelper.updateById(parameters.imageTableName, 'predictionFile = ?, zone = ?, updatedAt = ?', [path, engineCost.region, Date.now(), image.rowid])
-            resolve(engineCost.region)
+            await databaseHelper.updateById(parameters.imageTableName, 'predictionFile = ?, updatedAt = ?', [path, Date.now(), image.rowid])
+            resolve({ zone, provider: 'google'})
           }
         })
       })

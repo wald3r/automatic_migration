@@ -109,7 +109,7 @@ const endDocker = async (ip, pathToKey) => {
  
 }
 
-const executeMigration = async (fromIp, toIp, pathToKey, key) => {
+const executeMigration = async (fromIp, toIp, pathToKey, key, provider) => {
  
   let promise = await new Promise((resolve) => {
     ssh.connect({
@@ -118,7 +118,7 @@ const executeMigration = async (fromIp, toIp, pathToKey, key) => {
       privateKey: pathToKey,
     })
     .then(() => {
-      ssh.execCommand(`cd /home/${parameters.ec2Username}/image && sudo chmod +xr *.sh && ./migration.sh ${toIp} ${key}`).then((result) => {
+      ssh.execCommand(`cd /home/${parameters.ec2Username}/image && sudo chmod +xr *.sh && ./migration.sh ${toIp} ${key} ${provider}`).then((result) => {
         console.log(`STDOUT of ${fromIp}: ${result.stdout}`)
         console.log(`STDERR of ${fromIp}: ${result.stderr}`)
         resolve(1)

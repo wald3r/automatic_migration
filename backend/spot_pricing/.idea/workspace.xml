@@ -2,16 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8783ea1b-e104-45a3-8116-df50e1f00aae" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../2do.odt" beforeDir="false" afterPath="$PROJECT_DIR$/../../2do.odt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../predictions/t3.micro_Linux-Unix_51.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../predictions/t3.micro_Linux-Unix_52.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/collection_history.csv" beforeDir="false" afterPath="$PROJECT_DIR$/collection_history.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../trained.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../training_data_v2.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../training_data_v2.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../utils/billingHelper.js" beforeDir="false" afterPath="$PROJECT_DIR$/../utils/billingHelper.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../utils/computeEngine.js" beforeDir="false" afterPath="$PROJECT_DIR$/../utils/computeEngine.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../utils/spotInstances.js" beforeDir="false" afterPath="$PROJECT_DIR$/../utils/spotInstances.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/src/components/modals/CreateModelModal.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/src/components/modals/CreateModelModal.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../utils/sshConnectionEC2.js" beforeDir="false" afterPath="$PROJECT_DIR$/../utils/sshConnectionEC2.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../utils/sshConnectionEngine.js" beforeDir="false" afterPath="$PROJECT_DIR$/../utils/sshConnectionEngine.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/src/components/ShowImages.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/src/components/ShowImages.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -24,7 +24,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/collect_spot_prices.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="622">
+            <state relative-caret-position="900">
               <caret line="65" column="30" selection-start-line="65" selection-start-column="30" selection-end-line="65" selection-end-column="30" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
@@ -36,7 +36,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/concatFiles.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="217">
+            <state relative-caret-position="345">
               <caret line="24" column="29" selection-start-line="24" selection-start-column="29" selection-end-line="24" selection-end-column="29" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
@@ -99,7 +99,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -111,6 +110,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -317,10 +317,10 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/instances.csv">
+      <provider selected="true" editor-type-id="csv-text-editor" />
       <provider editor-type-id="csv-table-editor">
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
-      <provider selected="true" editor-type-id="csv-text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -333,10 +333,10 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/zones.csv">
+      <provider selected="true" editor-type-id="csv-text-editor" />
       <provider editor-type-id="csv-table-editor">
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
-      <provider selected="true" editor-type-id="csv-text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/filter_names.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -354,18 +354,18 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/collection_history.csv">
-      <provider editor-type-id="csv-table-editor">
-        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
-      </provider>
       <provider selected="true" editor-type-id="csv-text-editor">
         <state relative-caret-position="189">
           <caret line="183" column="68" selection-start-line="183" selection-start-column="63" selection-end-line="183" selection-end-column="68" />
         </state>
       </provider>
+      <provider editor-type-id="csv-table-editor">
+        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/collect_spot_prices.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="622">
+        <state relative-caret-position="900">
           <caret line="65" column="30" selection-start-line="65" selection-start-column="30" selection-end-line="65" selection-end-column="30" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
@@ -375,7 +375,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/concatFiles.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="217">
+        <state relative-caret-position="345">
           <caret line="24" column="29" selection-start-line="24" selection-start-column="29" selection-end-line="24" selection-end-column="29" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />

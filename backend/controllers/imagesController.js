@@ -5,7 +5,8 @@ const spotInstances = require('../utils/spotInstances')
 const migrationHelper = require('../utils/migrationHelper')
 const {v4: uuidv4 } = require('uuid')
 const authenticationHelper = require('../utils/authenticationHelper')
-const sshConnection = require('../utils/sshConnectionEC2')
+const sshConnectionEC2 = require('../utils/sshConnectionEC2')
+const sshConnectionEngine = require('../utils/sshConnectionEngine')
 const scheduler = require('../utils/scheduler')
 const fileHelper = require('../utils/fileHelper')
 
@@ -210,14 +211,14 @@ imagesRouter.get('/start/docker/:rowid', async(request, response, next) => {
       return response.status(500).send('Image does not exist')
     }
     
-    await sshConnection.startDocker(imageRow.ip, imageRow.key)
+    imageRow.provider === 'aws' ? await sshConnectionEC2.startDocker(imageRow.ip, imageRow.key) : await sshConnectionEngine.startDocker(imageRow.ip)
     
     const params = ['running', Date.now(), imageRow.rowid]
     const values = 'status = ?, updatedAt = ?'
     await databaseHelper.updateById(parameters.imageTableName, values, params)
     imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
     
-    imageRow.state = await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId])
+    imageRow.state = imageRow.provider === 'aws' ? await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) : 'running'
     return response.status(200).send(imageRow)
 
 
@@ -240,12 +241,12 @@ imagesRouter.get('/stop/docker/:rowid', async(request, response, next) => {
     if(imageRow === null){
       return response.status(500).send('Image does not exist')
     }
-    await sshConnection.endDocker(imageRow.ip, imageRow.key)
+    imageRow.provider === 'aws' ? await sshConnectionEC2.endDocker(imageRow.ip, imageRow.key) : await sshConnectionEngine.endDocker(imageRow.ip)
     const params = ['stopped', Date.now(), imageRow.rowid]
     const values = 'status = ?, updatedAt = ?'
     await databaseHelper.updateById(parameters.imageTableName, values, params)
     imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
-    imageRow.state = await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId])
+    imageRow.state = imageRow.provider === 'aws' ? await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) : 'running'
 
     return response.status(200).json(imageRow)
 
@@ -348,6 +349,7 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)  
+  console.log(imageRow)
   if(imageRow.simulation === 0 && imageRow.zone !== null){
     migrationHelper.terminateInstance(imageRow)
   }

@@ -30,7 +30,7 @@ const startInstance = async (image) => {
 
 const rebootInstance = async (image) => image.simulation === 0 ? await spotInstances.rebootInstance(image.zone, image.spotInstanceId) : null
 
-const terminateInstance = async (image) => {
+const terminateEC2Instance = async (image) => {
   await new Promise(async (resolve) => {
     await spotInstances.deleteKeyPair(image.zone, image.key, image.rowid)
     await spotInstances.cancelSpotInstance(image)
@@ -40,6 +40,22 @@ const terminateInstance = async (image) => {
     resolve()
   })
   
+}
+
+
+const terminateInstance = async (image) => {
+  if(image.provider === 'Google'){
+    await terminateEngineInstance(image)
+  }else{
+    await terminateEC2Instance(image)
+  }
+}
+
+const terminateEngineInstance = async (image) => {
+  await new Promise(async (resolve) => {
+    await computeEngine.deleteVM(`elmit${image.rowid}`, image.zone)
+    resolve()
+  })
 }
 
 
@@ -73,11 +89,16 @@ const requestEngineInstance = async(image, engineCost, machineType) => {
   
   if(image.simulation !== 1){
     computeEngine.startVM(image.rowid, machineType.metadata.name, image.port, engineCost.region)
-    await databaseHelper.updateById(parameters.imageTableName, 'provider = ?, zone = ?', ['Google', engineCost.region, image.rowid])
-
+    await databaseHelper.updateById(parameters.imageTableName, 'provider = ?', ['Google', image.rowid])
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve()
+      }, 120000)
+    })
+   
     return true
   }else{
-    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, provider = ?, zone = ?', ['simulation', 'Google', engineCost.region, image.rowid])
+    await databaseHelper.updateById(parameters.imageTableName, 'status = ?, provider = ?', ['simulation', 'Google', image.rowid])
     return true
   }
    
@@ -117,12 +138,10 @@ const newInstance = async (model, image, user) => {
   const instance_information = await spotInstances.getInstanceInformation(model.type)
   const machineType = await computeEngine.findMachineType(instance_information[1], instance_information[2])
   const engineCost = await billingHelper.getEnginePrice(machineType.metadata.name.substring(0,2).toUpperCase(), machineType.metadata.guestCpus, machineType.metadata.memoryMb / 1024)
-  const zone = await getPrediction(model, image, user, engineCost)
-  console.log(`MigrationHelper: Instance will boot in ${zone}`)
-  requestEngineInstance(image, engineCost, machineType)
-  /*
-  if(zone !== image.zone){
-    const flag = await requestEC2Instance(model, image, zone)
+  const prediction = await getPrediction(model, image, user, engineCost)
+  console.log(`MigrationHelper: Instance will boot in ${prediction.zone} ${prediction.provider}`)
+  if(prediction.zone !== image.zone){
+    const flag = prediction.provider === 'aws' ? await requestEC2Instance(model, image, prediction.zone) : await requestEngineInstance(image, engineCost, machineType)
     if(flag === false){
       return false
     }
@@ -131,13 +150,13 @@ const newInstance = async (model, image, user) => {
       await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['migrating', Date.now(), newImage.rowid])
     
       if(image.simulation === 0){
-        await terminateInstance(image)
-        await copyKey(image)
-        await migrateFiles(image, newImage)
+        prediction.provider === 'aws' ? await copyKey(image, prediction.provider) : null
+        await migrateFiles(image, newImage, prediction.provider)
+        prediction.provider === 'aws' ? await terminateEC2Instance(image) : await terminateEngineInstance(image)
         await fileHelper.renameFile(image.key.replace('.pem', '_1.pem'), image.key)
-        await installSoftware(newImage)
-        await deleteKey(newImage)
-        await startDocker(newImage.ip, newImage.key)
+        await installSoftware(newImage, prediction.provider)
+        prediction.provider === 'aws' ? await deleteKey(newImage) : null
+        await startDocker(newImage.ip, newImage.key, prediction.provider)
       } 
    
       await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', [newImage.simulation === 0 ? 'running' : 'simulation', Date.now(), newImage.rowid])
@@ -150,7 +169,7 @@ const newInstance = async (model, image, user) => {
 
    
       await filteredRows.map(async row => {
-        await databaseHelper.updateById(parameters.migrationTableName, 'newZone = ?, updatedAt = ?', [zone, Date.now(), row.rowid])
+        await databaseHelper.updateById(parameters.migrationTableName, 'newZone = ?, updatedAt = ?', [prediction.zone, Date.now(), row.rowid])
         await billingHelper.getCosts(model.type, model.product, image.zone, row.updatedAt, billingRow.rowid, migrationRows[0].startZone)
 
       })
@@ -159,12 +178,13 @@ const newInstance = async (model, image, user) => {
       return true
 
     }else{
-      if(image.zone === 0){
-        await setupServer(newImage.ip, newImage)
-        await startDocker(newImage.ip, newImage.key)
+
+      if(image.simulation === 0){
+        await setupServer(newImage.ip, newImage, prediction.provider)
+        await startDocker(newImage.ip, newImage.key, prediction.provider)
         await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), image.rowid])
       }
-      await setScheduler(image, model, user, true, zone)
+      await setScheduler(image, model, user, true, prediction.zone)
 
       return true
     }
@@ -182,20 +202,26 @@ const newInstance = async (model, image, user) => {
     })
     await setScheduler(image, model, user, false, migrationRows[0].startZone)
   }
-*/
+
 }
 
-const setupServer = async (ip, image) => {
-  await sshConnectionEC2.setUpServer(ip, image.key, image.path)
-  await sshConnectionEC2.installSoftware(ip, image.key)
+const setupServer = async (ip, image, provider) => {
+  if(provider === 'aws'){
+    await sshConnectionEC2.setUpServer(ip, image.key, image.path)
+    await sshConnectionEC2.installSoftware(ip, image.key)
+  }else{
+    await sshConnectionEngine.setUpServer(ip, image.path)
+    await sshConnectionEngine.installSoftware(ip)
+  }
+  
 }
 
-const startDocker = async (ip, key) => {
-  await sshConnectionEC2.startDocker(ip, key)
+const startDocker = async (ip, key, provider) => {
+  provider === 'aws' ? await sshConnectionEC2.startDocker(ip, key) : await sshConnectionEngine.startDocker(ip)
 }
 
-const installSoftware = async(image) => {
-  await sshConnectionEC2.installSoftware(image.ip, image.key)
+const installSoftware = async(image, provider) => {
+  provider === 'aws' ? await sshConnectionEC2.installSoftware(image.ip, image.key) : await sshConnectionEngine.installSoftware(image.ip)
 }
 
 const deleteKey = async(image) => {
@@ -206,15 +232,15 @@ const copyKey = async (image) => {
 
   const key1 = image.key
   const key2 = image.key.replace('.pem', '_1.pem')
-  await sshConnectionEC2.copyKey(image.ip, key1, key2)
+  image.provider !== 'Google' ? await sshConnectionEC2.copyKey(image.ip, key1, key2) : await sshConnectionEngine.copyKey(image.ip, key1, key2)
 }
 
-const migrateFiles = async (oldImage, newImage) => {
+const migrateFiles = async (oldImage, newImage, provider) => {
 
   await new Promise(async (resolve) => {
     const strings = oldImage.key.split('/')
     const key = strings[strings.length-1]
-    await sshConnectionEC2.executeMigration(oldImage.ip, newImage.ip, oldImage.key, key)
+    provider === 'aws' ? await sshConnectionEC2.executeMigration(oldImage.ip, newImage.ip, oldImage.key, key, provider) : await sshConnectionEngine.executeMigration(oldImage.ip, newImage.ip, key, provider)
     resolve()
   })
 }

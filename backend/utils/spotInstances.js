@@ -325,7 +325,10 @@ const waitForInstanceToBoot = async (ids) => {
   while(status !== 'ok'){
     await new Promise((resolve) => {
       ec2.describeInstanceStatus({ InstanceIds: ids, IncludeAllInstances: true }, async (err, data) => {
-        if (err) console.log(`SpotInstanceHelper: ${err.message}`) 
+        if (err) {
+          console.log(`SpotInstanceBootHelper: ${err.message}`)
+          resolve(status) 
+        }
         else {
           status = data.InstanceStatuses[0].InstanceStatus.Status
           resolve(status)

@@ -46,6 +46,8 @@ const redInstallFile = './red_install.sh'
 
 const engineInstallFile = './install_google.sh'
 const engineUsername = 'walder'
+const sshEnginePassphrase = 'elmit'
+const sshEngineSSHFile = '/home/walder/workspaces/automatic_migration/backend/google_compute_engine'
 
 const migrationFile = './migration.sh'
 const imageFile = './images.csv'
@@ -60,6 +62,8 @@ const migrationHour = 0
 const migrationMinutes = 2
 
 module.exports = { 
+    sshEnginePassphrase,
+    sshEngineSSHFile,
     engine_regions,
     engineMachineTypes,
     engineInstallFile,
