@@ -4,7 +4,7 @@ const databaseHelper = require('./databaseHelper')
 let parameters = require('../parameters')
 const mlModel = require('./mlModel')
 const spotInstances = require('./spotInstances')
-
+const computeEngine = require('./computeEngine')
 
 
 const scheduleCollectSpotPrices = schedule.scheduleJob('59 23 * * *', () => {
@@ -20,16 +20,24 @@ const checkInstances = schedule.scheduleJob(parameters.checkInstancesNumber, asy
   const imageRows = await databaseHelper.selectAllRows(parameters.imageTableValues, parameters.imageTableName)
   imageRows.map(async image => {
 
-    const state = image.simulation === 1 ? 'simulation' : await spotInstances.getInstanceState(image.zone, [image.spotInstanceId]) 
+    let state = null
+    if(image.simulation === 1){
+      state = 'simulation'
+    }
+    else{
+      state = image.provider === 'AWS' ?  await spotInstances.getInstanceState(image.zone, [image.spotInstanceId]) : await computeEngine.getStatus(image)
+    }
     if(state === 'stopped' && image.status !== 'booting' && image.status !== 'migration' && image.status !== 'simulation' && image.manually === 0){
       console.log(`CheckInstanceHelper: Reboot image ${image.rowid}`)
       const migrationHelper = require('./migrationHelper')
       parameters = require('../parameters')
-      await migrationHelper.startInstance(image)
-      await spotInstances.waitForInstanceToBoot([image.spotInstanceId])
-      await spotInstances.getPublicIpFromRequest([image.spotInstanceId], image.rowid)
+      if(image.provider === 'AWS'){
+        await migrationHelper.startInstance(image)
+        await spotInstances.waitForInstanceToBoot([image.spotInstanceId])
+        await spotInstances.getPublicIpFromRequest([image.spotInstanceId], image.rowid)
+      }
       const newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
-      await migrationHelper.startDocker(newImage.ip, image.key)
+      await migrationHelper.startDocker(newImage.ip, image.key, image.provider)
       await databaseHelper.updateById(parameters.imageTableName, `status = ?, update = ?`, ['running', Date.now(), image.rowid])
     }
   })
@@ -65,6 +73,7 @@ const setMigrationScheduler = async (time, model, image, user) => {
     const databaseHelper = require('./databaseHelper')
     parameters = require('../parameters')
     const spotInstances = require('./spotInstances')
+    const computeEngine = require('./computeEngine')
 
     const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
 
@@ -72,8 +81,13 @@ const setMigrationScheduler = async (time, model, image, user) => {
       return
     }
     console.log(`MigrationSchedulerHelper: Start with evaluation of image ${imageRow.rowid}`)
+    let state = null
 
-    const state = image.simulation === 1 ? 'simulation' : await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) 
+    if(image.simulation === 1) {
+      state =  'simulation'
+    }else{
+      state = image.provider === 'AWS' ? await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) : await computeEngine.getStatus(imageRow)
+    }
     if(state === 'running' || state === 'simulation'){
       await migrationHelper.newInstance(model, imageRow, user)
     }else{

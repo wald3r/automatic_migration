@@ -91,13 +91,13 @@ const predictModel = async (instance, product, image, user, region, engineCost) 
           if(Number(cost) <= engineCost.cost || engineCost.cost === 0 || engineCost.cost === null){
             await databaseHelper.insertRow(parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?, ?)', [null, results[0][0], null, image.rowid, user.rowid, Date.now(), Date.now()])
             await databaseHelper.updateById(parameters.imageTableName, 'predictionFile = ?, zone = ?, updatedAt = ?', [path, zone, Date.now(), image.rowid])
-            resolve({zone, provider: 'aws'})
+            resolve({zone, provider: 'AWS'})
           }else{
-            zone = String(engineCost.region[0])
-            console.log(zone)
+            const region = String(engineCost.region[0])
+            zone = await computeEngine.getZone(region)
             await databaseHelper.insertRow(parameters.billingTableName, '(null, ?, ?, ?, ?, ?, ?, ?)', [null, engineCost.cost, null, image.rowid, user.rowid, Date.now(), Date.now()])
-            await databaseHelper.updateById(parameters.imageTableName, 'predictionFile = ?, updatedAt = ?', [path, Date.now(), image.rowid])
-            resolve({ zone, provider: 'google'})
+            await databaseHelper.updateById(parameters.imageTableName, 'key = ?, predictionFile = ?, zone = ?, updatedAt = ?', [parameters.sshEngineSSHFile, path, zone, Date.now(), image.rowid])
+            resolve({ zone, provider: 'Google'})
           }
         })
       })

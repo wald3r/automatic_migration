@@ -60,9 +60,9 @@ const terminateEngineInstance = async (image) => {
 
 
 const requestEC2Instance = async(model, image, zone) => {
-  
-  const requestId = await spotInstances.requestSpotInstance(model.type, zone, model.product, image.bidprice, image.simulation, image.rowid, image.key, image.port)
+
   await databaseHelper.updateById(parameters.imageTableName, 'provider = ?, zone = ?', ['AWS', zone, image.rowid])
+  const requestId = await spotInstances.requestSpotInstance(model.type, zone, model.product, image.bidprice, image.simulation, image.rowid, image.key, image.port)
   if(image.simulation === 0){
     const instanceIds = await spotInstances.getInstanceIds(requestId, image.rowid)
     if(instanceIds[0] === undefined){
@@ -85,16 +85,19 @@ const requestEC2Instance = async(model, image, zone) => {
  
 }
 
-const requestEngineInstance = async(image, engineCost, machineType) => {
+const requestEngineInstance = async(image, machineType) => {
   
   if(image.simulation !== 1){
-    computeEngine.startVM(image.rowid, machineType.metadata.name, image.port, engineCost.region)
     await databaseHelper.updateById(parameters.imageTableName, 'provider = ?', ['Google', image.rowid])
+    let imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
+    let ip = computeEngine.startVM(image.rowid, machineType.metadata.name, image.port, imageRow.zone)
+
     await new Promise((resolve) => {
       setTimeout(() => {
         resolve()
-      }, 120000)
+      }, 60000)
     })
+    await fileHelper.executeFile(parameters.workaroundFile, ip)
    
     return true
   }else{
@@ -141,21 +144,22 @@ const newInstance = async (model, image, user) => {
   const prediction = await getPrediction(model, image, user, engineCost)
   console.log(`MigrationHelper: Instance will boot in ${prediction.zone} ${prediction.provider}`)
   if(prediction.zone !== image.zone){
-    const flag = prediction.provider === 'aws' ? await requestEC2Instance(model, image, prediction.zone) : await requestEngineInstance(image, engineCost, machineType)
+    if(image.zone !== null){
+      await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['migrating', Date.now(), image.rowid])
+    }
+    const flag = prediction.provider === 'AWS' ? await requestEC2Instance(model, image, prediction.zone) : await requestEngineInstance(image, machineType)
     if(flag === false){
       return false
     }
     const newImage = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, image.rowid)
-    if(image.zone !== null){
-      await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['migrating', Date.now(), newImage.rowid])
-    
+    if(image.zone !== null){    
       if(image.simulation === 0){
-        prediction.provider === 'aws' ? await copyKey(image, prediction.provider) : null
+        await copyKey(image, newImage, prediction.provider)
         await migrateFiles(image, newImage, prediction.provider)
-        prediction.provider === 'aws' ? await terminateEC2Instance(image) : await terminateEngineInstance(image)
-        await fileHelper.renameFile(image.key.replace('.pem', '_1.pem'), image.key)
+        image.provider === 'AWS' ? await terminateEC2Instance(image) : await terminateEngineInstance(image)
+        (image.provider === 'AWS' && prediction.provider === 'AWS') ? await fileHelper.renameFile(image.key.replace('.pem', '_1.pem'), image.key) : null
         await installSoftware(newImage, prediction.provider)
-        prediction.provider === 'aws' ? await deleteKey(newImage) : null
+        prediction.provider === 'AWS' ? await deleteKey(newImage) : null
         await startDocker(newImage.ip, newImage.key, prediction.provider)
       } 
    
@@ -180,7 +184,7 @@ const newInstance = async (model, image, user) => {
     }else{
 
       if(image.simulation === 0){
-        await setupServer(newImage.ip, newImage, prediction.provider)
+        await setupServer(newImage, prediction.provider)
         await startDocker(newImage.ip, newImage.key, prediction.provider)
         await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['running', Date.now(), image.rowid])
       }
@@ -205,42 +209,56 @@ const newInstance = async (model, image, user) => {
 
 }
 
-const setupServer = async (ip, image, provider) => {
-  if(provider === 'aws'){
-    await sshConnectionEC2.setUpServer(ip, image.key, image.path)
-    await sshConnectionEC2.installSoftware(ip, image.key)
+const setupServer = async (image, provider) => {
+  if(provider === 'AWS'){
+    await sshConnectionEC2.setUpServer(image.ip, image.key, image.path)
+    await sshConnectionEC2.installSoftware(image.ip, image.key)
   }else{
-    await sshConnectionEngine.setUpServer(ip, image.path)
-    await sshConnectionEngine.installSoftware(ip)
+    console.log(image)
+    await sshConnectionEngine.setUpServer(image.ip, image.path)
+    await sshConnectionEngine.installSoftware(image.ip)
   }
   
 }
 
 const startDocker = async (ip, key, provider) => {
-  provider === 'aws' ? await sshConnectionEC2.startDocker(ip, key) : await sshConnectionEngine.startDocker(ip)
+  provider === 'AWS' ? await sshConnectionEC2.startDocker(ip, key) : await sshConnectionEngine.startDocker(ip)
 }
 
 const installSoftware = async(image, provider) => {
-  provider === 'aws' ? await sshConnectionEC2.installSoftware(image.ip, image.key) : await sshConnectionEngine.installSoftware(image.ip)
+  console.log(provider)
+  provider === 'AWS' ? await sshConnectionEC2.installSoftware(image.ip, image.key) : await sshConnectionEngine.installSoftware(image.ip)
 }
 
 const deleteKey = async(image) => {
   await sshConnectionEC2.deleteKey(image.ip, image.key)
 }
 
-const copyKey = async (image) => {
-
-  const key1 = image.key
-  const key2 = image.key.replace('.pem', '_1.pem')
-  image.provider !== 'Google' ? await sshConnectionEC2.copyKey(image.ip, key1, key2) : await sshConnectionEngine.copyKey(image.ip, key1, key2)
+const copyKey = async (oldImage, newImage, provider) => {
+  console.log(oldImage)
+  console.log(newImage)
+  console.log(provider)
+  if(oldImage.provider === 'Google'){
+    await sshConnectionEngine.copyKey(oldImage.ip, newImage.key)
+  }else{
+    const key1 = oldImage.key
+    const key2 = oldImage.key.replace('.pem', '_1.pem')
+    if(provider === 'AWS')    await sshConnectionEC2.copyKey(oldImage.ip, key1, key2)
+    else{
+      await sshConnectionEC2.copyKey(oldImage.ip, oldImage.key, parameters.sshEngineSSHFile)
+    }
+  }
 }
 
 const migrateFiles = async (oldImage, newImage, provider) => {
 
+  console.log(oldImage)
+  console.log(newImage)
+  console.log(provider)
   await new Promise(async (resolve) => {
-    const strings = oldImage.key.split('/')
+    const strings = newImage.key.split('/')
     const key = strings[strings.length-1]
-    provider === 'aws' ? await sshConnectionEC2.executeMigration(oldImage.ip, newImage.ip, oldImage.key, key, provider) : await sshConnectionEngine.executeMigration(oldImage.ip, newImage.ip, key, provider)
+    oldImage.provider === 'AWS' ? await sshConnectionEC2.executeMigration(oldImage.ip, newImage.ip, oldImage.key, key, provider) : await sshConnectionEngine.executeMigration(oldImage.ip, newImage.ip, key, provider)
     resolve()
   })
 }

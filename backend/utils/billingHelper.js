@@ -3,7 +3,6 @@ const {spawn} = require('child_process')
 const { google } = require('googleapis')
 const fs = require('fs')
 const csv = require('csv-parse')
-const { engine_regions } = require('../parameters')
 
 
 const getCosts = async (instance, product, zone, start, rowid, startZone) => {

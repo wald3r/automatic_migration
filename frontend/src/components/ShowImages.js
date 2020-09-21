@@ -284,12 +284,12 @@ const ShowImages = (props) => {
                 <td id='idImageCreatedAt'>{convertTime(image.createdAt)}</td>
                 <td id='idImageUpdatedAt'>{convertTime(image.updatedAt)}</td>
                 <td id='idImageKey'>
-                  <Button style={{ display: (image.simulation === 1 || image.provider === 'Google' || image.status === 'booting' ) ? 'none' : '' }} variant='primary' id='idImagesDownloadKey'  data-toggle='tooltip' data-placement='top' title='Download Key' onClick={() => handleKeyDownload(image)}><i className="fa fa-key" /></Button>
+                  <Button style={{ display: (image.simulation === 1 || image.status === 'booting' ) ? 'none' : '' }} variant='primary' id='idImagesDownloadKey'  data-toggle='tooltip' data-placement='top' title='Download Key' onClick={() => handleKeyDownload(image)}><i className="fa fa-key" /></Button>
                 </td>
                 <td>
                   <Button variant='primary' id='idImagesDelete'  data-toggle='tooltip' data-placement='top' title='Remove Image' onClick={() => handleImageDeletion(image)}><i className="fa fa-trash" /></Button>
-                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping') ? '' : 'none' }} variant='primary' id='idImagesStart'  data-toggle='tooltip' data-placement='top' title='Start State' onClick={() => handleStart(image)}><i className="fa fa-sort-up" /></Button>
-                  <Button style={{ display: (image.state === 'running' || image.state === 'pending') ? '' : 'none' }} variant='primary' id='idImagesStop'  data-toggle='tooltip' data-placement='top' title='Stop State' onClick={() => handleStop(image)}><i className="fa fa-sort-desc" /></Button>
+                  <Button style={{ display: (image.state === 'stopped' || image.state === 'stopping' || image.provider === 'Google' ) ? '' : 'none' }} variant='primary' id='idImagesStart'  data-toggle='tooltip' data-placement='top' title='Start State' onClick={() => handleStart(image)}><i className="fa fa-sort-up" /></Button>
+                  <Button style={{ display: ((image.state === 'running' || image.state === 'pending') && image.provider === 'AWS' ) ? '' : 'none' }} variant='primary' id='idImagesStop'  data-toggle='tooltip' data-placement='top' title='Stop State' onClick={() => handleStop(image)}><i className="fa fa-sort-desc" /></Button>
                   <Button style={{ display: (image.status === 'stopped' && image.state === 'running') ? '' : 'none' }} variant='primary' id='idImagesStartDocker'  data-toggle='tooltip' data-placement='top' title='Start Docker' onClick={() => handleStartDocker(image)}><i className="fa fa-toggle-up" /></Button>
                   <Button style={{ display: (image.status === 'running') ? '' : 'none' }} variant='primary' id='idImagesStopDocker'  data-toggle='tooltip' data-placement='top' title='Stop Docker' onClick={() => handleStopDocker(image)}><i className="fa fa-toggle-down" /></Button>
                 </td>

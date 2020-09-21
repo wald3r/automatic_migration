@@ -47,7 +47,11 @@ const redInstallFile = './red_install.sh'
 const engineInstallFile = './install_google.sh'
 const engineUsername = 'walder'
 const sshEnginePassphrase = 'elmit'
-const sshEngineSSHFile = '/home/walder/workspaces/automatic_migration/backend/google_compute_engine'
+//const sshEngineSSHFile = '/home/walder/workspaces/automatic_migration/backend/google_compute_engine'
+const sshEngineSSHFile = '/home/walder/Schreibtisch/id_rsa'
+
+const knownHosts = '/home/walder/.ssh/known_hosts'
+const workaroundFile = '/home/walder/workspaces/automatic_migration/backend/workaround.sh'
 
 const migrationFile = './migration.sh'
 const imageFile = './images.csv'
@@ -62,6 +66,8 @@ const migrationHour = 0
 const migrationMinutes = 2
 
 module.exports = { 
+    workaroundFile,
+    knownHosts,
     sshEnginePassphrase,
     sshEngineSSHFile,
     engine_regions,

@@ -4,7 +4,7 @@ const keyFile = '/home/walder/Downloads/automaticMigration-65e56cf0b2a0.json'
 const compute = new Compute({projectId, keyFile})
 const databaseHelper = require('./databaseHelper')
 const parameters = require('../parameters')
-
+const fileHelper = require('./fileHelper')
 const getZones = async () => {
 
   return await new Promise((resolve) => {
@@ -77,7 +77,7 @@ const findMachineType = async (cpu, memory) => {
 const setSSHKey = async (vm) => {
 
   const metadata = {
-    customKey: 'AAAAB3NzaC1yc2EAAAADAQABAAACAQDqflp/R2I1THP2dOKhU864ht3gyBtdLyNaTZXmPDi2zbKT7xnrF0IDcf7UbwpWvSPxnubR9qNZ/YhH7U5tDJ4ZbCuneoWsv+8XgcMYDFXq/7aV80d74L7U2vShi3cbfjC0EKtvqqpLHRObscdkrlLa1So1ADK4bP4eNk6k+Q7OifvlBneJ132PA2dFvSpDwwjDz8w4ZqbXYhZkQCTj+C1Zyv8QCmRAE632uzxHKmk0waozIWSvX/W8zZqHYrE6638qWFIIPGegiAfizmoiaIRaHmfdHsUkvNkbTdWgWBNmq/WBN7QHQl7OQLf8KQHlOrKZauT/ft8De6SAQIA1PgBOcp9pLjZJrswonSwqWn5ONfg12o55dCzHpQ/urnZxi6z6+RC3oK4BoVn082ejB58PBoG4c+p+PxC2nFbciapH7YJ88DJm9YoUl16RyIvpZLLAL0YuHfWtrAGfVpRNW7ug1z0tvCSx2w8+SzwYnWFcnGCMyZ2ctNr4sMCJOoElxQG5eEx0OZCHL/yN46tO8mOoPhI1L0Mcctp6Y9WxPPXIJqoPI25SmGcNK9jlhkXN1VP6yv6/ua1fcQJkbnN4rccEuZhYHLZbDE/FDgEpEfsPFTipDwt2nKj2/6p93BCIP8BCsD8NAcKS8KzNNWFvA/jwA0TfwsQJXOte5QdHY+BYew=='
+    customKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDqflp/R2I1THP2dOKhU864ht3gyBtdLyNaTZXmPDi2zbKT7xnrF0IDcf7UbwpWvSPxnubR9qNZ/YhH7U5tDJ4ZbCuneoWsv+8XgcMYDFXq/7aV80d74L7U2vShi3cbfjC0EKtvqqpLHRObscdkrlLa1So1ADK4bP4eNk6k+Q7OifvlBneJ132PA2dFvSpDwwjDz8w4ZqbXYhZkQCTj+C1Zyv8QCmRAE632uzxHKmk0waozIWSvX/W8zZqHYrE6638qWFIIPGegiAfizmoiaIRaHmfdHsUkvNkbTdWgWBNmq/WBN7QHQl7OQLf8KQHlOrKZauT/ft8De6SAQIA1PgBOcp9pLjZJrswonSwqWn5ONfg12o55dCzHpQ/urnZxi6z6+RC3oK4BoVn082ejB58PBoG4c+p+PxC2nFbciapH7YJ88DJm9YoUl16RyIvpZLLAL0YuHfWtrAGfVpRNW7ug1z0tvCSx2w8+SzwYnWFcnGCMyZ2ctNr4sMCJOoElxQG5eEx0OZCHL/yN46tO8mOoPhI1L0Mcctp6Y9WxPPXIJqoPI25SmGcNK9jlhkXN1VP6yv6/ua1fcQJkbnN4rccEuZhYHLZbDE/FDgEpEfsPFTipDwt2nKj2/6p93BCIP8BCsD8NAcKS8KzNNWFvA/jwA0TfwsQJXOte5QdHY+BYew== walder@station'
   }
 
   await new Promise((resolve) => {
@@ -102,23 +102,29 @@ const setSSHKey = async (vm) => {
 }
 
 
-
-
-const startVM = async(id, machine, port, chosenRegion) => {
+const getZone = async (chosenRegion) => {
 
   let regions = []
   await new Promise((resolve) => {
     compute.getZones((err, zones) => {
       if(err) console.log(`EngineHelper: Problems with collecting Zones`)
       else{
-        regions = zones.filter(z => z.metadata.name.includes(chosenRegion[0]))
+        regions = zones.filter(z => z.metadata.name.includes(chosenRegion))
         resolve(regions)
       }
     })
   })
 
-  const zone = await compute.zone(regions[0].metadata.name)
-  await databaseHelper.updateById(parameters.imageTableName, 'zone = ?', [regions[0].metadata.name, id])
+  return regions[0].metadata.name
+}
+
+
+
+const startVM = async(id, machine, port, chosenZone) => {
+
+  await fileHelper.deleteFile(parameters.knownHosts)
+
+  const zone = await compute.zone(chosenZone)
 
   await createSecurityConfig(port)
   const vm = zone.vm(`elmit${id}`)
@@ -145,11 +151,36 @@ const startVM = async(id, machine, port, chosenRegion) => {
   const ip = metadata[0].networkInterfaces[0].accessConfigs[0].natIP
   await databaseHelper.updateById(parameters.imageTableName, 'ip = ?', [ip, id])
 
+  return ip
   //await setSSHKey(vm)
 
 }
 
+const getStatus = async (image) => {
+  const zone = await compute.zone(image.zone)
+  const vm = zone.vm(`elmit${image.rowid}`)
 
+  let status = null
+  await new Promise((resolve) => {
+    vm.get((err, vm) => {
+      if(err) console.log(`StatusEngineHelper: ${err}`)
+      else{
+       status = vm.metadata.status
+       resolve()
+      }
+    })
+  })
+
+
+  if(status === 'RUNNING')
+    status = 'running'
+  else if(status === 'STOPPING')
+    status = 'stopping'
+  else if(status === 'TERMINATED')
+    status = 'stopped'
+
+  return status
+}
 
 
 const deleteVM = async (name, fromZone) => {
@@ -166,4 +197,4 @@ const deleteVM = async (name, fromZone) => {
 
 
 
-module.exports = { findMachineType, startVM, deleteVM, getZones }
+module.exports = { getZone, getStatus, findMachineType, startVM, deleteVM, getZones }

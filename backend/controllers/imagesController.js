@@ -9,6 +9,7 @@ const sshConnectionEC2 = require('../utils/sshConnectionEC2')
 const sshConnectionEngine = require('../utils/sshConnectionEngine')
 const scheduler = require('../utils/scheduler')
 const fileHelper = require('../utils/fileHelper')
+const computeEngine = require('../utils/computeEngine')
 
 imagesRouter.get('/', async(request, response, next) => {
 
@@ -21,14 +22,30 @@ imagesRouter.get('/', async(request, response, next) => {
     let responseArray = await databaseHelper.selectByUserId(parameters.imageTableValues, parameters.imageTableName, user.rowid)
     await new Promise(async (resolve) => {
       for(let a = 0; a < responseArray.length; a++){
-        if(responseArray[a].spotInstanceId !== null){
-          responseArray[a].state = await spotInstances.getInstanceState(responseArray[a].zone, [responseArray[a].spotInstanceId]) 
-        }else{
-          responseArray[a].state = responseArray[a].simulation === 0 ? 'pending' : 'simulation'
+
+        if(responseArray[a].simulation === 1){
+          responseArray[a].state = 'simulation'
         }
-        if(responseArray[a].state === 'stopped' || responseArray[a].state === 'stopping'){
-          await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['stopped', Date.now(), responseArray[a].rowid])
-          responseArray[a].status = 'stopped'
+        if(responseArray[a].provider === 'AWS'){
+          if(responseArray[a].spotInstanceId !== null){
+            responseArray[a].state = await spotInstances.getInstanceState(responseArray[a].zone, [responseArray[a].spotInstanceId]) 
+          }else{
+            responseArray[a].state = 'pending'
+          }
+          if(responseArray[a].state === 'stopped' || responseArray[a].state === 'stopping'){
+            await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['stopped', Date.now(), responseArray[a].rowid])
+            responseArray[a].status = 'stopped'
+          }
+        
+        }
+        else if(responseArray[a].provider === 'Google'){
+          responseArray[a].state = await computeEngine.getStatus(responseArray[a])
+          
+          if(responseArray[a].state === 'stopped' || responseArray[a].state === 'stopping'){
+            await databaseHelper.updateById(parameters.imageTableName, 'status = ?, updatedAt = ?', ['stopped', Date.now(), responseArray[a].rowid])
+            responseArray[a].status = 'stopped'
+          }
+         
         }
         if(a + 1 === responseArray.length){
           resolve()
@@ -218,7 +235,7 @@ imagesRouter.get('/start/docker/:rowid', async(request, response, next) => {
     await databaseHelper.updateById(parameters.imageTableName, values, params)
     imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
     
-    imageRow.state = imageRow.provider === 'aws' ? await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) : 'running'
+    imageRow.state = imageRow.provider === 'aws' ? await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) : await computeEngine.getStatus(imageRow)
     return response.status(200).send(imageRow)
 
 
@@ -246,7 +263,7 @@ imagesRouter.get('/stop/docker/:rowid', async(request, response, next) => {
     const values = 'status = ?, updatedAt = ?'
     await databaseHelper.updateById(parameters.imageTableName, values, params)
     imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)
-    imageRow.state = imageRow.provider === 'aws' ? await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) : 'running'
+    imageRow.state = imageRow.provider === 'aws' ? await spotInstances.getInstanceState(imageRow.zone, [imageRow.spotInstanceId]) : await computeEngine.getStatus(imageRow)
 
     return response.status(200).json(imageRow)
 
@@ -349,7 +366,6 @@ imagesRouter.delete('/:rowid', async(request, response, next) => {
 
   const rowid = request.params.rowid
   const imageRow = await databaseHelper.selectById(parameters.imageTableValues, parameters.imageTableName, rowid)  
-  console.log(imageRow)
   if(imageRow.simulation === 0 && imageRow.zone !== null){
     migrationHelper.terminateInstance(imageRow)
   }

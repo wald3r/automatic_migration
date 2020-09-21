@@ -1,5 +1,7 @@
 const fs = require('fs')
 const Path = require('path')
+const parameters = require('../parameters')
+const exec = require('child_process').exec
 
 const deleteFolderRecursively = (path) => {
   if (fs.existsSync(path)) {
@@ -63,6 +65,9 @@ const createDirectory = async (path, file) => {
 
 const deleteFile = async (path) => {
 
+  if(parameters.sshEngineSSHFile.includes(path)){
+    return
+  }
   return await new Promise((resolve) => {
     fs.unlink(path, (err) => {
       if (err) console.log(`FileDeleteHelper: ${err.message}`)
@@ -91,6 +96,26 @@ const copyFile = (filepath1, filepath2, filename) => {
   })
 }
 
+
+
+
+const executeFile = async (path, arg) => {
+
+
+
+  console.log(path, arg)
+  const shellScript = exec(`sh ${path} ${arg}`)
+  
+
+  await new Promise((resolve) => {
+    shellScript.on('close', async () => {
+      console.log('Workaround file executed')
+      resolve()
+    })
+  })
+ 
+}
+
 const createKeyFile = async (key, path) => {
   
   let finalPath = path
@@ -110,4 +135,4 @@ const createKeyFile = async (key, path) => {
   
 }
 
-module.exports = { createPath, copyFile, deleteFile, createKeyFile, createDirectory, deleteFolderRecursively, renameFile }
+module.exports = { createPath, copyFile, deleteFile, createKeyFile, createDirectory, deleteFolderRecursively, renameFile, executeFile }

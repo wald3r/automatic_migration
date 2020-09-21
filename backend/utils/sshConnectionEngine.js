@@ -13,7 +13,7 @@ const setUpServer = async (ip, pathToDocker) => {
     ssh.connect({
       host: ip,
       username: parameters.engineUsername,
-      passphrase: parameters.sshEnginePassphrase,
+      //passphrase: parameters.sshEnginePassphrase,
       privateKey: parameters.sshEngineSSHFile
 
     })
@@ -41,9 +41,9 @@ const setUpServer = async (ip, pathToDocker) => {
   
 }
 
-const copyKey = async (ip, pathToKey2) => {
+const copyKey = async (ip, key) => {
 
-  let strings = pathToKey1.split('/')
+  let strings = key.split('/')
   let keyName = strings[strings.length -1]
   let promise = await new Promise((resolve) => {
     ssh.connect({
@@ -52,12 +52,12 @@ const copyKey = async (ip, pathToKey2) => {
       passphrase: parameters.sshEnginePassphrase,
       privateKey: parameters.sshEngineSSHFile
     }).then(() => {
-      ssh.putFile(pathToKey2, `/home/${parameters.engineUsername}/image/${keyName}`)
+      ssh.putFile(key, `/home/${parameters.engineUsername}/image/${keyName}`)
       .then(() => {
-        console.log(`CopyKeyHelper: The key ${pathToKey2} was copied successfully to ${ip}`)
+        console.log(`CopyKeyHelper: The key ${key} was copied successfully to ${ip}`)
         resolve(1)
       }, (error) => {
-        console.log(`CopyKeyHelper: The copying of the key ${pathToKey2} to ${ip} failed`)
+        console.log(`CopyKeyHelper: The copying of the key ${key} to ${ip} failed`)
         console.log(error)
         resolve(-1)
       })
@@ -127,7 +127,7 @@ const startDocker = async (ip) => {
     ssh.connect({
       host: ip,
       username: parameters.engineUsername,
-      passphrase: parameters.sshEnginePassphrase,
+      //passphrase: parameters.sshEnginePassphrase,
       privateKey: parameters.sshEngineSSHFile
     })
     .then(() => {
@@ -174,4 +174,4 @@ const endDocker = async (ip) => {
 
 
 
-module.exports = { setUpServer, installSoftware, startDocker, endDocker }
+module.exports = { setUpServer, installSoftware, startDocker, endDocker, copyKey, executeMigration }
