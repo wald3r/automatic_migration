@@ -1,0 +1,10 @@
+PUT http://localhost:3001/api/instances/1
+Content-Type: application/json
+
+{
+    "type": "t99.micro",
+    "product": "Windows",
+    "bidprice": 0.101,
+    "region": null,
+    "simulation": 1
+}

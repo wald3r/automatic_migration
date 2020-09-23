@@ -1,0 +1,19 @@
+Install nodejs
+Install npm
+
+npm install
+
+
+~/.aws/credentials
+
+	Structure:
+	[default]
+	aws_access_key_id=ID
+	aws_secret_access_key=KEY 
+	
+	
+install google-cloud-sdk
+
+export google key: export GOOGLE_APPLICATION_CREDENTIALS="path_to_key"
+
+gcloud auth application-default login

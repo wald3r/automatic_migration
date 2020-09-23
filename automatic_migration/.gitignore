@@ -1,0 +1,11 @@
+google.json
+
+/python_analysis/variables/*
+/backend/ml_model/models/*
+/backend/node_modules/*
+/backend/spot_pricing/aws_spot_pricing.csv
+/backend/spot_pricing/pricing_history/*
+
+/frontend/node_modules/*
+
+
